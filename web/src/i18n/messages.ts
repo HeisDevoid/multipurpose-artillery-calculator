@@ -4,6 +4,17 @@
  * версии: тест следит, чтобы ключи и подстановки у языков совпадали.
  */
 export const ru = {
+  "mapPicker.contours": "Высотные линии",
+  "mapPicker.coverage-from": "Куда достаю",
+  "mapPicker.coverage-to": "Где встать",
+  "mapPicker.stand-here": "Встать здесь",
+  "mapPicker.coverage-legend": "Зелёное: достаёт. Жёлтое: впритык к рельефу. Красное: рельеф закрывает.",
+  "mapPicker.coverage-need-gun": "Поставьте орудие на карте.",
+  "mapPicker.coverage-need-target": "Поставьте цель на карте.",
+  "settings.hotkeys.lay": "Наводка: включить / выключить слежение",
+  "settings.hotkeys.lay-low": "Наводка: ствол на нижнем упоре",
+  "settings.hotkeys.lay-high": "Наводка: ствол на верхнем упоре",
+  "settings.hotkeys.lay-calibrate": "Наводка: калибровка",
   "settingsPage.only-good": "Только лучшие заряды",
   "settingsPage.weather-ballistics": "Погода и улучшенная баллистика",
   "settingsPage.weather-ballistics-description": "Ветер, температура, давление и таблицы для игры с сопротивлением воздуха (ACE advanced ballistics). Одно без другого не работает: в игре с погодой таблицы другие.",
@@ -204,6 +215,7 @@ export const ru = {
   "ballisticTableView.temp-inc": "Темп. +1°",
   "ballisticTableView.tof": "Время",
   "ballisticTableView.transcribed-from-in-game-screenshots": "Перепечатано со скриншотов игры. Если значение расходится с игрой, проверьте web/data-sources.",
+  "ballisticTableView.exported-from-game": "Выгружено из игры скриптом: тот же расчёт ACE, что в окне таблицы.",
   "ballisticTableView.wind-head": "Ветер встр.",
   "ballisticTableView.wind-tail": "Ветер попут.",
   "categories.rocket-artillery": "РСЗО",
@@ -651,6 +663,17 @@ export const ru = {
 } as const
 
 export const en: Record<keyof typeof ru, string> = {
+  "mapPicker.contours": "Contour lines",
+  "mapPicker.coverage-from": "Where I can hit",
+  "mapPicker.coverage-to": "Where to stand",
+  "mapPicker.stand-here": "Stand here",
+  "mapPicker.coverage-legend": "Green: reachable. Yellow: tight over terrain. Red: terrain blocks the shot.",
+  "mapPicker.coverage-need-gun": "Place the gun on the map.",
+  "mapPicker.coverage-need-target": "Place a target on the map.",
+  "settings.hotkeys.lay": "Gun laying: start / stop tracking",
+  "settings.hotkeys.lay-low": "Gun laying: barrel at the lower stop",
+  "settings.hotkeys.lay-high": "Gun laying: barrel at the upper stop",
+  "settings.hotkeys.lay-calibrate": "Gun laying: calibration",
   "settingsPage.only-good": "Only the good charges",
   "settingsPage.weather-ballistics": "Weather and advanced ballistics",
   "settingsPage.weather-ballistics-description": "Wind, temperature, pressure and the tables for games with air drag (ACE advanced ballistics). They go together: with weather in the game the tables are different.",
@@ -851,6 +874,7 @@ export const en: Record<keyof typeof ru, string> = {
   "ballisticTableView.temp-inc": "Temp inc",
   "ballisticTableView.tof": "TOF",
   "ballisticTableView.transcribed-from-in-game-screenshots": "Transcribed from in-game screenshots. If a value differs from the game, check web/data-sources.",
+  "ballisticTableView.exported-from-game": "Exported from the game with a script: the same ACE computation as the in-game table.",
   "ballisticTableView.wind-head": "Wind head",
   "ballisticTableView.wind-tail": "Wind tail",
   "categories.rocket-artillery": "Rocket artillery",

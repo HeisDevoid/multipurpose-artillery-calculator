@@ -15,6 +15,11 @@ import sholefData from './sholef.json'
 import sochorData from './sochor.json'
 import type53Data from './type53_sog.json'
 import type63Data from './type63_sog.json'
+import d30Data from './d30_rhs.json'
+import gvozdikaData from './gvozdika_rhs.json'
+import bm21Data from './bm21_rhs.json'
+import podnosData from './podnos_rhs.json'
+import himarsData from './himars_rhs.json'
 
 import type { ArtilleryReference } from '../../types/artillery'
 
@@ -168,6 +173,7 @@ export function parseReference(
     typeof data.name !== 'string' ||
     typeof data.modification !== 'string' ||
     typeof data.source.name !== 'string' ||
+    !(data.source.method === undefined || data.source.method === 'export' || data.source.method === 'screenshots') ||
     !validStatus ||
     !validModes ||
     !validScreenshots ||
@@ -201,4 +207,9 @@ export const artilleryCatalog = {
   sochor: parseReference(sochorData, 'sochor'),
   type53_sog: parseReference(type53Data, 'type53_sog'),
   type63_sog: parseReference(type63Data, 'type63_sog'),
+  d30_rhs: parseReference(d30Data, 'd30_rhs'),
+  gvozdika_rhs: parseReference(gvozdikaData, 'gvozdika_rhs'),
+  bm21_rhs: parseReference(bm21Data, 'bm21_rhs'),
+  podnos_rhs: parseReference(podnosData, 'podnos_rhs'),
+  himars_rhs: parseReference(himarsData, 'himars_rhs'),
 }

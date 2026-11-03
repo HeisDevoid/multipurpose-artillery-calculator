@@ -1,6 +1,17 @@
 import type { ru } from './messages'
 
 export const uk: Record<keyof typeof ru, string> = {
+  "mapPicker.contours": "Горизонталі",
+  "mapPicker.coverage-from": "Куди дістаю",
+  "mapPicker.coverage-to": "Де стати",
+  "mapPicker.stand-here": "Стати тут",
+  "mapPicker.coverage-legend": "Зелене: дістає. Жовте: впритул до рельєфу. Червоне: рельєф закриває.",
+  "mapPicker.coverage-need-gun": "Поставте гармату на карті.",
+  "mapPicker.coverage-need-target": "Поставте ціль на карті.",
+  "settings.hotkeys.lay": "Наведення: увімкнути / вимкнути стеження",
+  "settings.hotkeys.lay-low": "Наведення: ствол на нижньому упорі",
+  "settings.hotkeys.lay-high": "Наведення: ствол на верхньому упорі",
+  "settings.hotkeys.lay-calibrate": "Наведення: калібрування",
   "settingsPage.only-good": "Лише вдалі заряди",
   "settingsPage.weather-ballistics": "Погода і покращена балістика",
   "settingsPage.weather-ballistics-description": "Вітер, температура, тиск і таблиці для гри з опором повітря (ACE advanced ballistics). Одне без одного не працює: у грі з погодою таблиці інші.",
@@ -201,6 +212,7 @@ export const uk: Record<keyof typeof ru, string> = {
   "ballisticTableView.temp-inc": "Темп. +",
   "ballisticTableView.tof": "Час",
   "ballisticTableView.transcribed-from-in-game-screenshots": "Перенесено зі знімків екрана гри. Якщо значення відрізняється від гри, перевірте web/data-sources.",
+  "ballisticTableView.exported-from-game": "Вивантажено з гри скриптом: той самий розрахунок ACE, що у вікні таблиці.",
   "ballisticTableView.wind-head": "Вітер зустр.",
   "ballisticTableView.wind-tail": "Вітер попутн.",
   "categories.rocket-artillery": "Реактивна артилерія",

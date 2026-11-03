@@ -1,6 +1,17 @@
 import type { ru } from './messages'
 
 export const ja: Record<keyof typeof ru, string> = {
+  "mapPicker.contours": "等高線",
+  "mapPicker.coverage-from": "命中できる範囲",
+  "mapPicker.coverage-to": "どこに構えるか",
+  "mapPicker.stand-here": "ここに構える",
+  "mapPicker.coverage-legend": "緑：届く。黄：地形すれすれ。赤：地形が射線を遮る。",
+  "mapPicker.coverage-need-gun": "地図に砲を置いてください。",
+  "mapPicker.coverage-need-target": "地図に目標を置いてください。",
+  "settings.hotkeys.lay": "照準：追跡のオン / オフ",
+  "settings.hotkeys.lay-low": "照準：砲身を下限ストッパーに",
+  "settings.hotkeys.lay-high": "照準：砲身を上限ストッパーに",
+  "settings.hotkeys.lay-calibrate": "照準：キャリブレーション",
   "settingsPage.only-good": "優れた装薬のみ",
   "settingsPage.weather-ballistics": "天候と高度な弾道計算",
   "settingsPage.weather-ballistics-description": "風・気温・気圧と、空気抵抗あり（ACE advanced ballistics）のゲーム用射表。両者はセットです：天候が有効だと射表が変わります。",
@@ -201,6 +212,7 @@ export const ja: Record<keyof typeof ru, string> = {
   "ballisticTableView.temp-inc": "気温 高",
   "ballisticTableView.tof": "飛翔時間",
   "ballisticTableView.transcribed-from-in-game-screenshots": "ゲーム内スクリーンショットから書き起こしています。値がゲームと異なる場合は web/data-sources を確認してください。",
+  "ballisticTableView.exported-from-game": "スクリプトでゲームから書き出し：ゲーム内の射表と同じ ACE の計算です。",
   "ballisticTableView.wind-head": "向かい風",
   "ballisticTableView.wind-tail": "追い風",
   "categories.rocket-artillery": "ロケット砲",

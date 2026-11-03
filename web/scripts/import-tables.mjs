@@ -159,12 +159,12 @@ function importOne(sourceDir, jsonPath, profileKey, check) {
     modes,
   }
 
-  // Профиль «advanced» (улучшенная баллистика) подключается к боеприпасам обычного
-  if (profileKey === 'advanced') {
+  // Профиль с сопротивлением воздуха подключается к боеприпасам своего набора:
+  // «advanced» — к основному (default), «<набор>-advanced» — к набору <набор>
+  if (profileKey === 'advanced' || profileKey.endsWith('-advanced')) {
+    const base = profileKey === 'advanced' ? 'default' : profileKey.slice(0, -'-advanced'.length)
     for (const ammo of data.ammunition ?? []) {
-      if (ammo.profile !== undefined && ammo.profile !== 'advanced') {
-        ammo.advancedProfile = 'advanced'
-      }
+      if (ammo.profile === base) ammo.advancedProfile = profileKey
     }
   }
 
@@ -206,6 +206,14 @@ if (all) {
     // data-sources/<id>/advanced — таблицы при улучшенной баллистике
     const advanced = join(root, entry.name, 'advanced')
     if (existsSync(advanced)) importOne(advanced, json, 'advanced', check)
+    // Другие подпапки — наборы снарядов с другой скоростью (профиль = имя папки),
+    // у каждого может быть своя advanced/
+    for (const sub of readdirSync(join(root, entry.name), { withFileTypes: true })) {
+      if (!sub.isDirectory() || sub.name === 'advanced') continue
+      importOne(join(root, entry.name, sub.name), json, sub.name, check)
+      const subAdvanced = join(root, entry.name, sub.name, 'advanced')
+      if (existsSync(subAdvanced)) importOne(subAdvanced, json, `${sub.name}-advanced`, check)
+    }
   }
 } else {
   if (positional.length !== 2 || !profileKey) {

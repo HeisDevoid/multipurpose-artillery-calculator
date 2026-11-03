@@ -11,6 +11,7 @@
     "tables:import": "node scripts/import-tables.mjs --all",
     "tables:check": "node scripts/import-tables.mjs --all --check",
     "tables:ingest": "node scripts/ingest-tables.mjs",
+    "tables:game": "node scripts/import-ace-tables.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

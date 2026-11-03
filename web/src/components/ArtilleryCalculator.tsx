@@ -893,6 +893,7 @@ export function ArtilleryCalculator({
                   shellType={selectedAmmo?.type}
                   onGunLockChange={handleGunLock}
                   solveLine={solveLinePoint}
+                  solveKey={[modelId, selectedAmmo?.id, mode, activeResult?.charge, rangeAdjust, JSON.stringify(weatherInputs.weather)].join('|')}
                   onTerrainProfile={setTerrain}
                   showMarkers={showMarkers}
                   showScreenMarkers={showScreenMarkers}
@@ -1416,6 +1417,7 @@ export function ArtilleryCalculator({
               charges={selectedAmmo?.charges}
               activeCharge={activeResult?.charge ?? null}
               highlightRange={solution?.lookupRange ?? null}
+              exported={reference.source.method === 'export'}
             />
           )}
         </div>

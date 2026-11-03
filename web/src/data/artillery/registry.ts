@@ -22,4 +22,9 @@ export const artilleryRegistry = {
   sochor: artilleryCatalog.sochor,
   type53: artilleryCatalog.type53_sog,
   type63: artilleryCatalog.type63_sog,
+  d30: artilleryCatalog.d30_rhs,
+  gvozdika: artilleryCatalog.gvozdika_rhs,
+  bm21: artilleryCatalog.bm21_rhs,
+  podnos: artilleryCatalog.podnos_rhs,
+  himars: artilleryCatalog.himars_rhs,
 } satisfies Record<ModelId, ArtilleryReference>

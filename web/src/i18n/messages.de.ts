@@ -1,6 +1,17 @@
 import type { ru } from './messages'
 
 export const de: Record<keyof typeof ru, string> = {
+  "mapPicker.contours": "Höhenlinien",
+  "mapPicker.coverage-from": "Trefferzone",
+  "mapPicker.coverage-to": "Wo aufstellen",
+  "mapPicker.stand-here": "Hier aufstellen",
+  "mapPicker.coverage-legend": "Grün: erreichbar. Gelb: knapp über dem Gelände. Rot: Gelände versperrt den Schuss.",
+  "mapPicker.coverage-need-gun": "Geschütz auf der Karte setzen.",
+  "mapPicker.coverage-need-target": "Ziel auf der Karte setzen.",
+  "settings.hotkeys.lay": "Richten: Verfolgung an / aus",
+  "settings.hotkeys.lay-low": "Richten: Rohr am unteren Anschlag",
+  "settings.hotkeys.lay-high": "Richten: Rohr am oberen Anschlag",
+  "settings.hotkeys.lay-calibrate": "Richten: Kalibrierung",
   "settingsPage.only-good": "Nur die guten Ladungen",
   "settingsPage.weather-ballistics": "Wetter und erweiterte Ballistik",
   "settingsPage.weather-ballistics-description": "Wind, Temperatur, Luftdruck und die Tabellen für Spiele mit Luftwiderstand (ACE advanced ballistics). Beides gehört zusammen: Mit Wetter im Spiel sind die Tabellen anders.",
@@ -201,6 +212,7 @@ export const de: Record<keyof typeof ru, string> = {
   "ballisticTableView.temp-inc": "Temp. +",
   "ballisticTableView.tof": "Flugz.",
   "ballisticTableView.transcribed-from-in-game-screenshots": "Von Spiel-Screenshots abgeschrieben. Weicht ein Wert vom Spiel ab, prüfe web/data-sources.",
+  "ballisticTableView.exported-from-game": "Per Skript aus dem Spiel exportiert: dieselbe ACE-Berechnung wie im Tabellenfenster.",
   "ballisticTableView.wind-head": "Gegenwind",
   "ballisticTableView.wind-tail": "Rückenwind",
   "categories.rocket-artillery": "Raketenartillerie",

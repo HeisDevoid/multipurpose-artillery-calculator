@@ -1,6 +1,17 @@
 import type { ru } from './messages'
 
 export const zh: Record<keyof typeof ru, string> = {
+  "mapPicker.contours": "等高线",
+  "mapPicker.coverage-from": "可命中范围",
+  "mapPicker.coverage-to": "在哪里架炮",
+  "mapPicker.stand-here": "在此架炮",
+  "mapPicker.coverage-legend": "绿色：可达。黄色：贴近地形。红色：地形阻挡。",
+  "mapPicker.coverage-need-gun": "请在地图上放置火炮。",
+  "mapPicker.coverage-need-target": "请在地图上放置目标。",
+  "settings.hotkeys.lay": "瞄准：开启 / 关闭跟踪",
+  "settings.hotkeys.lay-low": "瞄准：炮管在下限位",
+  "settings.hotkeys.lay-high": "瞄准：炮管在上限位",
+  "settings.hotkeys.lay-calibrate": "瞄准：校准",
   "settingsPage.only-good": "只保留优质装药",
   "settingsPage.weather-ballistics": "天气与高级弹道",
   "settingsPage.weather-ballistics-description": "风、温度、气压以及启用空气阻力（ACE 高级弹道）时的射表。两者相互关联：游戏中有天气时射表会不同。",
@@ -201,6 +212,7 @@ export const zh: Record<keyof typeof ru, string> = {
   "ballisticTableView.temp-inc": "温度 升",
   "ballisticTableView.tof": "飞行时间",
   "ballisticTableView.transcribed-from-in-game-screenshots": "根据游戏截图转录。如有数值与游戏不符，请检查 web/data-sources。",
+  "ballisticTableView.exported-from-game": "用脚本从游戏导出：与游戏内射表相同的 ACE 计算。",
   "ballisticTableView.wind-head": "逆风",
   "ballisticTableView.wind-tail": "顺风",
   "categories.rocket-artillery": "火箭炮",
