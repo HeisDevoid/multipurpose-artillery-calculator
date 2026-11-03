@@ -1,6 +1,9 @@
 import type { ru } from './messages'
 
 export const ja: Record<keyof typeof ru, string> = {
+  "mapPicker.line-tight": "すれすれ：斜面の上 {0} {1}",
+  "mapPicker.line-blocked": "斜面に当たる",
+  "mapPicker.coverage-out": "届かない",
   "terrain.short-tight": "地形すれすれの射撃：弾が斜面をかすめそうです",
   "terrain.short-blocked": "地形が遮っています：弾は斜面に当たります",
   "mrsiPanel.shared": "計画はオーバーレイとリンクの砲手にも表示され、「射撃」で開始します。パネルを閉じると多弾同時着弾を取り消します。",

@@ -85,26 +85,46 @@ const BULGE = 2
  * перед целью всегда идёт низко, и на ровной земле это не опасно.
  */
 export function clearance(profile: TerrainProfile, elevationMil: number): Clearance | null {
-  const { distance, heights } = profile
-  const n = heights.length - 1
+  return clearanceAlong(profile.heights, 0, profile.heights.length - 1, profile.distance, elevationMil)
+}
+
+/**
+ * То же по части массива высот без копирования: от индекса first (орудие)
+ * до last (цель), в любую сторону. Для зон на карте, где профилей тысячи.
+ */
+export function clearanceAlong(
+  heights: ArrayLike<number>,
+  first: number,
+  last: number,
+  distance: number,
+  elevationMil: number
+): Clearance | null {
+  const n = Math.abs(last - first)
   if (n < 2) return null
-  const gunHeight = heights[0] + MUZZLE_HEIGHT
-  const targetHeight = heights[n]
+  const dir = last > first ? 1 : -1
+  const own = heights[first]
+  const gunHeight = own + MUZZLE_HEIGHT
+  const targetHeight = heights[last]
+  // Парабола как в shellHeightAt, но тангенс — один раз на профиль: зоны
+  // на карте проверяют миллионы точек
+  const tan = Math.tan((elevationMil * Math.PI) / 3200)
+  const drop = distance * tan - (targetHeight - gunHeight)
   let hit: Clearance | null = null
   let bump: Clearance | null = null
   for (let i = 1; i < n; i += 1) {
     const x = (i / n) * distance
     if (x < SKIP_START || x > distance - SKIP_END) continue
-    const shell = shellHeightAt(x, distance, gunHeight, targetHeight, elevationMil)
-    const margin = shell - heights[i]
-    const point = { min: margin, at: x, terrain: heights[i], shell }
+    const ground = heights[first + dir * i]
+    const k = i / n
+    const shell = gunHeight + x * tan - k * k * drop
+    const margin = shell - ground
     if (margin < -BLOCK_TOLERANCE) {
-      if (hit === null || margin < hit.min) hit = point
+      if (hit === null || margin < hit.min) hit = { min: margin, at: x, terrain: ground, shell }
       continue
     }
-    const chord = heights[0] + ((targetHeight - heights[0]) * i) / n
-    const close = margin < 0 || heights[i] > chord + BULGE
-    if (close && (bump === null || margin < bump.min)) bump = point
+    const chord = own + ((targetHeight - own) * i) / n
+    const close = margin < 0 || ground > chord + BULGE
+    if (close && (bump === null || margin < bump.min)) bump = { min: margin, at: x, terrain: ground, shell }
   }
   return hit ?? bump
 }

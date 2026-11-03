@@ -4,6 +4,9 @@
  * версии: тест следит, чтобы ключи и подстановки у языков совпадали.
  */
 export const ru = {
+  "mapPicker.line-tight": "Впритык: {0} {1} над склоном",
+  "mapPicker.line-blocked": "Упрётся в склон",
+  "mapPicker.coverage-out": "Не достаёт",
   "terrain.short-tight": "Огонь впритык к рельефу: снаряд почти задевает склон",
   "terrain.short-blocked": "Рельеф закрывает: снаряд упрётся в склон",
   "mrsiPanel.shared": "План виден в оверлее и у стрелков по связке, «Огонь» начинает удар. Свернуть панель: отменить одновременный удар.",
@@ -310,13 +313,13 @@ export const ru = {
   "hotkeysDialog.go-to-azimuth": "К полю азимута",
   "hotkeysDialog.go-to-distance": "К полю дистанции",
   "hotkeysDialog.go-to-fire-adjustment": "К корректировке огня",
-  "hotkeysDialog.high-low-mode": "Режим HIGH / LOW",
+  "hotkeysDialog.high-low-mode": "Режим крутой | пологой дуги",
   "hotkeysDialog.in-a-report-field-apply": "В поле доклада: учесть разрыв",
-  "hotkeysDialog.next-previous-target": "Следующая / предыдущая цель",
+  "hotkeysDialog.next-previous-target": "Следующая | предыдущая цель",
   "hotkeysDialog.over-the-game-desktop-app": "Поверх игры (программа для ПК)",
   "hotkeysDialog.select-a-charge": "Выбрать заряд",
   "hotkeysDialog.shortcuts-work-in-any-keyboard": "Клавиши работают в любой раскладке, когда курсор не в поле ввода.",
-  "hotkeysDialog.show-hide-this-help": "Показать / скрыть эту справку",
+  "hotkeysDialog.show-hide-this-help": "Показать | скрыть эту справку",
   "hotkeysDialog.stop-the-timer-leave-a": "Остановить таймер, выйти из поля",
   "journalIO.added-already-present": "Добавлено: {0}. Уже были: {1}.",
   "journalIO.damaged": "Повреждённых: {0}.",
@@ -574,11 +577,11 @@ export const ru = {
   "shellIcon.high-explosive": "Фугасный",
   "shellIcon.illumination": "Осветительный",
   "shellIcon.smoke": "Дымовой",
-  "soundSettings.3-2-1-countdown-mrsi": "Отсчёт 3-2-1 (MRSI, по времени)",
+  "soundSettings.3-2-1-countdown-mrsi": "Отсчёт 3-2-1 (MRSI, огонь по времени)",
   "soundSettings.choose-file": "Выбрать файл",
   "soundSettings.default-beep": "стандартный сигнал",
   "soundSettings.fire-button-pressed": "Выстрел (нажали «Огонь»)",
-  "soundSettings.fire-mrsi-on-time": "«Огонь» (MRSI, по времени)",
+  "soundSettings.fire-mrsi-on-time": "«Огонь» (MRSI, огонь по времени)",
   "soundSettings.is-not-a-playable-sound": "«{0}» не читается как звук. Подойдут MP3, WAV, OGG.",
   "soundSettings.is-over-mb-use-a": "«{0}» больше {1} МБ. Возьмите короткий звук.",
   "soundSettings.link-new-settings": "Связка: новые установки",
@@ -689,6 +692,9 @@ export const ru = {
 } as const
 
 export const en: Record<keyof typeof ru, string> = {
+  "mapPicker.line-tight": "Tight: {0} {1} over the slope",
+  "mapPicker.line-blocked": "Hits the slope",
+  "mapPicker.coverage-out": "Out of reach",
   "terrain.short-tight": "Firing tight over the terrain: the round barely clears a slope",
   "terrain.short-blocked": "Terrain blocks the shot: the round will hit a slope",
   "mrsiPanel.shared": "The plan is shown in the overlay and to gunners in the link, Fire starts the strike. Collapse the panel to cancel the simultaneous strike.",

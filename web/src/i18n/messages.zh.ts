@@ -1,6 +1,9 @@
 import type { ru } from './messages'
 
 export const zh: Record<keyof typeof ru, string> = {
+  "mapPicker.line-tight": "贴近：高出山坡 {0} {1}",
+  "mapPicker.line-blocked": "撞上山坡",
+  "mapPicker.coverage-out": "打不到",
   "terrain.short-tight": "贴近地形射击：炮弹几乎擦到山坡",
   "terrain.short-blocked": "地形阻挡：炮弹会撞上山坡",
   "mrsiPanel.shared": "计划会显示在悬浮窗和联机的炮手那里，“开火”开始齐射。收起面板即取消多发同时弹着。",

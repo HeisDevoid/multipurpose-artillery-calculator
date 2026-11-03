@@ -1,6 +1,9 @@
 import type { ru } from './messages'
 
 export const fr: Record<keyof typeof ru, string> = {
+  "mapPicker.line-tight": "Juste : {0} {1} au-dessus de la pente",
+  "mapPicker.line-blocked": "Touche la pente",
+  "mapPicker.coverage-out": "Hors de portée",
   "terrain.short-tight": "Tir juste au-dessus du relief : l’obus frôle une pente",
   "terrain.short-blocked": "Le relief bloque : l’obus touchera une pente",
   "mrsiPanel.shared": "Le plan s’affiche dans l’overlay et chez les pourvoyeurs de la liaison, « Tir » lance la frappe. Replier le panneau : annuler la frappe simultanée.",

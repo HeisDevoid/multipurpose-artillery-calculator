@@ -19,7 +19,17 @@ import {
 } from '../lib/fireLine'
 import { readStoredText, writeStored } from '../lib/input'
 import { sampleProfile, type TerrainProfile } from '../lib/terrainClearance'
-import { COVERAGE_RGB, computeCoverage, nearestGoodSpot, type Coverage } from '../lib/coverage'
+import {
+  COVERAGE_RGB,
+  computeCoverageRays,
+  coverageRayCount,
+  isWater,
+  nearestGoodSpot,
+  pointStatus,
+  type Coverage,
+  type CoverageInput,
+  type CoverageRay,
+} from '../lib/coverage'
 import { contourInterval, drawDemContours } from '../lib/contours'
 import {
   drawVector,
@@ -124,6 +134,9 @@ interface Props {
   shellType?: string
   // Рельеф по прямой от орудия к цели: для проверки, не упрётся ли снаряд в гору
   onTerrainProfile?: (profile: TerrainProfile | null) => void
+  // Опасное место на линии огня для текущего решения: снаряд идёт впритык
+  // к рельефу или упирается в него; at — расстояние от орудия, м
+  terrainHit?: { status: 'tight' | 'blocked'; at: number; min: number } | null
   // Огонь по линии: возвышение в точку при этой дальности и разнице высот
   // (цель минус орудие) тем же способом, что и основной расчёт
   solveLine?: (distance: number, heightDiff: number) => { elevation: number; charge: number } | null
@@ -240,6 +253,7 @@ export function MapPicker({
   solveLine,
   solveKey = '',
   onTerrainProfile,
+  terrainHit = null,
 }: Props) {
   const ru = language === 'ru'
   const unitM = t('unit.m')
@@ -320,25 +334,82 @@ export function MapPicker({
   })
   const reachMin = reach?.min ?? 0
   const reachMax = reach?.max ?? 0
-  const coverage = useMemo<Coverage | null>(() => {
-    if (coverageMode === 'off' || !map || reachMax <= 0) return null
-    const center = coverageMode === 'from' ? gun : target
-    if (!center) return null
-    return computeCoverage({
-      map,
-      center,
-      mode: coverageMode,
-      minRange: reachMin,
-      maxRange: reachMax,
-      solve: (distance, heightDiff) => solveRef.current?.(distance, heightDiff) ?? null,
-    })
+  // Центр зоны: орудие («Куда достаю») или цель («Где встать»)
+  const coverageCenter = coverageMode === 'from' ? gun : coverageMode === 'to' ? target : null
+
+  // Зона считается по частям между кадрами: лучей сотни, а интерфейс не
+  // должен замирать; на карте она заполняется по кругу
+  const [coverage, setCoverage] = useState<Coverage | null>(null)
+  useEffect(() => {
+    let frame = 0
+    let cancelled = false
+    const input: CoverageInput | null =
+      coverageMode !== 'off' && map && coverageCenter && reachMax > 0
+        ? {
+            map,
+            center: coverageCenter,
+            mode: coverageMode,
+            minRange: reachMin,
+            maxRange: reachMax,
+            solve: (distance, heightDiff) => solveRef.current?.(distance, heightDiff) ?? null,
+          }
+        : null
+    const total = input ? coverageRayCount(input) : 0
+    const rays: CoverageRay[] = []
+    let next = 0
+    const step = () => {
+      if (cancelled) return
+      if (!input) {
+        setCoverage(null)
+        return
+      }
+      const until = performance.now() + 12
+      while (next < total && performance.now() < until) {
+        rays.push(...computeCoverageRays(input, next, next + 4))
+        next += 4
+      }
+      setCoverage({ center: input.center, mode: input.mode, width: (Math.PI * 2) / total, rays: [...rays] })
+      if (next < total) frame = requestAnimationFrame(step)
+    }
+    frame = requestAnimationFrame(step)
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(frame)
+    }
     // solveKey заменяет solveLine: функция каждый раз новая
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coverageMode, map, gun, target, reachMin, reachMax, solveKey])
+  }, [coverageMode, map, coverageCenter, reachMin, reachMax, solveKey])
   const spot = useMemo(
     () => (coverage && coverage.mode === 'to' ? nearestGoodSpot(coverage, gun ?? coverage.center) : null),
     [coverage, gun]
   )
+
+  // Зоны — фигуры в метрах вокруг центра: на кадр три заливки, сколько бы
+  // ни было лучей, и без тёмных швов между соседними клиньями
+  const coveragePaths = useMemo(() => {
+    if (!coverage || typeof Path2D === 'undefined') return null
+    const half = coverage.width / 2 + 0.002
+    const paths = { ok: new Path2D(), tight: new Path2D(), blocked: new Path2D() }
+    for (const ray of coverage.rays) {
+      const a0 = ray.angle - Math.PI / 2 - half
+      const a1 = ray.angle - Math.PI / 2 + half
+      for (const segment of ray.segments) {
+        const path = paths[segment.status]
+        path.moveTo(Math.cos(a0) * segment.to, Math.sin(a0) * segment.to)
+        path.arc(0, 0, segment.to, a0, a1)
+        path.arc(0, 0, Math.max(0, segment.from), a1, a0, true)
+        path.closePath()
+      }
+    }
+    return paths
+  }, [coverage])
+
+  // «Куда достаю»: вода в зону не входит, а цель в воде проверяется отдельно
+  const targetInWater = useMemo(() => {
+    if (coverageMode !== 'from' || !map || !gun || !target || !isWater(map, target)) return null
+    return pointStatus(map, gun, target, (distance, heightDiff) => solveRef.current?.(distance, heightDiff) ?? null)
+    // solveKey заменяет solveLine: функция каждый раз новая
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coverageMode, map, gun, target, solveKey])
 
   // ---- метки ----
   const sync = useSync()
@@ -845,26 +916,21 @@ export function MapPicker({
     }
 
     // Зоны по рельефу: зелёное достаёт, жёлтое впритык к рельефу, красное закрыто
-    if (coverage) {
+    if (coverage && coveragePaths) {
       const c = toScreen(coverage.center)
-      const half = coverage.width / 2 + 0.004
       const colors = {
         ok: `rgba(${COVERAGE_RGB.ok},0.34)`,
         tight: `rgba(${COVERAGE_RGB.tight},0.34)`,
         blocked: `rgba(${COVERAGE_RGB.blocked},0.24)`,
       } as const
-      for (const ray of coverage.rays) {
-        const a0 = ray.angle - Math.PI / 2 - half
-        const a1 = ray.angle - Math.PI / 2 + half
-        for (const segment of ray.segments) {
-          ctx.fillStyle = colors[segment.status]
-          ctx.beginPath()
-          ctx.arc(c.x, c.y, segment.to * scale, a0, a1)
-          ctx.arc(c.x, c.y, Math.max(0, segment.from) * scale, a1, a0, true)
-          ctx.closePath()
-          ctx.fill()
-        }
+      ctx.save()
+      ctx.translate(c.x, c.y)
+      ctx.scale(scale, scale)
+      for (const status of ['ok', 'tight', 'blocked'] as const) {
+        ctx.fillStyle = colors[status]
+        ctx.fill(coveragePaths[status])
       }
+      ctx.restore()
       // Где встать: ближайшее хорошее место
       if (spot) {
         const p = toScreen(spot.point)
@@ -930,6 +996,75 @@ export function MapPicker({
       ctx.moveTo(a.x, a.y)
       ctx.lineTo(b.x, b.y)
       ctx.stroke()
+
+      // Где снаряд идёт впритык к рельефу или упирается: участок линии и метка
+      const length = Math.hypot(target.x - gun.x, target.y - gun.y)
+      if (terrainHit && length > 0) {
+        const color = `rgb(${COVERAGE_RGB[terrainHit.status]})`
+        const span = Math.max(40, length * 0.04)
+        const at = (d: number) => {
+          const f = Math.min(1, Math.max(0, d / length))
+          return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f }
+        }
+        const p0 = at(terrainHit.at - span)
+        const p1 = at(terrainHit.at + span)
+        ctx.strokeStyle = color
+        ctx.lineWidth = 5
+        ctx.lineCap = 'round'
+        ctx.beginPath()
+        ctx.moveTo(p0.x, p0.y)
+        ctx.lineTo(p1.x, p1.y)
+        ctx.stroke()
+        ctx.lineCap = 'butt'
+
+        const p = at(terrainHit.at)
+        ctx.fillStyle = color
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+
+        const label =
+          terrainHit.status === 'blocked'
+            ? t('mapPicker.line-blocked')
+            : t('mapPicker.line-tight', Math.max(0, Math.round(terrainHit.min)), unitM)
+        ctx.font = '600 12px ' + sans
+        const w = ctx.measureText(label).width
+        ctx.fillStyle = ink.plate
+        ctx.fillRect(p.x - w / 2 - 6, p.y - 31, w + 12, 19)
+        ctx.fillStyle = color
+        ctx.textAlign = 'center'
+        ctx.fillText(label, p.x, p.y - 17)
+        ctx.textAlign = 'start'
+      }
+    }
+
+    // Цель в воде при «Куда достаю»: кольцо цвета зоны и подпись
+    if (target && targetInWater) {
+      const p = toScreen(target)
+      const color =
+        targetInWater === 'out' ? `rgb(${COVERAGE_RGB.blocked})` : `rgb(${COVERAGE_RGB[targetInWater]})`
+      ctx.strokeStyle = color
+      ctx.lineWidth = 3
+      if (targetInWater === 'out') ctx.setLineDash([5, 4])
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, 15, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.setLineDash([])
+      const label =
+        targetInWater === 'out'
+          ? t('mapPicker.coverage-out')
+          : t(({ ok: 'mapPicker.coverage-ok', tight: 'mapPicker.coverage-tight', blocked: 'mapPicker.coverage-blocked' } as const)[targetInWater])
+      ctx.font = '600 12px ' + sans
+      const w = ctx.measureText(label).width
+      ctx.fillStyle = ink.plate
+      ctx.fillRect(p.x - w / 2 - 6, p.y + 20, w + 12, 19)
+      ctx.fillStyle = color
+      ctx.textAlign = 'center'
+      ctx.fillText(label, p.x, p.y + 34)
+      ctx.textAlign = 'start'
     }
 
     // Орудие — синяя точка, цель — красная со свечением
@@ -958,7 +1093,7 @@ export function MapPicker({
       ctx.arc(p.x, p.y, 7, 0, Math.PI * 2)
       ctx.fill()
     }
-  }, [canvas, map, relief, activeView, gun, target, size, unitM, ratio, markers, now, draft, ru, night, journalTargets, tiles, tileTick, linePoints, lineAim, lineIndex, lineDensity, reach, coverage, spot, contoursOn, strokes, liveStroke, vector, mapStyle, settleTick])
+  }, [canvas, map, relief, activeView, gun, target, size, unitM, ratio, markers, now, draft, ru, night, journalTargets, tiles, tileTick, linePoints, lineAim, lineIndex, lineDensity, reach, coverage, spot, contoursOn, strokes, liveStroke, vector, mapStyle, settleTick, coveragePaths, targetInWater, terrainHit])
 
   // ---- масштаб колёсиком (нужен не-пассивный обработчик) ----
   const viewRef = useRef<View | null>(null)
@@ -1642,7 +1777,7 @@ export function MapPicker({
             unit={unitM}
             flight={flight}
           >
-            <CoveragePanel mode={coverageMode} onMode={setCoverageMode} ready={coverage !== null} />
+            <CoveragePanel mode={coverageMode} onMode={setCoverageMode} ready={coverageCenter !== null} />
           </CoordinatePlate>
         </div>
       )}

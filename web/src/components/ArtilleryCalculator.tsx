@@ -958,6 +958,11 @@ export function ArtilleryCalculator({
                   solveLine={solveLinePoint}
                   solveKey={[modelId, selectedAmmo?.id, mode, activeResult?.charge, rangeAdjust, JSON.stringify(weatherInputs.weather)].join('|')}
                   onTerrainProfile={setTerrain}
+                  terrainHit={
+                    solution && activeTerrain && terrainStatus
+                      ? { status: terrainStatus, at: activeTerrain.at, min: activeTerrain.min }
+                      : null
+                  }
                   showMarkers={showMarkers}
                   showScreenMarkers={showScreenMarkers}
                   onPickJournalTarget={onLoadEntry}

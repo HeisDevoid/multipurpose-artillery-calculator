@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeCoverage, nearestGoodSpot, overallStatus, type SolveAt } from './coverage'
+import { computeCoverage, isWater, nearestGoodSpot, overallStatus, pointStatus, type SolveAt } from './coverage'
 import type { Heightmap } from './heightmap'
 
 /** Карта size×size точек с шагом step; высота — функция координат. */
@@ -91,7 +91,7 @@ describe('computeCoverage', () => {
     expect(north.segments.every((s) => s.status === 'ok')).toBe(true)
   })
 
-  it('режим «to»: в воде встать нельзя, режим «from» воду не исключает', () => {
+  it('вода не в зоне: в «to» в ней не встать, в «from» по ней не стреляют', () => {
     // Море (высота 0) к востоку от x = 3000
     const map = makeMap((x) => (x >= 3000 ? 0 : 100))
     const input = {
@@ -109,7 +109,22 @@ describe('computeCoverage', () => {
     const eastFrom = computeCoverage({ ...input, mode: 'from' }).rays.find(
       (ray) => Math.abs(ray.angle - Math.PI / 2) < 1e-9
     )!
-    expect(Math.max(...eastFrom.segments.map((s) => s.to))).toBeGreaterThan(1000)
+    expect(Math.max(...eastFrom.segments.map((s) => s.to))).toBeLessThanOrEqual(600)
+    // К западу суша: зона идёт до конца дальности
+    const westFrom = computeCoverage({ ...input, mode: 'from' }).rays.find(
+      (ray) => Math.abs(ray.angle - (3 * Math.PI) / 2) < 1e-9
+    )!
+    expect(Math.max(...westFrom.segments.map((s) => s.to))).toBeGreaterThan(1000)
+  })
+
+  it('цель в воде: достаёт ли до неё орудие, отдельно от зоны', () => {
+    const map = makeMap((x) => (x >= 3000 ? 0 : 100))
+    const gun = { x: 2500, y: 2500 }
+    expect(isWater(map, { x: 3500, y: 2500 })).toBe(true)
+    expect(isWater(map, gun)).toBe(false)
+    // У обрыва к морю снаряд может идти впритык: главное, что статус посчитан
+    expect(['ok', 'tight', 'blocked']).toContain(pointStatus(map, gun, { x: 3500, y: 2500 }, flat))
+    expect(pointStatus(map, gun, { x: 3500, y: 2500 }, () => null)).toBe('out')
   })
 
   it('луч обрывается на краю карты', () => {

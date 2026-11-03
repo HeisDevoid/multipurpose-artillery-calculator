@@ -1,9 +1,10 @@
 import { heightAt, type Heightmap, type MapPoint } from './heightmap'
 import {
   clearance,
+  clearanceAlong,
   isBlocked,
   isTight,
-  type TerrainProfile,
+  sampleProfile,
 } from './terrainClearance'
 
 /**
@@ -14,7 +15,8 @@ import {
  *
  * Вокруг центра строятся лучи; на каждом проверяются дальности от минимальной
  * до максимальной: есть ли решение в таблице и не упрётся ли снаряд в рельеф
- * по пути (та же проверка, что для выстрела по цели).
+ * по пути (та же проверка, что для выстрела по цели). Вода в зону не входит:
+ * в «from» по ней не стреляют, в «to» на ней не стоят.
  */
 
 export type CoverageStatus = 'ok' | 'tight' | 'blocked'
@@ -66,27 +68,41 @@ export interface CoverageInput {
 // Высота не больше этой — вода, м
 const SEA_LEVEL = 0.5
 
-const DEFAULT_RAYS = 120
-const DEFAULT_STEPS = 48
+// Лучей по кругу (1°) и дальностей на луче: контур огибает рельеф,
+// а не режет его крупными клиньями
+const DEFAULT_RAYS = 360
+const DEFAULT_STEPS = 120
 
 function worse(a: CoverageStatus, b: CoverageStatus): CoverageStatus {
   const order: CoverageStatus[] = ['ok', 'tight', 'blocked']
   return order.indexOf(a) >= order.indexOf(b) ? a : b
 }
 
-export function computeCoverage({
-  map,
-  center,
-  mode,
-  minRange,
-  maxRange,
-  solve,
-  rays = DEFAULT_RAYS,
-  steps = DEFAULT_STEPS,
-}: CoverageInput): Coverage {
+export function computeCoverage(input: CoverageInput): Coverage {
+  const rays = input.rays ?? DEFAULT_RAYS
+  return {
+    center: input.center,
+    mode: input.mode,
+    width: (Math.PI * 2) / rays,
+    rays: computeCoverageRays(input, 0, rays),
+  }
+}
+
+/** Сколько лучей у зоны (для расчёта по частям). */
+export const coverageRayCount = (input: CoverageInput) => input.rays ?? DEFAULT_RAYS
+
+/**
+ * Лучи с номерами от start до end (не включая): зону можно считать по
+ * частям между кадрами, чтобы интерфейс не замирал.
+ */
+export function computeCoverageRays(
+  { map, center, mode, minRange, maxRange, solve, rays = DEFAULT_RAYS, steps = DEFAULT_STEPS }: CoverageInput,
+  start: number,
+  end: number
+): CoverageRay[] {
   const width = (Math.PI * 2) / rays
   const result: CoverageRay[] = []
-  if (!(maxRange > minRange) || maxRange <= 0) return { center, mode, width, rays: result }
+  if (!(maxRange > minRange) || maxRange <= 0) return result
 
   // Шаг высот по лучу и шаг проверяемых дальностей (кратный ему)
   const sampleStep = Math.max(10, map.step / 2)
@@ -94,18 +110,19 @@ export function computeCoverage({
   const stride = Math.max(1, Math.round(wantedStep / sampleStep))
   const cell = stride * sampleStep
 
-  for (let r = 0; r < rays; r += 1) {
+  for (let r = start; r < Math.min(end, rays); r += 1) {
     const angle = r * width
     const dx = Math.sin(angle)
     const dy = Math.cos(angle)
 
     // Высоты рельефа от центра наружу, пока луч внутри карты
-    const heights: number[] = []
+    const samples: number[] = []
     for (let d = 0; d <= maxRange + cell; d += sampleStep) {
       const h = heightAt(map, { x: center.x + dx * d, y: center.y + dy * d })
       if (h === null) break
-      heights.push(h)
+      samples.push(h)
     }
+    const heights = Float64Array.from(samples)
 
     const segments: CoverageSegment[] = []
     let open: CoverageSegment | null = null
@@ -114,21 +131,18 @@ export function computeCoverage({
       const distance = k * sampleStep
       if (distance > maxRange + cell / 2) break
 
-      const slice = heights.slice(0, k + 1)
       // «from»: орудие в центре, цель на конце луча; «to»: наоборот
-      const profile: TerrainProfile = {
-        distance,
-        heights: mode === 'from' ? slice : slice.reverse(),
-      }
-      const own = profile.heights[0]
-      const aim = profile.heights[profile.heights.length - 1]
-      const solved = solve(distance, aim - own)
+      const first = mode === 'from' ? 0 : k
+      const last = mode === 'from' ? k : 0
+      const own = heights[first]
+      const aim = heights[last]
 
       let status: CoverageStatus | null = null
-      // Стоять в воде нельзя: в режиме «to» клетки на уровне моря не считаются
-      const standable = mode === 'from' || own > SEA_LEVEL
-      if (solved !== null && standable) {
-        const check = clearance(profile, solved.elevation)
+      // Вода не в зоне: стрелять по ней незачем («from»), стоять в ней нельзя («to»)
+      const land = mode === 'from' ? aim > SEA_LEVEL : own > SEA_LEVEL
+      const solved = land ? solve(distance, aim - own) : null
+      if (solved !== null) {
+        const check = clearanceAlong(heights, first, last, distance, solved.elevation)
         status = isBlocked(check) ? 'blocked' : isTight(check) ? 'tight' : 'ok'
       }
 
@@ -149,7 +163,32 @@ export function computeCoverage({
     result.push({ angle, segments })
   }
 
-  return { center, mode, width, rays: result }
+  return result
+}
+
+/** Точка на уровне моря (вода): в зоны не входит. */
+export function isWater(map: Heightmap, point: MapPoint): boolean {
+  const h = heightAt(map, point)
+  return h !== null && h <= SEA_LEVEL
+}
+
+/**
+ * Достаёт ли орудие до одной точки (цель в воде, которой нет в зоне):
+ * статус как у зоны, 'out' — нет решения в таблицах, null — не посчитать.
+ */
+export function pointStatus(
+  map: Heightmap,
+  gun: MapPoint,
+  target: MapPoint,
+  solve: SolveAt
+): CoverageStatus | 'out' | null {
+  const profile = sampleProfile(map, gun, target)
+  if (!profile) return null
+  const h = profile.heights
+  const solved = solve(profile.distance, h[h.length - 1] - h[0])
+  if (!solved) return 'out'
+  const check = clearance(profile, solved.elevation)
+  return isBlocked(check) ? 'blocked' : isTight(check) ? 'tight' : 'ok'
 }
 
 /** Худший статус на круге дальностей: для подписи «достаёт ли вообще». */

@@ -1,6 +1,9 @@
 import type { ru } from './messages'
 
 export const uk: Record<keyof typeof ru, string> = {
+  "mapPicker.line-tight": "Впритул: {0} {1} над схилом",
+  "mapPicker.line-blocked": "Упреться в схил",
+  "mapPicker.coverage-out": "Не дістає",
   "terrain.short-tight": "Вогонь впритул до рельєфу: снаряд ледь не зачіпає схил",
   "terrain.short-blocked": "Рельєф закриває: снаряд упреться в схил",
   "mrsiPanel.shared": "План видно в оверлеї та в навідників по зв’язку, «Вогонь» починає удар. Згорнути панель: скасувати одночасний удар.",

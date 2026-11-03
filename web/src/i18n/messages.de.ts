@@ -1,6 +1,9 @@
 import type { ru } from './messages'
 
 export const de: Record<keyof typeof ru, string> = {
+  "mapPicker.line-tight": "Knapp: {0} {1} über dem Hang",
+  "mapPicker.line-blocked": "Trifft den Hang",
+  "mapPicker.coverage-out": "Nicht erreichbar",
   "terrain.short-tight": "Knapp über dem Gelände: Das Geschoss streift fast einen Hang",
   "terrain.short-blocked": "Gelände versperrt: Das Geschoss trifft einen Hang",
   "mrsiPanel.shared": "Der Plan ist im Overlay und bei den Richtschützen in der Verbindung zu sehen, „Feuer“ startet den Schlag. Panel einklappen: gleichzeitigen Einschlag abbrechen.",
