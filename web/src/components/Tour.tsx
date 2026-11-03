@@ -33,6 +33,17 @@ const BASIC: Step[] = [
     text: 'tour.a-short-tour-of-where',
   },
   {
+    // Главное для точности: есть ли на сервере физика снаряда
+    target: byTour('settings'),
+    title: 'physics.title',
+    text: 'tour.physics-text',
+  },
+  {
+    target: byTour('weapon'),
+    title: 'tour.weapon-title',
+    text: 'tour.weapon-text',
+  },
+  {
     target: byTour('map'),
     title: 'mapPicker.map',
     text: 'tour.left-click-places-the-gun',
@@ -76,6 +87,16 @@ const ADVANCED: Step[] = [
     text: 'tour.the-star-adds-a-map',
   },
   {
+    target: byTour('zones'),
+    title: 'mapPicker.coverage',
+    text: 'tour.zones-text',
+  },
+  {
+    target: byTour('map'),
+    title: 'tour.terrain-title',
+    text: 'tour.terrain-text',
+  },
+  {
     target: byTour('tools'),
     title: 'mapPicker.fire-line',
     text: 'tour.pick-line-and-drop-points',
@@ -104,6 +125,11 @@ const ADVANCED: Step[] = [
     target: byTour('hotkeys'),
     title: 'tour.keys-title',
     text: 'tour.keys-text',
+  },
+  {
+    target: null,
+    title: 'tour.overlay-title',
+    text: 'tour.overlay-text',
   },
   {
     target: byTour('theme'),

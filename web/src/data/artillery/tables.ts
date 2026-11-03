@@ -72,9 +72,19 @@ export async function preloadAllTables() {
   }
 }
 
+/** Каких таблиц нет: без сопротивления воздуха ('no-air') или с ним ('air'). */
+export type MissingTables = 'air' | 'no-air'
+
+const statusIndex = tableStatus as Record<string, { status: DataStatus; missing: MissingTables[] }>
+
 /** Проверены ли таблицы в игре: без загрузки самих таблиц. */
 export function statusOf(id: ModelId): DataStatus {
-  return (tableStatus as Record<string, DataStatus>)[TABLE_OF[id]] ?? 'pending'
+  return statusIndex[TABLE_OF[id]]?.status ?? 'pending'
+}
+
+/** Неполные таблицы: каких наборов нет (пусто — есть оба). */
+export function missingTablesOf(id: ModelId): MissingTables[] {
+  return statusIndex[TABLE_OF[id]]?.missing ?? []
 }
 
 /** Орудие при открытии: выбранное раньше (как в App), иначе Mk6. */

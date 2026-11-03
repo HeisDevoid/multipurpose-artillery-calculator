@@ -190,17 +190,17 @@ export function PickerDialog({
                 const selected = item.id === selectedId
                 const favorite = favorites.includes(item.id)
                 return (
-                  <div key={item.id} className="group relative">
+                  <div key={item.id} className="group relative h-full">
                     <button
                       type="button"
                       aria-current={selected ? 'true' : undefined}
                       onClick={() => onPick(item.id)}
                       className={[
-                        'flex w-full cursor-pointer flex-col overflow-hidden rounded-xl bg-app-raised text-left transition-all hover:-translate-y-0.5 hover:bg-app-raised-hover',
+                        'flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-xl bg-app-raised text-left transition-all hover:-translate-y-0.5 hover:bg-app-raised-hover',
                         selected ? 'ring-2 ring-accent' : '',
                       ].join(' ')}
                     >
-                      <span className="flex aspect-[4/3] w-full items-center justify-center bg-app-surface">
+                      <span className="relative flex aspect-[4/3] w-full items-center justify-center bg-app-surface">
                         {item.thumb ? (
                           <img
                             src={item.thumb}
@@ -211,21 +211,21 @@ export function PickerDialog({
                         ) : (
                           item.icon
                         )}
+                        {/* Значок (например, упрощённый снимок карты) — в правом нижнем углу превью */}
+                        {item.badge && <span className="absolute right-1.5 bottom-1.5">{item.badge}</span>}
                       </span>
-                      <span className="block px-2.5 py-2">
+                      {/* Название сверху, автор прижат к низу: у всех карточек на одной линии */}
+                      <span className="flex flex-1 flex-col px-2.5 py-2">
                         <span className="block text-[14px] leading-snug font-medium break-words text-app-text">
                           {item.title}
                         </span>
                         {item.subtitle && (
-                          <span className="block text-[11.5px] leading-snug break-words text-app-muted opacity-70">
+                          <span className="mt-auto block pt-0.5 text-[11.5px] leading-snug break-words text-app-muted opacity-70">
                             {item.subtitle}
                           </span>
                         )}
                       </span>
                     </button>
-                    {item.badge && (
-                      <span className="pointer-events-auto absolute top-1.5 left-1.5">{item.badge}</span>
-                    )}
                     {onToggleFavorite && (
                       <button
                         type="button"

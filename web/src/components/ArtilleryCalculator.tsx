@@ -1182,6 +1182,7 @@ export function ArtilleryCalculator({
               icon="weapon"
               control="full"
               label={t('artilleryCalculator.weapon')}
+              tourId="weapon"
             >
               {modelSelector}
             </Row>

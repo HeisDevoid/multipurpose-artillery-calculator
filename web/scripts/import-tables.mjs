@@ -186,6 +186,41 @@ function importOne(sourceDir, jsonPath, profileKey, check) {
   console.log(`записано ${jsonPath} (${charges})`)
 }
 
+// Таблица с погодными поправками снята с сопротивлением воздуха (см. lib/profileSelect.ts)
+function hasDrag(profile) {
+  return Object.values(profile?.modes ?? {}).some((tables) =>
+    Object.values(tables ?? {}).some((rows) =>
+      rows.some((row) => row.length > 5 && row.slice(5).some((value) => value !== null))
+    )
+  )
+}
+
+const modesOf = (profile) =>
+  Object.entries(profile?.modes ?? {})
+    .filter(([, tables]) => tables && Object.keys(tables).length > 0)
+    .map(([mode]) => mode)
+
+/**
+ * Каких таблиц у орудия нет: 'no-air' — без сопротивления воздуха,
+ * 'air' — с ним (хотя бы для одного снаряда и траектории).
+ */
+function missingTables(data) {
+  const missing = new Set()
+  for (const ammo of data.ammunition ?? [{}]) {
+    const profiles = [ammo.profile ?? 'default', ammo.advancedProfile]
+      .filter(Boolean)
+      .map((key) => data.profiles?.[key])
+      .filter(Boolean)
+    const noAir = new Set(profiles.filter((p) => !hasDrag(p)).flatMap(modesOf))
+    const air = new Set(profiles.filter(hasDrag).flatMap(modesOf))
+    for (const mode of data.availableModes) {
+      if (!noAir.has(mode)) missing.add('no-air')
+      if (!air.has(mode)) missing.add('air')
+    }
+  }
+  return [...missing].sort()
+}
+
 const args = process.argv.slice(2)
 const check = args.includes('--check')
 const all = args.includes('--all')
@@ -216,17 +251,18 @@ if (all) {
     }
   }
 
-  // Статусы проверки всех орудий — отдельным маленьким файлом: список орудий
-  // показывает их сразу, а сами таблицы грузятся, только когда орудие выбрано
+  // Статусы проверки и полнота таблиц всех орудий — отдельным маленьким
+  // файлом: список орудий показывает их сразу, а сами таблицы грузятся,
+  // только когда орудие выбрано
   const tablesDir = join('src', 'data', 'artillery')
   const status = Object.fromEntries(
     readdirSync(tablesDir)
       .filter((name) => name.endsWith('.json'))
       .sort()
-      .map((name) => [
-        name.replace(/\.json$/, ''),
-        JSON.parse(readFileSync(join(tablesDir, name), 'utf8')).source.status,
-      ])
+      .map((name) => {
+        const data = JSON.parse(readFileSync(join(tablesDir, name), 'utf8'))
+        return [name.replace(/\.json$/, ''), { status: data.source.status, missing: missingTables(data) }]
+      })
   )
   const statusPath = join('src', 'data', 'tableStatus.json')
   const statusOutput = `${JSON.stringify(status, null, 2)}\n`

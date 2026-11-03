@@ -32,7 +32,7 @@ export function CoveragePanel({
 }) {
   return (
     <div className="pointer-events-auto border-t border-white/10 px-1.5 py-1.5">
-      <div role="group" aria-label={t('mapPicker.coverage')} className="flex justify-center gap-1">
+      <div role="group" aria-label={t('mapPicker.coverage')} data-tour="zones" className="flex justify-center gap-1">
         {MODES.map(({ id, icon, label }) => {
           const active = mode === id
           return (

@@ -7,9 +7,9 @@ import { FlightTrack } from '../FlightTrack'
 
 /**
  * Снизу на карте: координаты и высоты орудия и цели, полёт снаряда между ними,
- * под ними — зоны по рельефу (children). На телефоне орудие и цель стоят в две
- * строки, полоска полёта справа от них: так плашка не заходит на кнопку слоя
- * и не прыгает, когда полоска раскрывается.
+ * под ними — зоны по рельефу (children). На узкой карте (телефон, маленькое
+ * окно) орудие и цель стоят в две строки по центру, без полоски полёта: так
+ * плашка не заходит на кнопку слоя. Ширина — по самой карте (@container).
  */
 export function CoordinatePlate({
   gun,
@@ -29,15 +29,15 @@ export function CoordinatePlate({
   children?: ReactNode
 }) {
   return (
-    <div className="pointer-events-none absolute bottom-3 left-2 flex max-w-[calc(100%-3.5rem)] flex-col rounded-lg bg-black/70 text-white/90 shadow-lg backdrop-blur-sm sm:left-1/2 sm:max-w-[calc(100%-6rem)] sm:-translate-x-1/2">
-      <div className="grid grid-cols-[auto_auto] items-center gap-x-2.5 gap-y-1.5 px-2.5 py-2 text-[12px] leading-none whitespace-nowrap tabular-nums sm:flex sm:justify-center sm:gap-3 sm:px-3 sm:text-[12.5px]">
+    <div className="pointer-events-none absolute bottom-3 left-2 flex max-w-[calc(100%-3.5rem)] flex-col rounded-lg bg-black/70 text-white/90 shadow-lg backdrop-blur-sm @lg:left-1/2 @lg:max-w-[calc(100%-6rem)] @lg:-translate-x-1/2">
+      <div className="grid grid-cols-1 justify-items-center gap-y-1.5 px-2.5 py-2 text-[12px] leading-none whitespace-nowrap tabular-nums @lg:flex @lg:items-center @lg:justify-center @lg:gap-3 @lg:px-3 @lg:text-[12.5px]">
         <span className="flex items-center gap-2">
           <span className="block h-2 w-2 shrink-0 rounded-full bg-gun" />
           <span>
             {gun ? `${toGridReference(gun, 8)} · ${Math.round(gunHeight ?? 0)} ${unit}` : t('mapPicker.no-gun')}
           </span>
         </span>
-        <span className="row-span-2 flex items-center sm:contents">
+        <span className="hidden @lg:contents">
           <FlightTrack shots={flight} />
         </span>
         <span className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export function CoordinatePlate({
               ? `${toGridReference(target, 8)} · ${Math.round(targetHeight ?? 0)} ${unit}`
               : t('mapPicker.no-target')}
           </span>
-          <span className="block h-2 w-2 shrink-0 rounded-full bg-target max-sm:order-first" />
+          <span className="block h-2 w-2 shrink-0 rounded-full bg-target @max-lg:order-first" />
         </span>
       </div>
       {children}

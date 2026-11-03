@@ -92,11 +92,12 @@ test('сбой карты не ломает калькулятор', async ({ pa
   await expect(page.locator('#calc-distance')).toBeVisible()
 })
 
-test('у орудия виден статус проверки таблиц', async ({ page }) => {
-  const errors = await open(page)
-  const badge = page.locator('[data-status]').first()
+test('у орудия с неполными таблицами виден значок предупреждения', async ({ page }) => {
+  // У M2 (S.O.G.) нет таблиц без физики снаряда
+  const errors = await open(page, '/', { selectedModel: 'm2' })
+  const badge = page.locator('[data-status="incomplete"]').first()
   await expect(badge).toBeVisible()
-  await expect(badge).toHaveAttribute('aria-label', /verified in game/)
+  await expect(badge).toHaveAttribute('aria-label', /Incomplete tables: no tables without shell physics/)
   expect(errors).toEqual([])
 })
 

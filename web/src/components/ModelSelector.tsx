@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { statusOf } from '../data/artillery/tables'
+import { missingTablesOf, statusOf } from '../data/artillery/tables'
 import { categoryLabels } from '../data/categories'
 import { models, type ModelId } from '../data/models'
 import { t } from '../i18n'
@@ -52,7 +52,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
         : isVanilla(id)
           ? t('picker.vanilla')
           : t('picker.current'),
-      icon: <ArtilleryIcon category={models[id].category} status={statusOf(id)} />,
+      icon: <ArtilleryIcon category={models[id].category} status={statusOf(id)} missing={missingTablesOf(id)} />,
       trailing: (
         <button
           type="button"
@@ -87,7 +87,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
-      <ArtilleryIcon category={current.category} status={statusOf(value)} />
+      <ArtilleryIcon category={current.category} status={statusOf(value)} missing={missingTablesOf(value)} />
       <Dropdown
         fullWidth
         className="min-w-0 flex-1"
@@ -113,7 +113,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
             group: isVanilla(id) ? t('picker.vanilla') : models[id].mod,
             source: isVanilla(id) ? undefined : /\bDLC\b/i.test(models[id].mod) ? ('dlc' as const) : ('mod' as const),
             keywords: models[id].notes,
-            icon: <ArtilleryIcon category={models[id].category} size="md" status={statusOf(id)} />,
+            icon: <ArtilleryIcon category={models[id].category} size="md" status={statusOf(id)} missing={missingTablesOf(id)} />,
           }))}
           onPick={(id) => {
             setPicking(false)
