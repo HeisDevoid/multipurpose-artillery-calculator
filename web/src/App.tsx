@@ -1,10 +1,4 @@
-import {
-  detectLanguage,
-  isLanguage,
-  localeOf,
-  setLanguage as setI18nLanguage,
-  t,
-} from './i18n'
+import { loadLanguage, setLanguage as setI18nLanguage, t } from './i18n'
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 
@@ -17,6 +11,7 @@ import { DashboardPage } from './pages/DashboardPage'
 
 import { isModelId, type ModelId } from './data/models'
 import { onHotkey, toggleOverlay } from './lib/desktop'
+import { applyHead, initialLanguage } from './lib/seo'
 import { readInvite } from './lib/sync'
 import { usePersistentState } from './lib/usePersistentState'
 import { useWakeLock } from './lib/useWakeLock'
@@ -33,11 +28,6 @@ const SettingsPage = lazy(() =>
 )
 
 // Язык по умолчанию — как у системы
-function defaultLanguage(): Language {
-  if (typeof navigator === 'undefined') return 'en'
-  return detectLanguage(navigator.languages?.length ? navigator.languages : [navigator.language])
-}
-
 const parseFlag = (fallback: boolean) => (raw: string | null) =>
   raw === null ? fallback : raw === 'true'
 
@@ -77,10 +67,8 @@ function App() {
     readInvite(window.location.search) ? 'sync' : 'dashboard'
   )
 
-  const [language, setLanguage] = usePersistentState<Language>(
-    'language',
-    (raw) => (isLanguage(raw) ? raw : defaultLanguage())
-  )
+  // Язык: из адреса (?lang=), иначе выбранный раньше, иначе как у системы
+  const [language, setLanguage] = usePersistentState<Language>('language', initialLanguage)
   // Язык для t(): задаётся до отрисовки дочерних компонентов
   setI18nLanguage(language)
   const [theme, setTheme] = usePersistentState<Theme>('theme', (raw) =>
@@ -120,9 +108,20 @@ function App() {
     []
   )
 
-  useEffect(() => {
-    document.documentElement.lang = localeOf(language)
-  }, [language])
+  useEffect(() => applyHead(language), [language])
+
+  // Смена языка: сначала словарь (он грузится по требованию), потом
+  // интерфейс; ?lang= в адресе тоже меняется, чтобы не вернуть старый язык
+  function changeLanguage(next: Language) {
+    void loadLanguage(next).then(() => {
+      const url = new URL(window.location.href)
+      if (url.searchParams.has('lang')) {
+        url.searchParams.set('lang', next)
+        window.history.replaceState(window.history.state, '', url)
+      }
+      setLanguage(next)
+    })
+  }
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
@@ -173,6 +172,8 @@ function App() {
     <div className="flex min-h-screen flex-col">
       <CrashProbe area="app" />
       <main className="mx-auto w-full max-w-[1240px] flex-1 px-4 pt-6 pb-4 sm:px-6 lg:pt-14">
+        {/* Заголовок страницы для поиска и экранных дикторов */}
+        {view === 'dashboard' && <h1 className="sr-only">{t('seo.heading')}</h1>}
         {view === 'dashboard' && (
           <DashboardPage
             selectedModel={selectedModel}
@@ -232,7 +233,7 @@ function App() {
         view={view}
         onViewChange={setView}
         language={language}
-        onLanguageChange={setLanguage}
+        onLanguageChange={changeLanguage}
         theme={theme}
         onToggleTheme={toggleTheme}
       />

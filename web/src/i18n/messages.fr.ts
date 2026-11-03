@@ -1,11 +1,17 @@
 import type { ru } from './messages'
 
 export const fr: Record<keyof typeof ru, string> = {
+  "seo.title": "Calculateur d’artillerie Arma 3 (ACE3) : mortiers, obusiers, LRM",
+  "seo.description": "Calculateur de tir gratuit pour Arma 3 avec ACE3 : élévation, charge, azimut et temps de vol d’après les tables du jeu, cartes avec relief, liaison avec le tireur. Mortiers, obusiers, lance-roquettes.",
+  "seo.heading": "Calculateur d’artillerie pour Arma 3 et ACE3",
   "mapPicker.contours": "Courbes de niveau",
   "mapPicker.coverage-from": "Zone atteignable",
   "mapPicker.coverage-to": "Où se placer",
   "mapPicker.stand-here": "Se placer ici",
-  "mapPicker.coverage-legend": "Vert : atteignable. Jaune : juste au-dessus du relief. Rouge : le relief bloque le tir.",
+  "mapPicker.coverage": "Zones selon le relief",
+  "mapPicker.coverage-ok": "Atteignable",
+  "mapPicker.coverage-tight": "Juste au-dessus du relief",
+  "mapPicker.coverage-blocked": "Le relief bloque",
   "mapPicker.coverage-need-gun": "Placez le canon sur la carte.",
   "mapPicker.coverage-need-target": "Placez une cible sur la carte.",
   "settings.hotkeys.lay": "Pointage : activer / désactiver le suivi",

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { ArtilleryCalculator } from '../components/ArtilleryCalculator'
 import { ModelSelector } from '../components/ModelSelector'
+import { useTables } from '../data/artillery/tables'
 import { TargetBar } from '../components/TargetBar'
 import { isModelId, type ModelId } from '../data/models'
 import { onHotkey } from '../lib/desktop'
@@ -128,11 +129,16 @@ export function DashboardPage({
     />
   )
 
+  // Таблицы грузятся по требованию; пока новое орудие грузится, на экране прежнее
+  const tables = useTables(selectedModel)
+  if (!tables) return <section />
+
   return (
     <section>
       <ArtilleryCalculator
-        key={`${selectedModel}-${loadRequest?.nonce ?? 0}`}
-        modelId={selectedModel}
+        key={`${tables.id}-${loadRequest?.nonce ?? 0}`}
+        modelId={tables.id}
+        reference={tables.reference}
         modelSelector={selector}
         targetBar={
           <TargetBar

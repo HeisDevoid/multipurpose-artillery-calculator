@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { artilleryRegistry } from '../data/artillery/registry'
+import { statusOf } from '../data/artillery/tables'
 import { categoryLabels } from '../data/categories'
 import { models, type ModelId } from '../data/models'
 import { t } from '../i18n'
@@ -23,8 +23,6 @@ const isVanilla = (id: ModelId) => models[id].mod.startsWith('Arma 3')
 
 const MODS = '__mods__'
 
-// Проверка таблиц в игре: значок в углу плитки орудия (подробности в подсказке)
-const statusOf = (id: ModelId) => artilleryRegistry[id].source.status
 
 /**
  * Выбор орудия: значок класса отдельно от списка. В списке — ванильные

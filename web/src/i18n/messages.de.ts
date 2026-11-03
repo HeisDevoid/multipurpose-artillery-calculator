@@ -1,11 +1,17 @@
 import type { ru } from './messages'
 
 export const de: Record<keyof typeof ru, string> = {
+  "seo.title": "Arma 3 Artillerie-Rechner (ACE3): Mörser, Haubitzen, Raketenwerfer",
+  "seo.description": "Kostenloser Feuerrechner für Arma 3 mit ACE3: Erhöhung, Ladung, Azimut und Flugzeit aus den Tabellen im Spiel, Karten mit Gelände, Verbindung zum Richtschützen. Mörser, Haubitzen, Raketenartillerie.",
+  "seo.heading": "Artillerie-Rechner für Arma 3 und ACE3",
   "mapPicker.contours": "Höhenlinien",
   "mapPicker.coverage-from": "Trefferzone",
   "mapPicker.coverage-to": "Wo aufstellen",
   "mapPicker.stand-here": "Hier aufstellen",
-  "mapPicker.coverage-legend": "Grün: erreichbar. Gelb: knapp über dem Gelände. Rot: Gelände versperrt den Schuss.",
+  "mapPicker.coverage": "Geländezonen",
+  "mapPicker.coverage-ok": "Erreichbar",
+  "mapPicker.coverage-tight": "Knapp über Gelände",
+  "mapPicker.coverage-blocked": "Gelände versperrt",
   "mapPicker.coverage-need-gun": "Geschütz auf der Karte setzen.",
   "mapPicker.coverage-need-target": "Ziel auf der Karte setzen.",
   "settings.hotkeys.lay": "Richten: Verfolgung an / aus",

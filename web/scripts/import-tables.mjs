@@ -215,6 +215,27 @@ if (all) {
       if (existsSync(subAdvanced)) importOne(subAdvanced, json, `${sub.name}-advanced`, check)
     }
   }
+
+  // Статусы проверки всех орудий — отдельным маленьким файлом: список орудий
+  // показывает их сразу, а сами таблицы грузятся, только когда орудие выбрано
+  const tablesDir = join('src', 'data', 'artillery')
+  const status = Object.fromEntries(
+    readdirSync(tablesDir)
+      .filter((name) => name.endsWith('.json'))
+      .sort()
+      .map((name) => [
+        name.replace(/\.json$/, ''),
+        JSON.parse(readFileSync(join(tablesDir, name), 'utf8')).source.status,
+      ])
+  )
+  const statusPath = join('src', 'data', 'tableStatus.json')
+  const statusOutput = `${JSON.stringify(status, null, 2)}\n`
+  const currentStatus = existsSync(statusPath) ? readFileSync(statusPath, 'utf8').replace(/\r\n/g, '\n') : ''
+  if (currentStatus !== statusOutput) {
+    if (check) fail(`${statusPath} устарел. Запустите npm run tables:import.`)
+    writeFileSync(statusPath, statusOutput)
+    console.log(`записано ${statusPath}`)
+  }
 } else {
   if (positional.length !== 2 || !profileKey) {
     fail(

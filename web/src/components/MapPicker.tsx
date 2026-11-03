@@ -19,7 +19,7 @@ import {
 } from '../lib/fireLine'
 import { readStoredText, writeStored } from '../lib/input'
 import { sampleProfile, type TerrainProfile } from '../lib/terrainClearance'
-import { computeCoverage, nearestGoodSpot, type Coverage } from '../lib/coverage'
+import { COVERAGE_RGB, computeCoverage, nearestGoodSpot, type Coverage } from '../lib/coverage'
 import { contourInterval, drawDemContours } from '../lib/contours'
 import {
   drawVector,
@@ -72,6 +72,7 @@ import { MAPS_BASE } from '../lib/builtinMaps'
 import { ScreenMarkers } from './ScreenMarkers'
 import { CoordinatePlate } from './map/CoordinatePlate'
 import { DrawToolbar, type DrawTool } from './map/DrawToolbar'
+import { CoveragePanel, type CoverageMode } from './map/CoveragePanel'
 import { MapGlyph } from './map/MapGlyph'
 import { MapQualityBadge } from './map/MapQualityBadge'
 import { colorName, markerTitle } from './map/mapLabels'
@@ -274,7 +275,7 @@ export function MapPicker({
   const [contoursOn, setContoursOn] = useState(() => readStoredText('mapContours') !== 'off')
 
   // Зоны по рельефу: куда достаёт орудие («from») и откуда достать до цели («to»)
-  const [coverageMode, setCoverageMode] = useState<'off' | 'from' | 'to'>('off')
+  const [coverageMode, setCoverageMode] = useState<CoverageMode>('off')
 
   // Линия огня: ломаная из точек, плотность огня (радиус разрыва) и номер
   // точки прицеливания, по которой стреляют сейчас. Плотность по умолчанию —
@@ -830,9 +831,9 @@ export function MapPicker({
       const c = toScreen(coverage.center)
       const half = coverage.width / 2 + 0.004
       const colors = {
-        ok: 'rgba(70,200,120,0.34)',
-        tight: 'rgba(255,176,32,0.34)',
-        blocked: 'rgba(228,72,72,0.24)',
+        ok: `rgba(${COVERAGE_RGB.ok},0.34)`,
+        tight: `rgba(${COVERAGE_RGB.tight},0.34)`,
+        blocked: `rgba(${COVERAGE_RGB.blocked},0.24)`,
       } as const
       for (const ray of coverage.rays) {
         const a0 = ray.angle - Math.PI / 2 - half
@@ -849,7 +850,7 @@ export function MapPicker({
       // Где встать: ближайшее хорошее место
       if (spot) {
         const p = toScreen(spot.point)
-        ctx.fillStyle = 'rgba(70,200,120,1)'
+        ctx.fillStyle = `rgb(${COVERAGE_RGB.ok})`
         ctx.strokeStyle = '#ffffff'
         ctx.lineWidth = 2
         ctx.beginPath()
@@ -1573,35 +1574,7 @@ export function MapPicker({
 
 
           {/* Слева снизу: зоны по рельефу */}
-          <div className="absolute bottom-12 left-2 flex flex-col items-start gap-1">
-            {coverageMode !== 'off' && (
-              <p className="max-w-[15rem] rounded-md bg-black/70 px-2 py-1 text-[11.5px] leading-snug text-white/85 backdrop-blur-sm">
-                {coverage
-                  ? t('mapPicker.coverage-legend')
-                  : coverageMode === 'from'
-                    ? t('mapPicker.coverage-need-gun')
-                    : t('mapPicker.coverage-need-target')}
-              </p>
-            )}
-            <div className="flex gap-1">
-              {(['from', 'to'] as const).map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={coverageMode === id}
-                  onClick={() => setCoverageMode(coverageMode === id ? 'off' : id)}
-                  className={[
-                    'cursor-pointer rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium shadow-lg backdrop-blur-sm transition-colors',
-                    coverageMode === id
-                      ? 'bg-accent-solid text-white'
-                      : 'bg-black/70 text-white/90 hover:bg-black/85',
-                  ].join(' ')}
-                >
-                  {id === 'from' ? t('mapPicker.coverage-from') : t('mapPicker.coverage-to')}
-                </button>
-              ))}
-            </div>
-          </div>
+          <CoveragePanel mode={coverageMode} onMode={setCoverageMode} ready={coverage !== null} />
 
           {/* Справа снизу над слоем: высотные линии из сетки высот */}
           <button

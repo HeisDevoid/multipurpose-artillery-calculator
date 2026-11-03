@@ -4,11 +4,17 @@
  * версии: тест следит, чтобы ключи и подстановки у языков совпадали.
  */
 export const ru = {
+  "seo.title": "Калькулятор артиллерии Arma 3 (ACE3): миномёты, гаубицы, РСЗО",
+  "seo.description": "Бесплатный калькулятор стрельбы для Arma 3 и ACE3: возвышение, заряд, азимут и время полёта по таблицам из игры, карты с рельефом, связка с наводчиком. Миномёты, гаубицы, РСЗО.",
+  "seo.heading": "Калькулятор артиллерии для Arma 3 и ACE3",
   "mapPicker.contours": "Высотные линии",
   "mapPicker.coverage-from": "Куда достаю",
   "mapPicker.coverage-to": "Где встать",
   "mapPicker.stand-here": "Встать здесь",
-  "mapPicker.coverage-legend": "Зелёное: достаёт. Жёлтое: впритык к рельефу. Красное: рельеф закрывает.",
+  "mapPicker.coverage": "Зоны по рельефу",
+  "mapPicker.coverage-ok": "Достаёт",
+  "mapPicker.coverage-tight": "Впритык к рельефу",
+  "mapPicker.coverage-blocked": "Рельеф закрывает",
   "mapPicker.coverage-need-gun": "Поставьте орудие на карте.",
   "mapPicker.coverage-need-target": "Поставьте цель на карте.",
   "settings.hotkeys.lay": "Наводка: включить / выключить слежение",
@@ -663,11 +669,17 @@ export const ru = {
 } as const
 
 export const en: Record<keyof typeof ru, string> = {
+  "seo.title": "Arma 3 Artillery Calculator (ACE3): mortars, howitzers, MLRS",
+  "seo.description": "Free firing calculator for Arma 3 with ACE3: elevation, charge, azimuth and time of flight from the in-game tables, terrain maps, gunner link. Mortars, howitzers and rocket artillery.",
+  "seo.heading": "Artillery calculator for Arma 3 and ACE3",
   "mapPicker.contours": "Contour lines",
   "mapPicker.coverage-from": "Where I can hit",
   "mapPicker.coverage-to": "Where to stand",
   "mapPicker.stand-here": "Stand here",
-  "mapPicker.coverage-legend": "Green: reachable. Yellow: tight over terrain. Red: terrain blocks the shot.",
+  "mapPicker.coverage": "Terrain zones",
+  "mapPicker.coverage-ok": "Reachable",
+  "mapPicker.coverage-tight": "Tight over terrain",
+  "mapPicker.coverage-blocked": "Terrain blocks",
   "mapPicker.coverage-need-gun": "Place the gun on the map.",
   "mapPicker.coverage-need-target": "Place a target on the map.",
   "settings.hotkeys.lay": "Gun laying: start / stop tracking",

@@ -8,6 +8,9 @@ import App from './App.tsx'
 import { OverlayApp } from './components/OverlayApp.tsx'
 import { SyncProvider } from './components/SyncProvider.tsx'
 import { isDesktop, isOverlayWindow } from './lib/desktop.ts'
+import { loadLanguage } from './i18n'
+import { initialModelId, loadTables, preloadAllTables } from './data/artillery/tables.ts'
+import { initialLanguage } from './lib/seo.ts'
 import { loadCustomSounds } from './lib/sound.ts'
 
 // Работа без интернета (PWA). В режиме разработки не нужна — мешала бы
@@ -39,6 +42,14 @@ try {
 
 applyMotion()
 installGlobalErrorLog()
+
+// До первой отрисовки: словарь языка (русский и английский уже в основном
+// файле; не загрузился — интерфейс по-английски) и таблицы выбранного орудия
+await Promise.all([
+  loadLanguage(initialLanguage()).catch(() => undefined),
+  isOverlayWindow ? undefined : loadTables(initialModelId()).catch(() => undefined),
+])
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary area={isOverlayWindow ? 'overlay' : 'app'}>
@@ -52,3 +63,10 @@ createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </StrictMode>,
 )
+
+// Остальные таблицы — в фоне, когда браузер свободен: потом орудие
+// меняется мгновенно, а сайт работает без интернета
+if (!isOverlayWindow) {
+  const idle = window.requestIdleCallback ?? ((callback: () => void) => window.setTimeout(callback, 2000))
+  idle(() => void preloadAllTables())
+}

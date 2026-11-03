@@ -58,4 +58,5 @@ npm run tables:game -- sochor --write
 - Счётчики окна ACE перед расчётом сбрасываются так, чтобы окно не подхватило чужие строки.
 
 Новое орудие сначала добавляется в приложение (JSON в `src/data/artillery/`, `models.ts`,
-`registry.ts`); команда раскладывает таблицы только для орудия, которое уже есть.
+`TABLE_OF` в `src/data/artillery/tables.ts` и `catalog.ts`); команда раскладывает таблицы только
+для орудия, которое уже есть. После `npm run tables:import` обновится и `src/data/tableStatus.json`.

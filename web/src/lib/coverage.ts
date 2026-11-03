@@ -19,6 +19,13 @@ import {
 
 export type CoverageStatus = 'ok' | 'tight' | 'blocked'
 
+// Цвета зон (RGB) для карты и легенды: на карте с прозрачностью
+export const COVERAGE_RGB = {
+  ok: '70,200,120',
+  tight: '255,176,32',
+  blocked: '228,72,72',
+} as const satisfies Record<CoverageStatus, string>
+
 export interface CoverageSegment {
   // Дальности от центра, м
   from: number

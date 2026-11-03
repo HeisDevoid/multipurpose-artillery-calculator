@@ -1,11 +1,17 @@
 import type { ru } from './messages'
 
 export const zh: Record<keyof typeof ru, string> = {
+  "seo.title": "Arma 3 火炮计算器（ACE3）：迫击炮、榴弹炮、火箭炮",
+  "seo.description": "适用于 Arma 3 和 ACE3 的免费射击计算器：根据游戏内射表计算仰角、装药、方位角和飞行时间，带地形的地图，与炮手联动。支持迫击炮、榴弹炮和火箭炮。",
+  "seo.heading": "适用于 Arma 3 和 ACE3 的火炮计算器",
   "mapPicker.contours": "等高线",
   "mapPicker.coverage-from": "可命中范围",
   "mapPicker.coverage-to": "在哪里架炮",
   "mapPicker.stand-here": "在此架炮",
-  "mapPicker.coverage-legend": "绿色：可达。黄色：贴近地形。红色：地形阻挡。",
+  "mapPicker.coverage": "地形区域",
+  "mapPicker.coverage-ok": "可达",
+  "mapPicker.coverage-tight": "贴近地形",
+  "mapPicker.coverage-blocked": "地形阻挡",
   "mapPicker.coverage-need-gun": "请在地图上放置火炮。",
   "mapPicker.coverage-need-target": "请在地图上放置目标。",
   "settings.hotkeys.lay": "瞄准：开启 / 关闭跟踪",

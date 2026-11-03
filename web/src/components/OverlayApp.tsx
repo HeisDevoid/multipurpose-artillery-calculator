@@ -1,4 +1,4 @@
-import { setLanguage as setI18nLanguage, t } from '../i18n'
+import { isLanguageLoaded, loadLanguage, setLanguage as setI18nLanguage, t } from '../i18n'
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 
 import {
@@ -161,8 +161,14 @@ export function OverlayApp() {
   }, [fireAt])
   const totLeft = fireAt === null ? null : (fireAt - now) / 1000
 
-  // Оверлей — отдельное окно: язык приходит вместе с состоянием
-  setI18nLanguage(state?.language ?? 'ru')
+  // Оверлей — отдельное окно: язык приходит вместе с состоянием,
+  // словарь догружается (пока его нет — по-английски)
+  const language = state?.language ?? 'ru'
+  setI18nLanguage(language)
+  const [, setDictionaryTick] = useState(0)
+  useEffect(() => {
+    if (!isLanguageLoaded(language)) void loadLanguage(language).then(() => setDictionaryTick((n) => n + 1))
+  }, [language])
   const solution = state?.solution ?? null
   const left = shot ? shot.tof - (now - shot.firedAt) / 1000 : null
 

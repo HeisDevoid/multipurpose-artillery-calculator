@@ -110,6 +110,27 @@ test('панель рисования и слой карты на месте', a
   expect(errors).toEqual([])
 })
 
+test('ссылка с ?lang= открывает свой язык: интерфейс, заголовок вкладки, описание', async ({ page }) => {
+  // Сохранён английский, но язык из ссылки важнее: так её видит поиск
+  const errors = await open(page, '/?lang=fr')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
+  await expect(page).toHaveTitle(/Calculateur d’artillerie Arma 3/)
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Calculateur de tir/)
+  await expect(page.getByText('Élévation', { exact: true }).first()).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('зоны по рельефу: кнопки на карте и легенда', async ({ page }) => {
+  const errors = await open(page)
+  await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 })
+  const zones = page.getByRole('group', { name: 'Terrain zones' })
+  await zones.getByRole('button', { name: 'Where I can hit' }).click()
+  await expect(zones.getByRole('button', { name: 'Where I can hit' })).toHaveAttribute('aria-pressed', 'true')
+  // Орудия на карте нет: вместо легенды подсказка
+  await expect(page.getByText('Place the gun on the map.')).toBeVisible()
+  expect(errors).toEqual([])
+})
+
 test('справка открывается из меню «Обучение»', async ({ page }) => {
   const errors = await open(page)
   await page.getByRole('button', { name: /Tutorial/ }).click()

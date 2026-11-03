@@ -1,11 +1,17 @@
 import type { ru } from './messages'
 
 export const ja: Record<keyof typeof ru, string> = {
+  "seo.title": "Arma 3 砲兵計算機（ACE3）：迫撃砲・榴弾砲・多連装ロケット",
+  "seo.description": "Arma 3 と ACE3 向けの無料射撃計算機。ゲーム内の射表から仰角・装薬・方位角・飛翔時間を計算、地形付きの地図、砲手との連携。迫撃砲、榴弾砲、ロケット砲に対応。",
+  "seo.heading": "Arma 3 と ACE3 のための砲兵計算機",
   "mapPicker.contours": "等高線",
   "mapPicker.coverage-from": "命中できる範囲",
   "mapPicker.coverage-to": "どこに構えるか",
   "mapPicker.stand-here": "ここに構える",
-  "mapPicker.coverage-legend": "緑：届く。黄：地形すれすれ。赤：地形が射線を遮る。",
+  "mapPicker.coverage": "地形ゾーン",
+  "mapPicker.coverage-ok": "届く",
+  "mapPicker.coverage-tight": "地形すれすれ",
+  "mapPicker.coverage-blocked": "地形が遮る",
   "mapPicker.coverage-need-gun": "地図に砲を置いてください。",
   "mapPicker.coverage-need-target": "地図に目標を置いてください。",
   "settings.hotkeys.lay": "照準：追跡のオン / オフ",

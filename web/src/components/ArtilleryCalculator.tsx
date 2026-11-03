@@ -9,7 +9,6 @@ import {
   type ReactNode,
 } from 'react'
 
-import { artilleryRegistry } from '../data/artillery/registry'
 import { models, type ModelId } from '../data/models'
 import type { ArtilleryCategory } from '../types/gameModel'
 import {
@@ -60,7 +59,7 @@ import type { SyncSolution } from '../lib/sync'
 import { useSync } from '../lib/syncContext'
 import { useHotkeys, type HotkeyMap } from '../lib/useHotkeys'
 import { useWeatherInputs } from '../lib/useWeatherInputs'
-import type { ArtilleryMode } from '../types/artillery'
+import type { ArtilleryMode, ArtilleryReference } from '../types/artillery'
 import type { Language } from '../types/settings'
 import { AdjustFire, type AdjustmentEntry } from './AdjustFire'
 import { AmmunitionSelector } from './AmmunitionSelector'
@@ -96,6 +95,8 @@ const MapPicker = lazy(() =>
 
 interface Props {
   modelId: ModelId
+  // Таблицы орудия (грузятся по требованию, см. data/artillery/tables.ts)
+  reference: ArtilleryReference
   language: Language
   // Запись журнала, из которой восстановлены вводные
   initial?: JournalEntry | null
@@ -123,6 +124,7 @@ interface Props {
 
 export function ArtilleryCalculator({
   modelId,
+  reference,
   language,
   initial = null,
   gridInput = false,
@@ -147,7 +149,6 @@ export function ArtilleryCalculator({
   const showHints = useFeature('hints')
   const hideUnfit = useFeature('hideUnfit')
   const onlyGood = useFeature('onlyGood')
-  const reference = artilleryRegistry[modelId]
   const ammunition = reference.ammunition ?? []
 
   // Черновик: введённое ранее (другим орудием, до перезагрузки). Запись

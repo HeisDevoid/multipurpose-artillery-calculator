@@ -31,3 +31,6 @@ target/
 
 # Claude Code local settings
 .claude/
+
+# Материалы для продвижения (гайд Steam, скриншоты): не для репозитория
+/promo/

@@ -1,11 +1,17 @@
 import type { ru } from './messages'
 
 export const uk: Record<keyof typeof ru, string> = {
+  "seo.title": "Калькулятор артилерії Arma 3 (ACE3): міномети, гаубиці, РСЗВ",
+  "seo.description": "Безкоштовний калькулятор стрільби для Arma 3 та ACE3: кут піднесення, заряд, азимут і час польоту за таблицями з гри, карти з рельєфом, зв’язка з навідником. Міномети, гаубиці, РСЗВ.",
+  "seo.heading": "Калькулятор артилерії для Arma 3 та ACE3",
   "mapPicker.contours": "Горизонталі",
   "mapPicker.coverage-from": "Куди дістаю",
   "mapPicker.coverage-to": "Де стати",
   "mapPicker.stand-here": "Стати тут",
-  "mapPicker.coverage-legend": "Зелене: дістає. Жовте: впритул до рельєфу. Червоне: рельєф закриває.",
+  "mapPicker.coverage": "Зони за рельєфом",
+  "mapPicker.coverage-ok": "Дістає",
+  "mapPicker.coverage-tight": "Впритул до рельєфу",
+  "mapPicker.coverage-blocked": "Рельєф закриває",
   "mapPicker.coverage-need-gun": "Поставте гармату на карті.",
   "mapPicker.coverage-need-target": "Поставте ціль на карті.",
   "settings.hotkeys.lay": "Наведення: увімкнути / вимкнути стеження",
