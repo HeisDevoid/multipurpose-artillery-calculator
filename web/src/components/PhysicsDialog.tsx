@@ -75,6 +75,11 @@ export function PhysicsDialog() {
           </li>
         </ol>
 
+        {/* Без ACE листа нет, а у артиллерии в обычной Arma 3 сопротивления воздуха нет */}
+        <p className="mt-3 rounded-md bg-app-raised px-3 py-2 text-[13px] leading-relaxed text-app-text-2">
+          {t('physics.no-ace')}
+        </p>
+
         {/* Как это выглядит на листе: со звёздочкой и с поправками / без */}
         <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
           <SheetSample withPhysics />
@@ -82,10 +87,10 @@ export function PhysicsDialog() {
         </div>
 
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          <button type="button" onClick={() => answer(true)} className="btn btn-primary">
+          <button type="button" onClick={() => answer(true)} className="btn btn-primary h-auto min-w-0 py-2 whitespace-normal">
             {t('physics.yes')}
           </button>
-          <button type="button" onClick={() => answer(false)} className="btn">
+          <button type="button" onClick={() => answer(false)} className="btn h-auto min-w-0 py-2 whitespace-normal">
             {t('physics.no')}
           </button>
         </div>

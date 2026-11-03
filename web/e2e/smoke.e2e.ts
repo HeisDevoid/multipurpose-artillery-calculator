@@ -97,7 +97,7 @@ test('у орудия с неполными таблицами виден зна
   const errors = await open(page, '/', { selectedModel: 'm2' })
   const badge = page.locator('[data-status="incomplete"]').first()
   await expect(badge).toBeVisible()
-  await expect(badge).toHaveAttribute('aria-label', /Incomplete tables: no tables without shell physics/)
+  await expect(badge).toHaveAttribute('aria-label', /Incomplete tables: no tables without air resistance/)
   expect(errors).toEqual([])
 })
 
@@ -135,9 +135,9 @@ test('зоны по рельефу: кнопки на карте и легенд
 
 test('при первом запуске спрашивает про физику на сервере, ответ включает погоду', async ({ page }) => {
   const errors = await open(page, '/', { physicsAsked: '' })
-  const dialog = page.getByRole('dialog', { name: /Important: does the server have shell physics/ })
+  const dialog = page.getByRole('dialog', { name: /Important: does the server have air resistance/ })
   await expect(dialog).toBeVisible()
-  await dialog.getByRole('button', { name: /turn physics on/ }).click()
+  await dialog.getByRole('button', { name: /turn air resistance on/ }).click()
   await expect(dialog).toBeHidden()
   expect(await page.evaluate(() => [localStorage.getItem('physicsAsked'), localStorage.getItem('feature:weather')])).toEqual(['yes', 'on'])
   expect(errors).toEqual([])
