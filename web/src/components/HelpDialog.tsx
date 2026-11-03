@@ -9,7 +9,8 @@ const ISSUES_URL =
   'https://github.com/spanoproandrei2245-bit/multipurpose-artillery-calculator/issues/new/choose'
 
 // Вопрос и ответ: help.q<n> / help.a<n>
-const ITEMS = [1, 2, 3, 4, 5, 6, 7, 8] as const
+// Первым — главное: есть ли на сервере физика снаряда
+const ITEMS = [9, 1, 2, 3, 4, 5, 6, 7, 8] as const
 
 /** Справка: короткие ответы на частые вопросы, ссылка «сообщить о проблеме». */
 export function HelpDialog() {
@@ -60,6 +61,18 @@ export function HelpDialog() {
               <p className="mt-2 text-[14px] leading-relaxed whitespace-pre-line text-app-text-2">
                 {t(`help.a${n}` as MessageKey)}
               </p>
+              {n === 9 && (
+                <button
+                  type="button"
+                  className="btn btn-sm mt-2"
+                  onClick={() => {
+                    setPanel('help', false)
+                    setPanel('physics', true)
+                  }}
+                >
+                  {t('physics.check')}
+                </button>
+              )}
             </details>
           ))}
         </div>

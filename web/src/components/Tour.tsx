@@ -5,6 +5,7 @@ import {
   advancedTourDone,
   markAdvancedTourDone,
   markTourDone,
+  physicsAsked,
   setPanel,
   tourDone,
   usePanel,
@@ -186,8 +187,9 @@ export function Tour() {
   const [cardNode, setCardNode] = useState<HTMLDivElement | null>(null)
 
   // При первом запуске базовое обучение открывается само
+  // (если ещё не спросили про физику на сервере — обучение откроется после ответа)
   useEffect(() => {
-    if (tourDone()) return
+    if (tourDone() || !physicsAsked()) return
     const timer = window.setTimeout(() => setPanel('tour', true), 800)
     return () => window.clearTimeout(timer)
   }, [])

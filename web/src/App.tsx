@@ -3,7 +3,9 @@ import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 
 import { Footer, type View } from './components/Footer'
+import { GunnerAwayBanner } from './components/GunnerAwayBanner'
 import { HelpDialog } from './components/HelpDialog'
+import { PhysicsDialog } from './components/PhysicsDialog'
 import { UpdateBanner } from './components/UpdateBanner'
 import { HotkeysDialog } from './components/HotkeysDialog'
 import { Tour } from './components/Tour'
@@ -172,6 +174,9 @@ function App() {
     <div className="flex min-h-screen flex-col">
       <CrashProbe area="app" />
       <main className="mx-auto w-full max-w-[1240px] flex-1 px-4 pt-6 pb-4 sm:px-6 lg:pt-14">
+        {/* Стрелок ушёл со страницы «Связка»: установки не обновляются */}
+        {view !== 'sync' && <GunnerAwayBanner onBack={() => setView('sync')} />}
+
         {/* Заголовок страницы для поиска и экранных дикторов */}
         {view === 'dashboard' && <h1 className="sr-only">{t('seo.heading')}</h1>}
         {view === 'dashboard' && (
@@ -226,6 +231,7 @@ function App() {
 
       <HotkeysDialog />
       <HelpDialog />
+      <PhysicsDialog />
       <UpdateBanner />
       {view === 'dashboard' && <Tour />}
 

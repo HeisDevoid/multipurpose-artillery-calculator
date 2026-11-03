@@ -7,6 +7,7 @@ import { GLOBAL_HOTKEYS, isDesktop, toggleOverlay } from '../lib/desktop'
 import { SoundSettings } from '../components/SoundSettings'
 import { FeaturePreview } from '../components/FeaturePreview'
 import { FieldIcon, type FieldIconName } from '../components/FieldIcon'
+import { setPanel } from '../lib/uiPanels'
 import { Switch, Toggle } from '../components/FormControls'
 import { setFlightOnMap, setFlightStyle, useFlightOnMap, useFlightStyle } from '../lib/animation'
 import { setFeature, useFeature } from '../lib/features'
@@ -269,6 +270,14 @@ export function SettingsPage({
                 label={t('settingsPage.weather-ballistics')}
                 description={t('settingsPage.weather-ballistics-description')}
               />
+              <button
+                type="button"
+                onClick={() => setPanel('physics', true)}
+                className="mt-1 inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-accent hover:underline"
+              >
+                <FieldIcon name="help" className="h-4 w-4" />
+                {t('physics.check')}
+              </button>
               </FeaturePreview>
               <FeaturePreview id="tot">
               <Switch

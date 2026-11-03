@@ -3,93 +3,53 @@ import { FieldIcon } from './FieldIcon'
 import { useEffect, useRef, useState } from 'react'
 
 import { parseNumber, readStoredText, writeStored } from '../lib/input'
-import { planMrsi, type MrsiOption } from '../lib/mrsi'
-import { playSound } from '../lib/sound'
+import { planMrsi, type MrsiOption, type MrsiShot } from '../lib/mrsi'
+import { useMrsiClock } from '../lib/useMrsiClock'
 import { InlineNumber, ProgressBar } from './FormControls'
 
 interface Props {
   options: readonly MrsiOption[]
   // Показывать режим у выстрела (у модели есть HIGH и LOW)
   showMode: boolean
+  // Когда начат удар (часы этого устройства); null — не начат. Хранит
+  // калькулятор: удар начинают и клавиша «огонь», и выстрел по связке
+  startedAt: number | null
+  // Кнопка «Начать»: калькулятор запускает удар и сообщает связке
+  onStart: () => void
+  // Кнопка «Стоп» и конец удара
+  onStop: () => void
+  // Одновременный удар выбран (панель раскрыта, выстрелов два и больше):
+  // план для оверлея и связки; null — не выбран
+  onPlanChange?: (plan: MrsiShot[] | null) => void
 }
 
 const DEFAULT_GAP = 4
-// Сигналы перед выстрелом, с
-const COUNTDOWN = [3, 2, 1]
 
 /**
- * Одновременный удар (MRSI): одно орудие стреляет на разных зарядах
- * с задержками, и все снаряды падают на цель одновременно.
- *
- * Сверху перезарядка и время до общего разрыва, крупно — следующий выстрел
- * (заряд, возвышение, обратный отсчёт), ниже план всех выстрелов.
+ * План одновременного удара: что делать сейчас, крупно следующий выстрел
+ * (заряд, возвышение), полоса до общего разрыва и все выстрелы списком
+ * (выстрелянные зачёркнуты). Общий для калькулятора, стрелка по связке и оверлея.
  */
-export function MrsiPanel({ options, showMode, }: Props) {
+export function MrsiPlanView({
+  plan,
+  startedAt,
+  now,
+  showMode,
+  compact = false,
+}: {
+  plan: readonly MrsiShot[]
+  startedAt: number | null
+  now: number
+  showMode: boolean
+  // Оверлей: мельче и без отступов
+  compact?: boolean
+}) {
   const unitS = t('unit.s')
   const unitMil = t('unit.mil')
-
-  const [gap, setGap] = useState(
-    () => readStoredText('mrsiGap') || String(DEFAULT_GAP)
-  )
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [now, setNow] = useState(() => Date.now())
-  // Какие сигналы уже прозвучали: «индекс выстрела:секунда»
-  const signaled = useRef(new Set<string>())
-
-  useEffect(() => writeStored('mrsiGap', gap), [gap])
-
-  const minGap = Math.max(0, parseNumber(gap) ?? DEFAULT_GAP)
-  const plan = planMrsi(options, minGap)
   const impactAt = plan.length > 0 ? plan[0].tof : 0
-
-  // План для таймера без перезапуска интервала на каждый рендер
-  const planRef = useRef(plan)
-  useEffect(() => {
-    planRef.current = plan
-  })
-
-  useEffect(() => {
-    if (startedAt === null) return
-    const interval = window.setInterval(() => {
-      const current = Date.now()
-      const elapsed = (current - startedAt) / 1000
-
-      planRef.current.forEach((shot, index) => {
-        for (const second of COUNTDOWN) {
-          const key = `${index}:${second}`
-          if (elapsed >= shot.fireAt - second && !signaled.current.has(key)) {
-            signaled.current.add(key)
-            if (elapsed < shot.fireAt) playSound('mrsiTick')
-          }
-        }
-        const key = `${index}:fire`
-        if (elapsed >= shot.fireAt && !signaled.current.has(key)) {
-          signaled.current.add(key)
-          playSound('mrsiFire')
-        }
-      })
-
-      if (elapsed > impactAt + 3) {
-        setStartedAt(null)
-        return
-      }
-      setNow(current)
-    }, 100)
-    return () => window.clearInterval(interval)
-  }, [startedAt, impactAt])
-
   const elapsed = startedAt === null ? null : (now - startedAt) / 1000
-  const nextIndex =
-    elapsed === null ? 0 : plan.findIndex((shot) => shot.fireAt > elapsed)
+  const nextIndex = elapsed === null ? 0 : plan.findIndex((shot) => shot.fireAt > elapsed)
   const next = nextIndex >= 0 ? plan[nextIndex] : null
-
-  function start() {
-    signaled.current = new Set()
-    const at = Date.now()
-    setNow(at)
-    setStartedAt(at)
-    playSound('fire')
-  }
 
   // Крупная строка: что делать сейчас
   let status: string
@@ -99,8 +59,107 @@ export function MrsiPanel({ options, showMode, }: Props) {
   else status = t('mrsiPanel.impact')
 
   return (
+    <>
+      {/* Следующий выстрел крупно */}
+      <div className={compact ? 'rounded-lg bg-white/8 p-2.5' : 'mt-3 rounded-lg bg-app-raised p-3'}>
+        <p className="text-[13px] text-app-muted tabular-nums" aria-live="polite">{status}</p>
+        {next && (
+          <div className="mt-1 grid grid-cols-2 gap-2 tabular-nums">
+            <div>
+              <p className="text-[12px] text-app-muted">{t('artilleryCalculator.charge')}</p>
+              <p className="text-[22px] leading-tight font-semibold text-app-text">
+                {next.charge}
+                {showMode && <span className="ml-1.5 text-[13px] font-normal text-app-muted">{next.mode}</span>}
+              </p>
+            </div>
+            <div>
+              <p className="text-[12px] text-app-muted">{t('artilleryCalculator.elevation')}</p>
+              <p className="text-[22px] leading-tight font-semibold whitespace-nowrap text-app-text">
+                {Math.round(next.elevation)}
+                <span className="text-[13px] font-normal text-app-muted"> {unitMil}</span>
+              </p>
+            </div>
+          </div>
+        )}
+        {elapsed !== null && (
+          <ProgressBar className="mt-3" progress={impactAt > 0 ? elapsed / impactAt : 1} />
+        )}
+      </div>
+
+      {/* План: когда, заряд, возвышение; выстрелянные зачёркнуты */}
+      <ol className={`${compact ? 'mt-1.5 text-[13px]' : 'mt-2 text-[14px]'} overflow-hidden rounded-lg tabular-nums`}>
+        {plan.map((shot, index) => {
+          const done = elapsed !== null && elapsed >= shot.fireAt
+          const current = index === nextIndex
+          return (
+            <li
+              key={`${shot.mode}-${shot.charge}`}
+              className={[
+                'grid grid-cols-[1.5rem_1fr_auto_auto] items-center gap-3 border-l-2 px-2.5',
+                compact ? 'py-1' : 'py-1.5',
+                current ? 'border-l-accent bg-accent-soft text-app-text' : 'border-l-transparent',
+                done ? 'text-app-faint line-through' : current ? '' : 'text-app-text-2',
+              ].join(' ')}
+            >
+              <b className={done ? '' : 'text-app-text'}>{index + 1}</b>
+              <span>{index === 0 ? t('mrsiPanel.now') : `+${shot.fireAt.toFixed(1)} ${unitS}`}</span>
+              <span>
+                {t('mrsiPanel.charge')} {shot.charge}
+                {showMode && ` ${shot.mode}`}
+              </span>
+              <span className="text-right font-medium">
+                {Math.round(shot.elevation)} {unitMil}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    </>
+  )
+}
+
+/**
+ * Одновременный удар (MRSI): одно орудие стреляет на разных зарядах
+ * с задержками, и все снаряды падают на цель одновременно.
+ *
+ * Сверху перезарядка и время до общего разрыва, крупно — следующий выстрел
+ * (заряд, возвышение, обратный отсчёт), ниже план всех выстрелов. Пока
+ * панель раскрыта, план уходит в оверлей и стрелкам по связке.
+ */
+export function MrsiPanel({ options, showMode, startedAt, onStart, onStop, onPlanChange }: Props) {
+  const unitS = t('unit.s')
+
+  const [gap, setGap] = useState(
+    () => readStoredText('mrsiGap') || String(DEFAULT_GAP)
+  )
+  // Раскрыта ли панель: свёрнутая — удар не выбран
+  const [open, setOpen] = useState(() => readStoredText('mrsiOpen') !== 'off')
+
+  useEffect(() => writeStored('mrsiGap', gap), [gap])
+  useEffect(() => writeStored('mrsiOpen', open ? 'on' : 'off'), [open])
+
+  const minGap = Math.max(0, parseNumber(gap) ?? DEFAULT_GAP)
+  const plan = planMrsi(options, minGap)
+  const now = useMrsiClock(plan, startedAt, onStop)
+
+  // План для оверлея и связки: только реальные изменения
+  const planJson = JSON.stringify(open && plan.length >= 2 ? plan : null)
+  const onPlanRef = useRef(onPlanChange)
+  useEffect(() => {
+    onPlanRef.current = onPlanChange
+  })
+  useEffect(() => {
+    onPlanRef.current?.(JSON.parse(planJson) as MrsiShot[] | null)
+  }, [planJson])
+  useEffect(() => () => onPlanRef.current?.(null), [])
+
+  return (
     // Сворачивается, как «Огонь по времени» и «Корректировка огня»
-    <details className="disclosure panel p-4 sm:p-5" open>
+    <details
+      className="disclosure panel p-4 sm:p-5"
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
       <summary>
         <span className="inline-flex min-w-0 items-center gap-2 text-app-text">
           <FieldIcon name="stack" className="h-5 w-5 shrink-0 text-app-muted" />
@@ -128,67 +187,21 @@ export function MrsiPanel({ options, showMode, }: Props) {
         </p>
       ) : (
         <>
-          {/* Следующий выстрел крупно */}
-          <div className="mt-3 rounded-lg bg-app-raised p-3">
-            <p className="text-[13px] text-app-muted tabular-nums" aria-live="polite">{status}</p>
-            {next && (
-              <div className="mt-1 grid grid-cols-2 gap-2 tabular-nums">
-                <div>
-                  <p className="text-[12px] text-app-muted">{t('artilleryCalculator.charge')}</p>
-                  <p className="text-[22px] leading-tight font-semibold text-app-text">
-                    {next.charge}
-                    {showMode && <span className="ml-1.5 text-[13px] font-normal text-app-muted">{next.mode}</span>}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[12px] text-app-muted">{t('artilleryCalculator.elevation')}</p>
-                  <p className="text-[22px] leading-tight font-semibold whitespace-nowrap text-app-text">
-                    {Math.round(next.elevation)}
-                    <span className="text-[13px] font-normal text-app-muted"> {unitMil}</span>
-                  </p>
-                </div>
-              </div>
-            )}
-            {elapsed !== null && (
-              <ProgressBar className="mt-3" progress={impactAt > 0 ? elapsed / impactAt : 1} />
-            )}
-          </div>
+          <MrsiPlanView plan={plan} startedAt={startedAt} now={now} showMode={showMode} />
 
-          {/* План: когда, заряд, возвышение; выстрелянные зачёркнуты */}
-          <ol className="mt-2 overflow-hidden rounded-lg text-[14px] tabular-nums">
-            {plan.map((shot, index) => {
-              const done = elapsed !== null && elapsed >= shot.fireAt
-              const current = index === nextIndex
-              return (
-                <li
-                  key={`${shot.mode}-${shot.charge}`}
-                  className={[
-                    'grid grid-cols-[1.5rem_1fr_auto_auto] items-center gap-3 border-l-2 px-2.5 py-1.5',
-                    current ? 'border-l-accent bg-accent-soft text-app-text' : 'border-l-transparent',
-                    done ? 'text-app-faint line-through' : current ? '' : 'text-app-text-2',
-                  ].join(' ')}
-                >
-                  <b className={done ? '' : 'text-app-text'}>{index + 1}</b>
-                  <span>{index === 0 ? t('mrsiPanel.now') : `+${shot.fireAt.toFixed(1)} ${unitS}`}</span>
-                  <span>
-                    {t('mrsiPanel.charge')} {shot.charge}
-                    {showMode && ` ${shot.mode}`}
-                  </span>
-                  <span className="text-right font-medium">
-                    {Math.round(shot.elevation)} {unitMil}
-                  </span>
-                </li>
-              )
-            })}
-          </ol>
+          <p className="mt-2 text-[12px] text-app-muted">{t('mrsiPanel.shared')}</p>
 
           <div className="mt-3 flex gap-2">
-            <button type="button" onClick={start} className="btn btn-primary flex-1">
+            <button
+              type="button"
+              onClick={onStart}
+              className="btn btn-primary flex-1"
+            >
               <FieldIcon name="fire" />
               {startedAt === null ? t('mrsiPanel.start-mrsi') : t('mrsiPanel.restart')}
             </button>
             {startedAt !== null && (
-              <button type="button" onClick={() => setStartedAt(null)} className="btn">
+              <button type="button" onClick={onStop} className="btn">
                 <FieldIcon name="stop" />
                 {t('fireTimer.stop')}
               </button>

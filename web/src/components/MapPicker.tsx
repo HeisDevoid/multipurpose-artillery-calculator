@@ -451,6 +451,24 @@ export function MapPicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Орудие или карту поменяли в другом окне (карта в оверлее программы для ПК):
+  // localStorage общий, событие storage приходит только в другие окна
+  const openMapRef = useRef(openMap)
+  useEffect(() => {
+    openMapRef.current = openMap
+  })
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (!map || !event.key) return
+      if (event.key === `mapGun:${map.world}`) setGun(readGun(map.world))
+      else if (event.key === 'mapWorld' && event.newValue && event.newValue !== mapKey) {
+        openMapRef.current(event.newValue)
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [map, mapKey])
+
   // ---- размер холста ----
   // Ширина контейнера: сразу при появлении и при каждом изменении
   const containerRef = useCallback((element: HTMLDivElement | null) => {
@@ -1573,9 +1591,6 @@ export function MapPicker({
           )}
 
 
-          {/* Слева снизу: зоны по рельефу */}
-          <CoveragePanel mode={coverageMode} onMode={setCoverageMode} ready={coverage !== null} />
-
           {/* Справа снизу над слоем: высотные линии из сетки высот */}
           <button
             type="button"
@@ -1618,7 +1633,7 @@ export function MapPicker({
             </button>
           )}
 
-          {/* Снизу по центру: координаты орудия и цели */}
+          {/* Снизу по центру: координаты орудия и цели, под ними зоны по рельефу */}
           <CoordinatePlate
             gun={gun}
             gunHeight={gunHeight}
@@ -1626,7 +1641,9 @@ export function MapPicker({
             targetHeight={targetHeight}
             unit={unitM}
             flight={flight}
-          />
+          >
+            <CoveragePanel mode={coverageMode} onMode={setCoverageMode} ready={coverage !== null} />
+          </CoordinatePlate>
         </div>
       )}
 

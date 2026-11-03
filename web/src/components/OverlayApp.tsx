@@ -1,5 +1,5 @@
 import { isLanguageLoaded, loadLanguage, setLanguage as setI18nLanguage, t } from '../i18n'
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 
 import {
   focusCurrentWindow,
@@ -14,16 +14,29 @@ import {
   type OverlayState,
 } from '../lib/desktop'
 import { formatSigned, isInvalid, parseNumber } from '../lib/input'
+import type { TerrainStatus } from '../lib/mrsi'
+import { useMrsiClock } from '../lib/useMrsiClock'
+import { FieldIcon } from './FieldIcon'
 import { ProgressBar } from './FormControls'
+import { MrsiPlanView } from './MrsiPanel'
+
+// Карта в оверлее — по требованию, как и в основном окне
+const MapPicker = lazy(() => import('./MapPicker').then((m) => ({ default: m.MapPicker })))
 
 // Предупреждение «сплэш» за столько секунд до разрыва (как в FireTimer)
 const SPLASH_WARNING_S = 5
 const IMPACT_HOLD_MS = 4000
 
-// Размер окна: только установки / с панелью ввода
-const WIDTH = 340
-const COMPACT_HEIGHT = 250
+// Размер окна: установки / с панелью ввода / с картой
+const WIDTH = 380
+const COMPACT_HEIGHT = 230
+const TERRAIN_EXTRA = 44
 const EDITING_HEIGHT = 580
+const MAP_WIDTH = 560
+const MAP_HEIGHT = 900
+// Одновременный удар: строка выстрела в плане
+const MRSI_BASE_HEIGHT = 300
+const MRSI_ROW = 30
 
 const FIELDS: readonly OverlayField[] = [
   'distance',
@@ -44,10 +57,14 @@ interface Shot {
   tof: number
 }
 
+const noop = () => {}
+
 /**
- * Окно поверх игры: возвышение, азимут, заряд и отсчёт до разрыва.
- * Панель ввода меняет вводные основного окна, не переключаясь на него:
- * основное окно считает и присылает новое решение.
+ * Окно поверх игры: заряд, азимут и возвышение в том же порядке, что в HUD
+ * артиллерии Arma (CH, AZ, EL), время полёта и отсчёт до разрыва.
+ * «Ввод» меняет вводные основного окна, не переключаясь на него (с картой,
+ * если она включена): основное окно считает и присылает новое решение.
+ * Рельеф на пути снаряда и одновременный удар видны и по связке.
  * Огонь — по глобальной клавише, звук подаёт основное окно.
  */
 export function OverlayApp() {
@@ -70,6 +87,11 @@ export function OverlayApp() {
 
   // Панель ввода — только для своих вводных, не для данных по связке
   const canEdit = editing && state !== null && !state.readOnly
+  // С картой: «Ввод» открывает карту поверх игры
+  const mapMode = canEdit && Boolean(state?.map)
+  const solution = state?.solution ?? null
+  const mrsi = solution ? (state?.mrsi ?? null) : null
+  const terrain: TerrainStatus = solution ? (state?.terrain ?? null) : null
 
   useEffect(() => {
     const stop = onSolution((next) => {
@@ -88,12 +110,18 @@ export function OverlayApp() {
     return stop
   }, [])
 
+  // Размер окна под то, что в нём показано
+  const mrsiShots = mrsi?.shots.length ?? 0
+  const width = mapMode ? MAP_WIDTH : WIDTH
+  const height = mapMode
+    ? MAP_HEIGHT
+    : canEdit
+      ? EDITING_HEIGHT
+      : (mrsiShots > 0 ? MRSI_BASE_HEIGHT + MRSI_ROW * mrsiShots : COMPACT_HEIGHT) +
+        (terrain ? TERRAIN_EXTRA : 0)
   useEffect(() => {
-    void resizeCurrentWindow(
-      WIDTH,
-      canEdit ? EDITING_HEIGHT : COMPACT_HEIGHT
-    )
-  }, [canEdit])
+    void resizeCurrentWindow(width, height)
+  }, [width, height])
 
   useEffect(
     () =>
@@ -103,11 +131,12 @@ export function OverlayApp() {
           setFocusRequest((value) => value + 1)
           return
         }
-        const solution = stateRef.current?.solution
-        if (action !== 'fire' || !solution) return
+        const current = stateRef.current
+        // Одновременный удар начинает основное окно: время старта приходит в состоянии
+        if (action !== 'fire' || !current?.solution || current.mrsi) return
         const firedAt = Date.now()
         setNow(firedAt)
-        setShot({ firedAt, tof: solution.tof })
+        setShot({ firedAt, tof: current.solution.tof })
       }),
     []
   )
@@ -122,15 +151,20 @@ export function OverlayApp() {
     })
   }, [focusRequest])
 
+  // Карта в оверлее: окну нужен фокус для кликов и колёсика
+  useEffect(() => {
+    if (mapMode) void focusCurrentWindow()
+  }, [mapMode])
+
   // Выстрел из основного окна или по связке
   useEffect(
     () =>
       onOverlayShot(() => {
-        const solution = stateRef.current?.solution
-        if (!solution) return
+        const current = stateRef.current
+        if (!current?.solution || current.mrsi) return
         const firedAt = Date.now()
         setNow(firedAt)
-        setShot({ firedAt, tof: solution.tof })
+        setShot({ firedAt, tof: current.solution.tof })
       }),
     []
   )
@@ -161,6 +195,9 @@ export function OverlayApp() {
   }, [fireAt])
   const totLeft = fireAt === null ? null : (fireAt - now) / 1000
 
+  // Одновременный удар: свои часы (звук подаёт основное окно)
+  const mrsiNow = useMrsiClock(mrsi?.shots ?? [], mrsi?.startedAt ?? null, noop, false)
+
   // Оверлей — отдельное окно: язык приходит вместе с состоянием,
   // словарь догружается (пока его нет — по-английски)
   const language = state?.language ?? 'ru'
@@ -169,7 +206,6 @@ export function OverlayApp() {
   useEffect(() => {
     if (!isLanguageLoaded(language)) void loadLanguage(language).then(() => setDictionaryTick((n) => n + 1))
   }, [language])
-  const solution = state?.solution ?? null
   const left = shot ? shot.tof - (now - shot.firedAt) / 1000 : null
 
   function changeField(field: OverlayField, value: string) {
@@ -230,6 +266,7 @@ export function OverlayApp() {
               editing ? 'bg-app-raised-hover text-app-text' : '',
             ].join(' ')}
           >
+            {state?.map && <FieldIcon name="map" className="h-4 w-4" />}
             {t('overlayApp.input')}
           </button>
         )}
@@ -243,42 +280,54 @@ export function OverlayApp() {
         </button>
       </div>
 
-      {solution ? (
+      {solution && mrsi ? (
+        // Одновременный удар: азимут общий, по выстрелам — заряд и возвышение
+        <div data-tauri-drag-region className="mt-2">
+          <div data-tauri-drag-region className="flex items-end justify-between gap-3">
+            <p className="flex items-center gap-1.5 text-[13px] font-medium text-app-text">
+              <FieldIcon name="stack" className="h-4 w-4 text-app-muted" />
+              {t('mrsiPanel.simultaneous-impact-mrsi')}
+            </p>
+            <Readout label={t('artilleryCalculator.azimuth')} game="AZ" unit={solution.azimuthUnit} size="md">
+              {solution.azimuth ?? '-'}
+            </Readout>
+          </div>
+          <div className="mt-2">
+            <MrsiPlanView
+              plan={mrsi.shots}
+              startedAt={mrsi.startedAt}
+              now={mrsiNow}
+              showMode={state?.modes ? state.modes.length > 1 : false}
+              compact
+            />
+          </div>
+        </div>
+      ) : solution ? (
+        // Порядок как в HUD артиллерии Arma: CH, AZ, EL
         <div
           data-tauri-drag-region
           className={[
-            'mt-2 grid grid-cols-2 content-center gap-x-4 gap-y-2',
+            'mt-2 grid grid-cols-[auto_1fr_1fr] content-center gap-x-4 gap-y-2',
             canEdit ? '' : 'flex-1',
           ].join(' ')}
         >
-          <div data-tauri-drag-region>
-            <p className="label">
-              {t('artilleryCalculator.elevation')} · {t('unit.mil')}
-            </p>
-            <p className="readout mt-1 text-5xl font-semibold">
-              {Math.round(solution.elevation)}
-            </p>
-          </div>
-          <div data-tauri-drag-region>
-            <p className="label">
-              {t('artilleryCalculator.azimuth')}
-              {solution.azimuth !== null && ` · ${solution.azimuthUnit}`}
-            </p>
-            <p
-              className={[
-                'readout mt-1 text-5xl font-semibold',
-                solution.azimuth === null ? 'text-app-faint' : '',
-              ].join(' ')}
-            >
-              {solution.azimuth ?? '-'}
-            </p>
-          </div>
-          <p className="flex items-center gap-2 text-[15px] text-app-text tabular-nums">
-            <span className="label">{t('artilleryCalculator.charge')}</span>
-            {String(solution.charge).padStart(2, '0')}
-            {solution.mode === 'LOW' && <span className="tag tag-warn">LOW</span>}
-          </p>
-          <p className="flex items-center gap-2 text-[15px] text-app-text tabular-nums">
+          <Readout label={t('artilleryCalculator.charge')} game="CH" size="lg">
+            {solution.charge}
+            {solution.mode === 'LOW' && <span className="tag tag-warn ml-1.5 align-middle">LOW</span>}
+          </Readout>
+          <Readout
+            label={t('artilleryCalculator.azimuth')}
+            game="AZ"
+            unit={solution.azimuth !== null ? solution.azimuthUnit : undefined}
+            size="lg"
+            faint={solution.azimuth === null}
+          >
+            {solution.azimuth ?? '-'}
+          </Readout>
+          <Readout label={t('artilleryCalculator.elevation')} game="EL" unit={t('unit.mil')} size="lg">
+            {Math.round(solution.elevation)}
+          </Readout>
+          <p className="col-span-3 flex items-center gap-2 text-[14px] text-app-text tabular-nums">
             <span className="label">{t('combatScreen.flight')}</span>
             {solution.tof.toFixed(1)} {t('unit.s')}
           </p>
@@ -297,7 +346,20 @@ export function OverlayApp() {
         </p>
       )}
 
-      {totLeft !== null && totLeft > -3 && !shot && (
+      {/* Рельеф на пути снаряда: видно и по связке, чтобы стрелок мог сказать об этом */}
+      {terrain && (
+        <p
+          className={[
+            'mt-2 flex items-start gap-2 rounded-lg px-2.5 py-1.5 text-[13px] leading-snug font-medium',
+            terrain === 'blocked' ? 'bg-danger/20 text-danger' : 'bg-warn/15 text-warn',
+          ].join(' ')}
+        >
+          <FieldIcon name="mountain" className="mt-px h-4 w-4 shrink-0" />
+          {terrain === 'blocked' ? t('terrain.short-blocked') : t('terrain.short-tight')}
+        </p>
+      )}
+
+      {!mrsi && totLeft !== null && totLeft > -3 && !shot && (
         <p
           className={[
             'mt-2 flex items-baseline justify-between rounded-lg px-3 py-1.5',
@@ -315,7 +377,7 @@ export function OverlayApp() {
         </p>
       )}
 
-      {left !== null && shot && (
+      {!mrsi && left !== null && shot && (
         <div className="mt-2">
           <p
             className={[
@@ -344,6 +406,20 @@ export function OverlayApp() {
 
       {canEdit && (
         <div className="mt-3 flex flex-1 flex-col gap-2.5 border-t border-app-line-strong pt-3">
+          {/* Карта поверх игры: орудие и цель ставятся здесь, считает основное окно */}
+          {mapMode && state.map && (
+            <Suspense fallback={<p className="label py-10 text-center">{t('artilleryCalculator.loading-the-map')}</p>}>
+              <MapPicker
+                language={state.language}
+                currentTarget={state.map.target}
+                reach={state.map.reach}
+                category={state.map.category}
+                shellType={state.map.shellType}
+                onApply={(selection) => sendOverlayCommand({ type: 'map', selection })}
+              />
+            </Suspense>
+          )}
+
           <div className="grid grid-cols-2 gap-2">
             {FIELDS.map((field) => (
               <label key={field} className="block">
@@ -370,11 +446,41 @@ export function OverlayApp() {
           <SpotReport state={state} />
         </div>
       )}
+    </div>
+  )
+}
 
-      <p data-tauri-drag-region className="mt-2 text-[11.5px] leading-relaxed text-app-faint">
-        Ctrl+Alt+F: {t('combatScreen.fire')} · Ctrl+Alt+D:{' '}
-        {t('overlayApp.input-2')} · Ctrl+Alt+O: {t('overlayApp.hide')} ·
-        Ctrl+Alt+M: HIGH/LOW · Ctrl+Alt+N/P: {t('overlayApp.targets')}
+/** Одно значение установок: подпись, как в HUD игры (CH / AZ / EL), и крупное число. */
+function Readout({
+  label,
+  game,
+  unit,
+  size,
+  faint = false,
+  children,
+}: {
+  label: string
+  game: string
+  unit?: string
+  size: 'lg' | 'md'
+  faint?: boolean
+  children: ReactNode
+}) {
+  return (
+    <div data-tauri-drag-region className="min-w-0">
+      <p className="label flex items-baseline gap-1.5 whitespace-nowrap">
+        <span className="font-semibold text-app-text-2">{game}</span>
+        {label}
+      </p>
+      <p
+        className={[
+          'readout mt-0.5 font-semibold whitespace-nowrap',
+          size === 'lg' ? 'text-[40px] leading-[1.1]' : 'text-[28px] leading-tight',
+          faint ? 'text-app-faint' : '',
+        ].join(' ')}
+      >
+        {children}
+        {unit && <span className="ml-1 text-[13px] font-normal text-app-muted">{unit}</span>}
       </p>
     </div>
   )

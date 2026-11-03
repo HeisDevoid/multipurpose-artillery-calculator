@@ -5,8 +5,12 @@ import {
   WebviewWindow,
 } from '@tauri-apps/api/webviewWindow'
 
+import type { MapSelection } from '../components/MapPicker'
 import type { ArtilleryMode } from '../types/artillery'
+import type { ArtilleryCategory } from '../types/gameModel'
 import type { Language } from '../types/settings'
+import type { MapTarget } from './journal'
+import type { MrsiRun, TerrainStatus } from './mrsi'
 
 /** Приложение запущено как программа для ПК (Tauri), а не в браузере. */
 export const isDesktop =
@@ -74,6 +78,17 @@ export interface OverlayState {
   readOnly?: boolean
   // Огонь по времени: момент выстрела, мс; null — нет
   fireAt?: number | null
+  // Рельеф на пути снаряда на текущем заряде
+  terrain?: TerrainStatus
+  // Одновременный удар выбран: план и старт
+  mrsi?: MrsiRun | null
+  // Карта в основном окне включена: «Ввод» открывает её в оверлее
+  map?: {
+    target: MapTarget | null
+    reach: { min: number; max: number } | null
+    category: ArtilleryCategory
+    shellType?: string
+  } | null
 }
 
 /** Команда из оверлея в основное окно. */
@@ -84,6 +99,8 @@ export type OverlayCommand =
   // Доклад по линии орудия: > 0 — перелёт / правее цели, м
   | { type: 'spot'; over: number; right: number }
   | { type: 'undo-adjust' }
+  // Орудие и цель поставлены на карте в оверлее
+  | { type: 'map'; selection: MapSelection }
 
 /**
  * Подписка на событие Tauri. Возвращает функцию отписки, которую можно

@@ -10,15 +10,15 @@ const LEGEND: Record<CoverageStatus, MessageKey> = {
   blocked: 'mapPicker.coverage-blocked',
 }
 
-const MODES: { id: Exclude<CoverageMode, 'off'>; icon: FieldIconName }[] = [
-  { id: 'from', icon: 'reachFrom' },
-  { id: 'to', icon: 'standTo' },
+const MODES: { id: Exclude<CoverageMode, 'off'>; icon: FieldIconName; label: MessageKey }[] = [
+  { id: 'from', icon: 'reachFrom', label: 'mapPicker.coverage-from' },
+  { id: 'to', icon: 'standTo', label: 'mapPicker.coverage-to' },
 ]
 
 /**
- * Зоны по рельефу слева снизу на карте: «Куда достаю» и «Где встать» —
- * сегменты в стиле панели инструментов, над ними легенда цветов
- * (или подсказка, если на карте нет орудия или цели).
+ * Зоны по рельефу — нижняя строка плашки координат: «Куда достаю» (вокруг
+ * орудия) и «Где встать» (вокруг цели), под ними легенда цветов или
+ * подсказка, если на карте нет орудия или цели.
  */
 export function CoveragePanel({
   mode,
@@ -31,18 +31,37 @@ export function CoveragePanel({
   ready: boolean
 }) {
   return (
-    // Над плашкой координат: на телефоне она в две строки
-    <div className="absolute bottom-16 left-2 flex max-w-[calc(100%-4rem)] flex-col items-start gap-1.5 sm:bottom-[3.25rem]">
+    <div className="pointer-events-auto border-t border-white/10 px-1.5 py-1.5">
+      <div role="group" aria-label={t('mapPicker.coverage')} className="flex justify-center gap-1">
+        {MODES.map(({ id, icon, label }) => {
+          const active = mode === id
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onMode(active ? 'off' : id)}
+              className={[
+                'inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[12px] font-medium whitespace-nowrap transition-colors',
+                active ? 'bg-accent-solid text-white' : 'text-white/75 hover:bg-white/12 hover:text-white',
+              ].join(' ')}
+            >
+              <FieldIcon name={icon} className="h-[15px] w-[15px]" />
+              {t(label)}
+            </button>
+          )
+        })}
+      </div>
       {mode !== 'off' && (
         <div
           role="status"
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-black/70 px-2.5 py-1.5 text-[11.5px] leading-tight text-white/85 shadow-lg backdrop-blur-sm"
+          className="mt-1.5 flex flex-wrap justify-center gap-x-3 gap-y-1 px-1 pb-0.5 text-[11px] leading-tight text-white/80"
         >
           {ready ? (
             (['ok', 'tight', 'blocked'] as const).map((status) => (
               <span key={status} className="flex items-center gap-1.5 whitespace-nowrap">
                 <span
-                  className="block h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                  className="block h-2 w-2 shrink-0 rounded-[2px]"
                   style={{ backgroundColor: `rgb(${COVERAGE_RGB[status]})` }}
                 />
                 {t(LEGEND[status])}
@@ -55,30 +74,6 @@ export function CoveragePanel({
           )}
         </div>
       )}
-      <div
-        role="group"
-        aria-label={t('mapPicker.coverage')}
-        className="flex gap-1 rounded-lg bg-black/70 p-1 shadow-lg backdrop-blur-sm"
-      >
-        {MODES.map(({ id, icon }) => {
-          const active = mode === id
-          return (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => onMode(active ? 'off' : id)}
-              className={[
-                'inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-[12.5px] font-medium whitespace-nowrap transition-colors',
-                active ? 'bg-accent-solid text-white' : 'text-white/80 hover:bg-white/15',
-              ].join(' ')}
-            >
-              <FieldIcon name={icon} className="h-[18px] w-[18px]" />
-              {id === 'from' ? t('mapPicker.coverage-from') : t('mapPicker.coverage-to')}
-            </button>
-          )
-        })}
-      </div>
     </div>
   )
 }

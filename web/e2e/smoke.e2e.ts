@@ -12,9 +12,10 @@ async function open(page: Page, path = '/', storage: Record<string, string> = {}
     if (message.type() === 'error') errors.push(`console: ${message.text()}`)
   })
   await page.addInitScript((values) => {
-    // Без обучения при первом запуске; язык и карта — заданные тестом
+    // Без обучения и вопроса про физику при первом запуске; язык и карта — заданные тестом
     localStorage.setItem('tourDone', 'yes')
     localStorage.setItem('tourAdvancedDone', 'yes')
+    localStorage.setItem('physicsAsked', 'yes')
     for (const [key, value] of Object.entries(values)) localStorage.setItem(key, value)
   }, { language: 'en', mapWorld: 'builtin:stratis', ...storage })
   await page.goto(path)
@@ -128,6 +129,16 @@ test('зоны по рельефу: кнопки на карте и легенд
   await expect(zones.getByRole('button', { name: 'Where I can hit' })).toHaveAttribute('aria-pressed', 'true')
   // Орудия на карте нет: вместо легенды подсказка
   await expect(page.getByText('Place the gun on the map.')).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('при первом запуске спрашивает про физику на сервере, ответ включает погоду', async ({ page }) => {
+  const errors = await open(page, '/', { physicsAsked: '' })
+  const dialog = page.getByRole('dialog', { name: /Important: does the server have shell physics/ })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: /turn physics on/ }).click()
+  await expect(dialog).toBeHidden()
+  expect(await page.evaluate(() => [localStorage.getItem('physicsAsked'), localStorage.getItem('feature:weather')])).toEqual(['yes', 'on'])
   expect(errors).toEqual([])
 })
 

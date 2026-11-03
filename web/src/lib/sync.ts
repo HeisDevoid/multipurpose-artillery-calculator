@@ -1,5 +1,6 @@
 import type { ArtilleryMode } from '../types/artillery'
 import { parseMarker, type MapMarker } from './markers'
+import type { MrsiShot, TerrainStatus } from './mrsi'
 
 /**
  * Связка наводчик ↔ стрелок: общее для всех устройств.
@@ -44,6 +45,10 @@ export interface SyncSolution {
   tof: number
   // Огонь по времени: момент разрыва, мс (часы устройства); null — нет
   tot?: number | null
+  // Рельеф на пути снаряда: стрелок видит, что огонь впритык или закрыт
+  terrain?: TerrainStatus
+  // Одновременный удар: план выстрелов (старт — по сигналу «выстрел»)
+  mrsi?: { shots: MrsiShot[] } | null
 }
 
 export type SyncMessage =
@@ -209,6 +214,32 @@ const isNumber = (value: unknown): value is number =>
 
 const isString = (value: unknown): value is string => typeof value === 'string'
 
+function parseMrsiShots(value: unknown): MrsiShot[] | null {
+  if (!Array.isArray(value) || value.length === 0) return null
+  const shots: MrsiShot[] = []
+  for (const item of value) {
+    if (typeof item !== 'object' || item === null) return null
+    const shot = item as Record<string, unknown>
+    if (
+      !(shot.mode === 'HIGH' || shot.mode === 'LOW') ||
+      !isNumber(shot.charge) ||
+      !isNumber(shot.elevation) ||
+      !isNumber(shot.tof) ||
+      !isNumber(shot.fireAt)
+    ) {
+      return null
+    }
+    shots.push({
+      mode: shot.mode,
+      charge: shot.charge,
+      elevation: shot.elevation,
+      tof: shot.tof,
+      fireAt: shot.fireAt,
+    })
+  }
+  return shots
+}
+
 function parseSolution(value: unknown): SyncSolution | null | undefined {
   if (value === null) return null
   if (typeof value !== 'object') return undefined
@@ -225,6 +256,10 @@ function parseSolution(value: unknown): SyncSolution | null | undefined {
     s.tof > 0 &&
     (s.tot === undefined || s.tot === null || isNumber(s.tot))
   if (!valid) return undefined
+  const mrsiShots =
+    typeof s.mrsi === 'object' && s.mrsi !== null
+      ? parseMrsiShots((s.mrsi as Record<string, unknown>).shots)
+      : null
   return {
     title: s.title as string,
     targetName: s.targetName as string | null,
@@ -235,6 +270,9 @@ function parseSolution(value: unknown): SyncSolution | null | undefined {
     azimuthUnit: s.azimuthUnit as string,
     tof: s.tof as number,
     tot: (s.tot as number | null | undefined) ?? null,
+    // Поля новых версий: у старых их нет, неверные не показываются
+    ...(s.terrain === 'tight' || s.terrain === 'blocked' ? { terrain: s.terrain } : {}),
+    ...(mrsiShots ? { mrsi: { shots: mrsiShots } } : {}),
   }
 }
 
