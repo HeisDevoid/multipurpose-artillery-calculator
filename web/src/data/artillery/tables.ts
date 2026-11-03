@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { isModelId, type ModelId } from '../models'
+import { isModelId, models, type ModelId } from '../models'
 import tableStatus from '../tableStatus.json'
 import type { ArtilleryReference, DataStatus } from '../../types/artillery'
 import { parseReference } from './parse'
@@ -87,11 +87,22 @@ export function missingTablesOf(id: ModelId): MissingTables[] {
   return statusIndex[TABLE_OF[id]]?.missing ?? []
 }
 
+/**
+ * Орудие в выборе: только с обоими наборами таблиц, с сопротивлением воздуха
+ * и без. С одним набором на части серверов установки были бы неверны.
+ */
+export function isAvailableModel(value: string): value is ModelId {
+  return isModelId(value) && missingTablesOf(value).length === 0
+}
+
+/** Орудия в выборе, в порядке справочника. */
+export const availableModelIds = (Object.keys(models) as ModelId[]).filter(isAvailableModel)
+
 /** Орудие при открытии: выбранное раньше (как в App), иначе Mk6. */
 export function initialModelId(): ModelId {
   try {
     const stored = localStorage.getItem('selectedModel')
-    if (stored && isModelId(stored)) return stored
+    if (stored && isAvailableModel(stored)) return stored
   } catch {
     // Хранилище недоступно.
   }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { missingTablesOf, statusOf } from '../data/artillery/tables'
+import { availableModelIds, missingTablesOf, statusOf } from '../data/artillery/tables'
 import { categoryLabels } from '../data/categories'
 import { models, type ModelId } from '../data/models'
 import { t } from '../i18n'
@@ -16,7 +16,8 @@ interface ModelSelectorProps {
   onChange: (value: ModelId) => void
 }
 
-const modelIds = Object.keys(models) as ModelId[]
+// Только орудия с обоими наборами таблиц (с сопротивлением воздуха и без)
+const modelIds = availableModelIds
 
 /** Орудия из ванили (Arma 3) — в списке; остальные — в окне с поиском. */
 const isVanilla = (id: ModelId) => models[id].mod.startsWith('Arma 3')

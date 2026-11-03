@@ -11,7 +11,8 @@ import { HotkeysDialog } from './components/HotkeysDialog'
 import { Tour } from './components/Tour'
 import { DashboardPage } from './pages/DashboardPage'
 
-import { isModelId, type ModelId } from './data/models'
+import { isAvailableModel } from './data/artillery/tables'
+import type { ModelId } from './data/models'
 import { onHotkey, toggleOverlay } from './lib/desktop'
 import { applyHead, initialLanguage } from './lib/seo'
 import { readInvite } from './lib/sync'
@@ -61,7 +62,7 @@ function SubView({
 function App() {
   const [selectedModel, setSelectedModel] = usePersistentState<ModelId>(
     'selectedModel',
-    (raw) => (raw && isModelId(raw) ? raw : 'mk6')
+    (raw) => (raw && isAvailableModel(raw) ? raw : 'mk6')
   )
 
   // По ссылке-приглашению стрелка — сразу «Связка»

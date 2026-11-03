@@ -92,12 +92,21 @@ test('сбой карты не ломает калькулятор', async ({ pa
   await expect(page.locator('#calc-distance')).toBeVisible()
 })
 
-test('у орудия с неполными таблицами виден значок предупреждения', async ({ page }) => {
-  // У M2 (S.O.G.) нет таблиц без физики снаряда
+test('орудий без обоих наборов таблиц в выборе нет', async ({ page }) => {
+  // У M2 (S.O.G.) нет таблиц без сопротивления воздуха: сохранённый выбор сменяется на Mk6
   const errors = await open(page, '/', { selectedModel: 'm2' })
-  const badge = page.locator('[data-status="incomplete"]').first()
-  await expect(badge).toBeVisible()
-  await expect(badge).toHaveAttribute('aria-label', /Incomplete tables: no tables without air resistance/)
+  const select = page.getByRole('button', { name: 'Game Model' })
+  await expect(select).toContainText('Mk6 (82 mm)')
+  await expect(page.locator('[data-status="incomplete"]')).toHaveCount(0)
+  await select.click()
+  const list = page.getByRole('listbox', { name: 'Game Model' })
+  await expect(list.getByRole('option', { name: /Sholef/ })).toBeVisible()
+  await expect(list.getByRole('option', { name: /Seara|KamAZ/ })).toHaveCount(0)
+  await list.getByRole('option', { name: /Mods and DLC/ }).click()
+  await page.getByPlaceholder('Search weapons or mods…').fill('S.O.G.')
+  await expect(page.getByRole('dialog').getByText(/M2 \(60 mm\)|M29|M101|D-44|H-12|Type 53|Type 63/)).toHaveCount(0)
+  await page.getByPlaceholder('Search weapons or mods…').fill('HIMARS')
+  await expect(page.getByRole('dialog').getByText('M142 HIMARS (227 mm)')).toBeVisible()
   expect(errors).toEqual([])
 })
 

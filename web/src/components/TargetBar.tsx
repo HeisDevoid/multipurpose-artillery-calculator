@@ -1,6 +1,7 @@
 import { t } from '../i18n'
 import { useRef, useState } from 'react'
 
+import { isAvailableModel } from '../data/artillery/tables'
 import { isModelId, models } from '../data/models'
 import { recentEntries, type JournalEntry } from '../lib/journal'
 import type { JournalActions } from '../lib/journalIO'
@@ -87,7 +88,7 @@ export function TargetBar({ entries, activeId, onLoad, actions }: Props) {
               type="button"
               role="listitem"
               aria-current={active ? 'true' : undefined}
-              disabled={!isModelId(entry.modelId)}
+              disabled={!isAvailableModel(entry.modelId)}
               onClick={() => onLoad(entry)}
               className={[
                 'shrink-0 cursor-pointer rounded-lg px-3 py-1.5 text-left transition-colors',

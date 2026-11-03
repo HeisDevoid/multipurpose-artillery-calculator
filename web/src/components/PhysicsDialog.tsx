@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { t } from '../i18n'
 import { setFeature, useFeature } from '../lib/features'
 import { markPhysicsAsked, physicsAsked, setPanel, tourDone, usePanel } from '../lib/uiPanels'
+import { AceMenuDemo, AsteriskDemo } from './AceTableDemo'
 import { FieldIcon } from './FieldIcon'
 
 /**
@@ -65,6 +66,14 @@ export function PhysicsDialog() {
             <b className="w-4 shrink-0 text-app-text">1</b>
             {t('physics.step1')}
           </li>
+        </ol>
+
+        {/* Как в игре: меню ACE на себя, пункт с названием орудия, таблица */}
+        <div className="mt-3 overflow-hidden rounded-lg ring-1 ring-app-line-strong">
+          <AceMenuDemo />
+        </div>
+
+        <ol start={2} className="mt-4 space-y-2 text-[14px] leading-relaxed text-app-text-2">
           <li className="flex gap-2.5">
             <b className="w-4 shrink-0 text-app-text">2</b>
             {t('physics.step2')}
@@ -75,16 +84,16 @@ export function PhysicsDialog() {
           </li>
         </ol>
 
-        {/* Без ACE листа нет, а у артиллерии в обычной Arma 3 сопротивления воздуха нет */}
+        {/* Пункт меню со звёздочкой и без, и что тогда в таблице */}
+        <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+          <AsteriskSample withAir={false} />
+          <AsteriskSample withAir />
+        </div>
+
+        {/* Без ACE таблицы нет, а у артиллерии в обычной Arma 3 сопротивления воздуха нет */}
         <p className="mt-3 rounded-md bg-app-raised px-3 py-2 text-[13px] leading-relaxed text-app-text-2">
           {t('physics.no-ace')}
         </p>
-
-        {/* Как это выглядит на листе: со звёздочкой и с поправками / без */}
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-          <SheetSample withPhysics />
-          <SheetSample withPhysics={false} />
-        </div>
 
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
           <button type="button" onClick={() => answer(true)} className="btn btn-primary h-auto min-w-0 py-2 whitespace-normal">
@@ -113,30 +122,15 @@ function closePhysics() {
   if (!tourDone()) window.setTimeout(() => setPanel('tour', true), 400)
 }
 
-/** Шапка листа таблицы стрельбы и одна строка: так видно разницу. */
-function SheetSample({ withPhysics }: { withPhysics: boolean }) {
-  const cells = withPhysics ? ['0.4', '-6.2', '5.7', '-1.1'] : ['-', '-', '-', '-']
+/** Пункт меню ACE со звёздочкой или без и таблица за ним: так видно разницу. */
+function AsteriskSample({ withAir }: { withAir: boolean }) {
   return (
-    <div className="rounded-lg bg-app-raised p-3">
-      <p className={`text-[12px] font-semibold ${withPhysics ? 'text-ok' : 'text-app-muted'}`}>
-        {withPhysics ? t('physics.with') : t('physics.without')}
+    <div className="rounded-lg bg-app-raised p-2.5">
+      <p className={`mb-2 text-[12px] font-semibold ${withAir ? 'text-ok' : 'text-app-muted'}`}>
+        {withAir ? t('physics.with') : t('physics.without')}
       </p>
-      <div className="mt-2 rounded-md bg-[#ece6d6] px-2.5 py-2 font-mono text-[12px] leading-snug text-[#2b2a26]">
-        <p className="font-semibold">
-          M252 81mm Mortar
-          {withPhysics && (
-            <span className="ml-0.5 rounded-sm bg-warn/70 px-0.5 text-[13px] text-black">*</span>
-          )}
-        </p>
-        <p className="mt-1 flex gap-2 tabular-nums">
-          <span>1000</span>
-          <span>1333</span>
-          {cells.map((cell, index) => (
-            <span key={index} className={withPhysics ? 'font-semibold' : 'opacity-60'}>
-              {cell}
-            </span>
-          ))}
-        </p>
+      <div className="overflow-hidden rounded-md">
+        <AsteriskDemo withAir={withAir} />
       </div>
     </div>
   )

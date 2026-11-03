@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 
 import { ArtilleryCalculator } from '../components/ArtilleryCalculator'
 import { ModelSelector } from '../components/ModelSelector'
-import { useTables } from '../data/artillery/tables'
+import { isAvailableModel, useTables } from '../data/artillery/tables'
 import { TargetBar } from '../components/TargetBar'
-import { isModelId, type ModelId } from '../data/models'
+import type { ModelId } from '../data/models'
 import { onHotkey } from '../lib/desktop'
 import { downloadJournal, importJournalFile, type JournalActions } from '../lib/journalIO'
 import {
@@ -63,7 +63,7 @@ export function DashboardPage({
 
   // Загрузка записи журнала: переключаем модель и восстанавливаем вводные.
   function handleLoad(entry: JournalEntry) {
-    if (!isModelId(entry.modelId)) return
+    if (!isAvailableModel(entry.modelId)) return
 
     if (entry.modelId !== selectedModel) onModelChange(entry.modelId)
     setActiveId(entry.id)
@@ -77,7 +77,7 @@ export function DashboardPage({
   // Переключение сохранённых целей: N / P в окне, Ctrl+Alt+N / P в игре
   function cycleTarget(direction: 1 | -1) {
     const list = recentEntries(journal.entries).filter((e) =>
-      isModelId(e.modelId)
+      isAvailableModel(e.modelId)
     )
     const next = neighbourEntry(list, activeId, direction)
     if (next) handleLoad(next)
