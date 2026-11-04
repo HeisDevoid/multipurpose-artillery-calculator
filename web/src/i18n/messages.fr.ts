@@ -1,6 +1,7 @@
 import type { ru } from './messages'
 
 export const fr: Record<keyof typeof ru, string> = {
+  "footer.donate-hint": "Participer au domaine du site",
   "settings.physics-why": "Influe sur tous les éléments de tir.",
   "settingsPage.weather-ballistics": "Astérisque * dans le menu ACE",
   "settingsPage.weather-ballistics-description": "Passe à d’autres tables et ajoute les corrections de vent, température et pression.",
@@ -151,8 +152,6 @@ export const fr: Record<keyof typeof ru, string> = {
   "settingsPage.motion-switches": "Commutateurs coulissants",
   "settingsPage.motion-appear": "Fenêtres et panneaux en fondu",
   "settingsPage.motion-smooth": "Transitions fluides",
-  "footer.author-steam": "Steam de l’auteur",
-  "footer.author-github": "GitHub de l’auteur",
   "settingsPage.animations": "Animations",
   "footer.report-hint": "Un bug ou une idée ?",
   "artilleryCalculator.priority-best": "Priorité : optimal (équilibre entre rapidité et précision)",

@@ -13,11 +13,11 @@ import type { Language, Theme } from '../types/settings'
 const REPO_URL =
   'https://github.com/HeisDevoid/multipurpose-artillery-calculator'
 
-// Страница автора на GitHub
-const AUTHOR_URL = 'https://github.com/HeisDevoid'
+// Профиль автора в Steam: на него ведёт ник в «О программе»
+const AUTHOR_STEAM_URL = 'https://steamcommunity.com/id/Aron_Heis/'
 
-// Профиль автора в Steam
-const AUTHOR_STEAM_URL: string | null = 'https://steamcommunity.com/id/Aron_Heis/'
+// Страница Buy Me a Coffee (поддержать проект). null: пункта нет
+const DONATE_URL: string | null = null
 
 // Релизы с установщиком программы для ПК
 const RELEASES_URL = `${REPO_URL}/releases`
@@ -238,42 +238,14 @@ function AboutButton() {
             Multipurpose Artillery Calculator
           </p>
 
-          {/* Автор: ник и ссылки на его профили справа */}
-          <div className="flex items-center gap-3 rounded-lg px-2.5 py-2">
-            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-app-raised-hover text-app-text">
-              <FieldIcon name="user" className="h-[18px] w-[18px]" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block break-words text-app-text">Heis</span>
-              <span className="block break-words text-[12px] text-app-muted">
-                {t('footer.author-on-github')}
-              </span>
-            </span>
-            {AUTHOR_STEAM_URL && (
-              <a
-                href={AUTHOR_STEAM_URL}
-                target="_blank"
-                rel="noreferrer"
-                title={t('footer.author-steam')}
-                aria-label={t('footer.author-steam')}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-app-muted transition-colors hover:bg-app-raised-hover hover:text-app-text"
-              >
-                <FieldIcon name="steam" className="h-[18px] w-[18px]" />
-              </a>
-            )}
-            <a
-              href={AUTHOR_URL}
-              target="_blank"
-              rel="noreferrer"
-              title={t('footer.author-github')}
-              aria-label={t('footer.author-github')}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-app-muted transition-colors hover:bg-app-raised-hover hover:text-app-text"
-            >
-              <GithubMark />
-            </a>
-          </div>
-
           {[
+            // Автор: ник ведёт в его профиль Steam
+            {
+              href: AUTHOR_STEAM_URL,
+              title: 'Heis',
+              text: t('footer.author-on-github'),
+              icon: <FieldIcon name="steam" className="h-[18px] w-[18px]" />,
+            },
             {
               href: REPO_URL,
               title: t('footer.project-on-github'),
@@ -286,6 +258,17 @@ function AboutButton() {
               text: t('footer.report-hint'),
               icon: <FieldIcon name="help" className="h-4 w-4" />,
             },
+            // Поддержать проект (например, на домен): пункт виден, когда задана ссылка
+            ...(DONATE_URL
+              ? [
+                  {
+                    href: DONATE_URL,
+                    title: 'Buy Me a Coffee',
+                    text: t('footer.donate-hint'),
+                    icon: <FieldIcon name="coffee" className="h-[18px] w-[18px]" />,
+                  },
+                ]
+              : []),
           ].map((item) => (
             <a
               key={item.href}

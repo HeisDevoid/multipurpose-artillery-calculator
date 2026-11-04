@@ -1,6 +1,7 @@
 import type { ru } from './messages'
 
 export const de: Record<keyof typeof ru, string> = {
+  "footer.donate-hint": "Für die Domain der Website",
   "settings.physics-why": "Wirkt sich auf alle Werte aus.",
   "settingsPage.weather-ballistics": "Sternchen * im ACE-Menü",
   "settingsPage.weather-ballistics-description": "Schaltet auf andere Tabellen um und ergänzt Korrekturen für Wind, Temperatur und Luftdruck.",
@@ -151,8 +152,6 @@ export const de: Record<keyof typeof ru, string> = {
   "settingsPage.motion-switches": "Gleitende Umschalter",
   "settingsPage.motion-appear": "Fenster und Panels blenden ein",
   "settingsPage.motion-smooth": "Weiche Übergänge",
-  "footer.author-steam": "Steam des Autors",
-  "footer.author-github": "GitHub des Autors",
   "settingsPage.animations": "Animationen",
   "footer.report-hint": "Fehler gefunden oder eine Idee?",
   "artilleryCalculator.priority-best": "Priorität: beste (Balance aus Tempo und Präzision)",

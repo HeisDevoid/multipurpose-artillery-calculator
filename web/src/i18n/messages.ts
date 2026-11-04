@@ -4,6 +4,7 @@
  * версии: тест следит, чтобы ключи и подстановки у языков совпадали.
  */
 export const ru = {
+  "footer.donate-hint": "Скинуться на домен для сайта",
   "settings.physics-why": "Влияет на все установки.",
   "settingsPage.weather-ballistics": "В меню ACE есть звёздочка *",
   "settingsPage.weather-ballistics-description": "Включает другие таблицы и поправки на ветер, температуру и давление.",
@@ -154,8 +155,6 @@ export const ru = {
   "settingsPage.motion-switches": "Скользящие переключатели",
   "settingsPage.motion-appear": "Появление окон и плашек",
   "settingsPage.motion-smooth": "Плавные переходы",
-  "footer.author-steam": "Steam автора",
-  "footer.author-github": "GitHub автора",
   "settingsPage.animations": "Анимации",
   "footer.report-hint": "Нашли ошибку или есть идея?",
   "artilleryCalculator.priority-best": "Приоритет: лучший (золотая середина по скорости и точности)",
@@ -706,6 +705,7 @@ export const ru = {
 } as const
 
 export const en: Record<keyof typeof ru, string> = {
+  "footer.donate-hint": "Chip in for the site domain",
   "settings.physics-why": "Affects every solution.",
   "settingsPage.weather-ballistics": "Asterisk * in the ACE menu",
   "settingsPage.weather-ballistics-description": "Switches to other tables and adds wind, temperature and pressure corrections.",
@@ -856,8 +856,6 @@ export const en: Record<keyof typeof ru, string> = {
   "settingsPage.motion-switches": "Sliding switches",
   "settingsPage.motion-appear": "Windows and panels fading in",
   "settingsPage.motion-smooth": "Smooth transitions",
-  "footer.author-steam": "Author’s Steam",
-  "footer.author-github": "Author’s GitHub",
   "settingsPage.animations": "Animations",
   "footer.report-hint": "Found a bug or have an idea?",
   "artilleryCalculator.priority-best": "Priority: best (a balance of speed and precision)",

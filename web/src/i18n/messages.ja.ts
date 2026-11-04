@@ -1,6 +1,7 @@
 import type { ru } from './messages'
 
 export const ja: Record<keyof typeof ru, string> = {
+  "footer.donate-hint": "サイトのドメイン代に",
   "settings.physics-why": "すべての諸元に影響します。",
   "settingsPage.weather-ballistics": "ACE メニューに * がある",
   "settingsPage.weather-ballistics-description": "別の射表に切り替え、風・気温・気圧の補正を加えます。",
@@ -151,8 +152,6 @@ export const ja: Record<keyof typeof ru, string> = {
   "settingsPage.motion-switches": "スライドする切替",
   "settingsPage.motion-appear": "ウィンドウとパネルのフェードイン",
   "settingsPage.motion-smooth": "滑らかな遷移",
-  "footer.author-steam": "作者のSteam",
-  "footer.author-github": "作者のGitHub",
   "settingsPage.animations": "アニメーション",
   "footer.report-hint": "不具合やアイデアはありますか？",
   "artilleryCalculator.priority-best": "優先：最良（速度と精度のバランス）",

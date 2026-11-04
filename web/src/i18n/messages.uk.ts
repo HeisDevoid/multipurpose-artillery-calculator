@@ -1,6 +1,7 @@
 import type { ru } from './messages'
 
 export const uk: Record<keyof typeof ru, string> = {
+  "footer.donate-hint": "Скинутися на домен для сайту",
   "settings.physics-why": "Впливає на всі установки.",
   "settingsPage.weather-ballistics": "У меню ACE є зірочка *",
   "settingsPage.weather-ballistics-description": "Вмикає інші таблиці й поправки на вітер, температуру й тиск.",
@@ -151,8 +152,6 @@ export const uk: Record<keyof typeof ru, string> = {
   "settingsPage.motion-switches": "Плавні перемикачі",
   "settingsPage.motion-appear": "Плавна поява вікон і панелей",
   "settingsPage.motion-smooth": "Плавні переходи",
-  "footer.author-steam": "Steam автора",
-  "footer.author-github": "GitHub автора",
   "settingsPage.animations": "Анімації",
   "footer.report-hint": "Знайшли помилку або маєте ідею?",
   "artilleryCalculator.priority-best": "Пріоритет: кращий (баланс швидкості й точності)",

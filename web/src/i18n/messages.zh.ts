@@ -1,6 +1,7 @@
 import type { ru } from './messages'
 
 export const zh: Record<keyof typeof ru, string> = {
+  "footer.donate-hint": "为网站域名出一份力",
   "settings.physics-why": "影响所有诸元。",
   "settingsPage.weather-ballistics": "ACE 菜单中有 *",
   "settingsPage.weather-ballistics-description": "切换到另一套射表，并加入风、温度和气压修正。",
@@ -151,8 +152,6 @@ export const zh: Record<keyof typeof ru, string> = {
   "settingsPage.motion-switches": "滑动开关",
   "settingsPage.motion-appear": "窗口与面板淡入",
   "settingsPage.motion-smooth": "平滑过渡",
-  "footer.author-steam": "作者的 Steam",
-  "footer.author-github": "作者的 GitHub",
   "settingsPage.animations": "动画",
   "footer.report-hint": "发现错误或有想法？",
   "artilleryCalculator.priority-best": "优先：最佳（速度与精度的平衡）",
