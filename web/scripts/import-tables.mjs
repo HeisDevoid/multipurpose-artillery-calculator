@@ -5,7 +5,7 @@
  *   node scripts/import-tables.mjs <папка-источник> <json> [--profile default] [--check]
  *   node scripts/import-tables.mjs --all [--check]
  *
- * Папка содержит файлы <РЕЖИМ>-<заряд>.txt (см. data-sources/README.md).
+ * Папка содержит файлы <РЕЖИМ>-<заряд>.txt.
  * Скрипт заменяет profiles.<profile>.modes / columns / units в JSON,
  * остальные поля справочника не трогает.
  *

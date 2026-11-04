@@ -1,50 +1,93 @@
-# Multipurpose Artillery Calculator
+<p align="center">
+  <img src=".github/assets/banner.png" alt="Artillery Calculator · Arma 3 · ACE3" width="100%">
+</p>
 
-[![License](https://img.shields.io/github/license/spanoproandrei2245-bit/multipurpose-artillery-calculator?style=for-the-badge)](./LICENSE)
-![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Rust](https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white)
-![Tauri](https://img.shields.io/badge/tauri-%2324C8DB.svg?style=for-the-badge&logo=tauri&logoColor=%23FFFFFF)
-![Arma 3](https://img.shields.io/badge/Arma_3-ACE3-6b7b4b?style=for-the-badge)
+<p align="center">
+  Firing calculator for mortars, howitzers and rocket artillery in Arma 3 with ACE3.<br>
+  Elevation, azimuth, charge and time of flight from the range tables of the game.
+</p>
 
-Calculator for elevation, azimuth and charge (and more) for mortars and artillery in [Arma 3](https://arma3.com) with [ACE3](https://ace3.acemod.org).
+<p align="center">
+  <a href="https://heisdevoid.github.io/multipurpose-artillery-calculator/"><b>Open the website</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/HeisDevoid/multipurpose-artillery-calculator/releases/latest"><b>Download for Windows</b></a>
+</p>
 
-Калькулятор стрельбы для Arma 3 + ACE3, на русском и английском.
+<h2 align="center">Frontend</h2>
 
-| Branch    | multipurpose-artillery-calculator                                                                                                                  |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `main`    | [spanoproandrei2245-bit.github.io/multipurpose-artillery-calculator](https://spanoproandrei2245-bit.github.io/multipurpose-artillery-calculator/) |
-| `develop` | in development                                                                                                                                     |
+<p align="center">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white" alt="PWA">
+</p>
 
-Weapons: Mk6, M252, M29, M2, M101, M5 Sandstorm (Seara). Works in the browser, installs on a phone and runs as a Windows app with an overlay on top of the game. A fire direction computer can share the solution, map markers and a time on target with gunners in real time.
+<h2 align="center">Desktop</h2>
 
-## Download
+<p align="center">
+  <img src="https://img.shields.io/badge/Tauri-24C8DB?style=for-the-badge&logo=tauri&logoColor=white" alt="Tauri">
+  <img src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white" alt="Rust">
+</p>
 
-The Windows installer is on the [Releases](../../releases) page. To get it on a phone, open the website and pick "Add to Home screen" in the browser menu.
+<h2 align="center">Link &amp; Tools</h2>
 
-## Development
+<p align="center">
+  <img src="https://img.shields.io/badge/MQTT-660066?style=for-the-badge&logo=mqtt&logoColor=white" alt="MQTT">
+  <img src="https://img.shields.io/badge/Node.js-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white" alt="Vitest">
+  <img src="https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0iI2ZmZiIgZD0iTTcgNC41djE1bDEyLjUtNy41eiIvPjwvc3ZnPg%3D%3D" alt="Playwright">
+  <img src="https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white" alt="ESLint">
+  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions">
+</p>
+
+## How to use
+
+**Website.** Open [heisdevoid.github.io/multipurpose-artillery-calculator](https://heisdevoid.github.io/multipurpose-artillery-calculator/) in any modern browser. On a phone, pick “Add to Home Screen” (or “Install app”) in the browser menu: the calculator installs like an app and works offline.
+
+**Windows app.** Download `ArtilleryCalculator_<version>_x64-setup.exe` from [the latest release](https://github.com/HeisDevoid/multipurpose-artillery-calculator/releases/latest) and run it. The app shows an overlay on top of the game, has global hotkeys and updates itself. The installer is not code-signed yet, so Windows SmartScreen may warn you: click “More info”, then “Run anyway”.
+
+## Build from source
+
+You need [Node.js](https://nodejs.org) 22 or newer and [Git](https://git-scm.com).
 
 ```bash
-cd web
+git clone https://github.com/HeisDevoid/multipurpose-artillery-calculator.git
+cd multipurpose-artillery-calculator/web
 npm install
 npm run maps:pull
 npm run dev
 ```
 
-Maps (~100 MB) are not in the main history: they live in the `maps` branch (a single commit that is replaced on every update). `npm run maps:pull` downloads them into `web/public/maps`, `npm run maps:publish` replaces the branch with your local maps.
+`npm run dev` starts the site at `http://localhost:5173`. `npm run maps:pull` downloads the built-in maps from the `maps` branch: they are kept out of the main history because of their size.
 
-`npm test` runs the tests, `npm run test:e2e` runs browser smoke tests against the built site (`npm run build` first; `npx playwright install chromium` once), `npm run build` builds the site, `npm run desktop:build` builds the Windows app (needs [Rust](https://rustup.rs) and Visual Studio C++ Build Tools).
+| Command | What it does |
+| --- | --- |
+| `npm run build` | Builds the website into `web/dist` |
+| `npm test` | Unit tests (Vitest) |
+| `npm run test:e2e` | Browser tests against the built site (run `npx playwright install chromium` once) |
+| `npm run desktop:build` | Builds the Windows installer into `web/src-tauri/target/release/bundle/nsis` |
 
-## Adding a weapon
+The Windows app also needs [Rust](https://rustup.rs) and the [Visual Studio C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
 
-Range tables are copied by hand from screenshots of the ACE tables in game into `web/data-sources/<weapon>/`, then `npm run tables:import` turns them into JSON. The file format is in [web/data-sources/README.md](web/data-sources/README.md).
+## Special thanks
 
-## Adding a map
+- [ACE3](https://github.com/acemod/ACE3): its artillery range tables are what the calculator is built on.
+- [grad_meh](https://github.com/gruppe-adler/grad_meh) by Gruppe Adler: satellite images, heights and roads of the built-in maps come from its exports.
 
-Export the terrain with the [grad_meh](https://github.com/gruppe-adler/grad_meh) mod, then run `npm run maps:import "<Arma 3>/grad_meh/<map>"` in `web/`. It writes satellite tiles, heights and the vector layer to `web/public/maps/<map>/`; publish with `npm run maps:publish`. Map imagery © its authors, used with permission.
+Map imagery belongs to Bohemia Interactive and the map authors, used with permission.
+
+## Stats
+
+<div align="center">
+
+| Program | Website | Repository |
+| :---: | :---: | :---: |
+| <img src="https://img.shields.io/github/downloads/HeisDevoid/multipurpose-artillery-calculator/total?style=for-the-badge&label=downloads&labelColor=000000&color=222222" alt="Downloads"> | <img src="https://img.shields.io/website?url=https%3A%2F%2Fheisdevoid.github.io%2Fmultipurpose-artillery-calculator%2F&style=for-the-badge&label=website&labelColor=000000&up_message=online&up_color=222222" alt="Website"> | <img src="https://hits.sh/github.com/HeisDevoid/multipurpose-artillery-calculator.svg?style=for-the-badge&label=views&color=222222&labelColor=000000" alt="Views"> |
+| <img src="https://img.shields.io/github/v/release/HeisDevoid/multipurpose-artillery-calculator?style=for-the-badge&label=version&labelColor=000000&color=222222" alt="Version"> | | <img src="https://img.shields.io/github/stars/HeisDevoid/multipurpose-artillery-calculator?style=for-the-badge&labelColor=000000&color=222222" alt="Stars"> |
+
+</div>
 
 ## License
 
-[MIT](LICENSE) · made by Heis
+[MIT](LICENSE) © [HeisDevoid](https://github.com/HeisDevoid)

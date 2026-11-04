@@ -7,7 +7,7 @@
 
     powershell -ExecutionPolicy Bypass -File tools/arma/capture_screen.ps1 -OutDir D:\gradphoto
 
-  Stops by itself on GRADPHOTO|END. See tools/arma/README.md.
+  Stops by itself on GRADPHOTO|END.
 #>
 param(
   [string]$OutDir = 'D:\gradphoto',
