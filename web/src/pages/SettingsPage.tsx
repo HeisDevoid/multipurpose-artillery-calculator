@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 
 import { wakeLockSupported } from '../lib/useWakeLock'
 import { OpenOnPhone } from '../components/OpenOnPhone'
+import { DEV_BUILD } from '../lib/devBuild'
 import { GLOBAL_HOTKEYS, isDesktop, toggleOverlay } from '../lib/desktop'
 import { SettingsCard } from '../components/SettingsCard'
 import { SoundSettings } from '../components/SoundSettings'
@@ -251,7 +252,7 @@ export function SettingsPage({
             id="settings-physics"
             icon="wind"
             title={t('settings.physics-section')}
-            description={t('physics.why')}
+            description={t('settings.physics-why')}
             defaultOpen
           >
               <FeaturePreview id="weather">
@@ -370,6 +371,9 @@ export function SettingsPage({
                 }
               />
               </FeaturePreview>
+              {/* Экспериментальные функции: только в сборке для разработки */}
+              {DEV_BUILD && (
+              <>
               <FeaturePreview id="screenMarkers">
               <Switch
                 checked={showScreenMarkers}
@@ -389,6 +393,8 @@ export function SettingsPage({
                 description={t('settings.gridInputDescription')}
               />
               </FeaturePreview>
+              </>
+              )}
           </Card>
         </div>
       </div>

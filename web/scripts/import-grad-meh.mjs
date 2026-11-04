@@ -266,6 +266,8 @@ for (const source of sources) {
   // Вид карты (DLC, мод) размечается в index.json руками: по автору не отличить
   // DLC от базовой игры, а карты модов бывают с автором Bohemia (Черноруссия из CUP)
   if (previous?.kind) entry.kind = previous.kind
+  // Автор тоже правится руками: важно, из какого мода карта (Черноруссия: CUP)
+  if (previous?.author) entry.author = previous.author
   index.maps = [...index.maps.filter((m) => m.world !== entry.world), entry].sort(
     (a, b) => a.displayName.localeCompare(b.displayName)
   )

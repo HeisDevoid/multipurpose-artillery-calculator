@@ -96,11 +96,13 @@ test('орудий без обоих наборов таблиц в выборе
   // У M2 (S.O.G.) нет таблиц без сопротивления воздуха: сохранённый выбор сменяется на Mk6
   const errors = await open(page, '/', { selectedModel: 'm2' })
   const select = page.getByRole('button', { name: 'Game Model' })
-  await expect(select).toContainText('Mk6 (82 mm)')
+  // На кнопке название без калибра, калибр виден в раскрытом списке
+  await expect(select).toHaveText('Mk6')
   await expect(page.locator('[data-status="incomplete"]')).toHaveCount(0)
   await select.click()
   const list = page.getByRole('listbox', { name: 'Game Model' })
   await expect(list.getByRole('option', { name: /Sholef/ })).toBeVisible()
+  await expect(list.getByRole('option', { name: /Mk6 \(82 mm\)/ })).toBeVisible()
   await expect(list.getByRole('option', { name: /Seara|KamAZ/ })).toHaveCount(0)
   await list.getByRole('option', { name: /Mods and DLC/ }).click()
   await page.getByPlaceholder('Search weapons or mods…').fill('S.O.G.')

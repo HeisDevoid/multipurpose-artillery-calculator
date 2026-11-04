@@ -75,18 +75,11 @@ The Windows app also needs [Rust](https://rustup.rs) and the [Visual Studio C++ 
 - [ACE3](https://github.com/acemod/ACE3): its artillery range tables are what the calculator is built on.
 - [grad_meh](https://github.com/gruppe-adler/grad_meh) by Gruppe Adler: satellite images, heights and roads of the built-in maps come from its exports.
 
-Map imagery belongs to Bohemia Interactive and the map authors, used with permission.
-
 ## Stats
 
-<div align="center">
-
-| Program | Website | Repository |
-| :---: | :---: | :---: |
-| <img src="https://img.shields.io/github/downloads/HeisDevoid/multipurpose-artillery-calculator/total?style=for-the-badge&label=downloads&labelColor=000000&color=222222" alt="Downloads"> | <img src="https://img.shields.io/website?url=https%3A%2F%2Fheisdevoid.github.io%2Fmultipurpose-artillery-calculator%2F&style=for-the-badge&label=website&labelColor=000000&up_message=online&up_color=222222" alt="Website"> | <img src="https://hits.sh/github.com/HeisDevoid/multipurpose-artillery-calculator.svg?style=for-the-badge&label=views&color=222222&labelColor=000000" alt="Views"> |
-| <img src="https://img.shields.io/github/v/release/HeisDevoid/multipurpose-artillery-calculator?style=for-the-badge&label=version&labelColor=000000&color=222222" alt="Version"> | | <img src="https://img.shields.io/github/stars/HeisDevoid/multipurpose-artillery-calculator?style=for-the-badge&labelColor=000000&color=222222" alt="Stars"> |
-
-</div>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/HeisDevoid/multipurpose-artillery-calculator/stats/stats.svg" alt="Downloads of the Windows installer and update checks by installed apps, by version" width="100%">
+</p>
 
 ## License
 

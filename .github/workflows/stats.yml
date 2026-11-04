@@ -1,0 +1,43 @@
+name: Stats
+
+# Картинка со статистикой для README: раз в сутки и вручную. Кладётся в ветку
+# stats (один коммит, перезаписывается), README берёт её оттуда.
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stats
+  cancel-in-progress: true
+
+jobs:
+  stats:
+    name: Render stats
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/stats
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Render
+        run: node .github/stats/render.mjs out/stats.svg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to the stats branch
+        working-directory: out
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git init -q -b stats
+          git add stats.svg
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "stats"
+          git push -q --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" stats:stats
