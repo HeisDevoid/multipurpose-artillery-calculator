@@ -6,7 +6,7 @@ import { FieldIcon } from './FieldIcon'
 import { SectionHeading } from './FormControls'
 
 const ISSUES_URL =
-  'https://github.com/spanoproandrei2245-bit/multipurpose-artillery-calculator/issues/new/choose'
+  'https://github.com/HeisDevoid/multipurpose-artillery-calculator/issues/new/choose'
 
 // Вопрос и ответ: help.q<n> / help.a<n>
 // Первым — главное: есть ли на сервере физика снаряда

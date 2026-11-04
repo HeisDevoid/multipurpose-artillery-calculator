@@ -5,7 +5,7 @@ import { errorReport, recordError, type ErrorEntry } from '../lib/errorLog'
 import { FieldIcon } from './FieldIcon'
 
 const ISSUES_URL =
-  'https://github.com/spanoproandrei2245-bit/multipurpose-artillery-calculator/issues/new'
+  'https://github.com/HeisDevoid/multipurpose-artillery-calculator/issues/new'
 
 interface Props {
   // Где стоит граница: попадает в отчёт

@@ -18,7 +18,7 @@ export const SYNC_ROLES: readonly SyncRole[] = ['computer', 'gunner']
 
 /** Опубликованный сайт: ссылка-приглашение из программы для ПК ведёт сюда. */
 export const PUBLIC_SITE_URL =
-  'https://spanoproandrei2245-bit.github.io/multipurpose-artillery-calculator/'
+  'https://heisdevoid.github.io/multipurpose-artillery-calculator/'
 
 /** Публичные брокеры MQTT через WebSocket (без регистрации). */
 export const SYNC_SERVERS = [

@@ -144,7 +144,7 @@ test('зоны по рельефу: кнопки на карте и легенд
 
 test('при первом запуске спрашивает про физику на сервере, ответ включает погоду', async ({ page }) => {
   const errors = await open(page, '/', { physicsAsked: '' })
-  const dialog = page.getByRole('dialog', { name: /Important: does the server have air resistance/ })
+  const dialog = page.getByRole('dialog', { name: /Important: does your game have air resistance/ })
   await expect(dialog).toBeVisible()
   await dialog.getByRole('button', { name: /Mine has the asterisk/ }).click()
   await expect(dialog).toBeHidden()
