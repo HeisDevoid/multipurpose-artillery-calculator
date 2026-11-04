@@ -245,42 +245,41 @@ export function Switch({
   description?: ReactNode
   disabled?: boolean
 }) {
+  // Переключает только сам тумблер (с запасом под палец), а не вся строка:
+  // на телефоне при прокрутке легко задеть подпись или описание
   return (
-    <label
-      className={[
-        'flex items-start justify-between gap-4',
-        disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
-      ].join(' ')}
-    >
+    <div className={['flex items-start justify-between gap-4', disabled ? 'opacity-50' : ''].join(' ')}>
       <span className="min-w-0">
         <span className="block text-[15px] leading-snug font-medium text-app-text">{label}</span>
         {description && (
           <span className="mt-1 block text-[13px] leading-relaxed text-app-muted">{description}</span>
         )}
       </span>
-      <input
-        type="checkbox"
+      <button
+        type="button"
         role="switch"
-        checked={checked}
+        aria-checked={checked}
+        aria-label={label}
         disabled={disabled}
-        onChange={(event) => onChange(event.target.checked)}
-        className="peer sr-only"
-      />
-      <span
-        aria-hidden="true"
-        className={[
-          'relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent-solid',
-          checked ? 'bg-accent-solid' : 'bg-app-raised-hover',
-        ].join(' ')}
+        onClick={() => onChange(!checked)}
+        className="-m-2 shrink-0 cursor-pointer rounded-full p-2 focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent-solid disabled:cursor-not-allowed"
       >
         <span
+          aria-hidden="true"
           className={[
-            'absolute h-5 w-5 rounded-full bg-white shadow transition-all',
-            checked ? 'left-[22px]' : 'left-[2px]',
+            'relative mt-0.5 inline-flex h-6 w-11 items-center rounded-full transition-colors',
+            checked ? 'bg-accent-solid' : 'bg-app-raised-hover',
           ].join(' ')}
-        />
-      </span>
-    </label>
+        >
+          <span
+            className={[
+              'absolute h-5 w-5 rounded-full bg-white shadow transition-all',
+              checked ? 'left-[22px]' : 'left-[2px]',
+            ].join(' ')}
+          />
+        </span>
+      </button>
+    </div>
   )
 }
 
@@ -314,7 +313,9 @@ export function Row({
           {htmlFor ? <label htmlFor={htmlFor}>{label}</label> : label}
         </span>
       </dt>
-      <dd className="flex min-w-0 items-center justify-end gap-2">
+      {/* Поля единой ширины не сжимаются: длинная подпись переносится, а поля
+          во всех строках начинаются на одной линии */}
+      <dd className={['flex items-center justify-end gap-2', control ? 'shrink-0' : 'min-w-0'].join(' ')}>
         {control ? (
           <>
             <div

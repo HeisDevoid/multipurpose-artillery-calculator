@@ -137,11 +137,12 @@ describe('bundled tables', () => {
                 expect(rows[i][4]).toBeGreaterThan(0)
                 if (i === 0) continue
                 // HIGH: с ростом дальности возвышение падает,
-                // LOW: растёт.
+                // LOW: растёт. На дальних дистанциях игра округляет до
+                // целого мила, и соседние строки бывают равны.
                 if (mode === 'HIGH') {
-                  expect(rows[i][1]).toBeLessThan(rows[i - 1][1])
+                  expect(rows[i][1]).toBeLessThanOrEqual(rows[i - 1][1])
                 } else {
-                  expect(rows[i][1]).toBeGreaterThan(rows[i - 1][1])
+                  expect(rows[i][1]).toBeGreaterThanOrEqual(rows[i - 1][1])
                 }
               }
             })

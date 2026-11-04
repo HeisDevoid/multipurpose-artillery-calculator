@@ -20,6 +20,18 @@ import {
 import { readStoredText, writeStored } from '../lib/input'
 import { sampleProfile, type TerrainProfile } from '../lib/terrainClearance'
 import {
+  COVERAGE_RGB,
+  computeCoverageRays,
+  coverageRayCount,
+  isWater,
+  nearestGoodSpot,
+  pointStatus,
+  type Coverage,
+  type CoverageInput,
+  type CoverageRay,
+} from '../lib/coverage'
+import { contourInterval, drawDemContours } from '../lib/contours'
+import {
   drawVector,
   loadVector,
   TOPO_PAPER,
@@ -70,6 +82,7 @@ import { MAPS_BASE } from '../lib/builtinMaps'
 import { ScreenMarkers } from './ScreenMarkers'
 import { CoordinatePlate } from './map/CoordinatePlate'
 import { DrawToolbar, type DrawTool } from './map/DrawToolbar'
+import { CoveragePanel, type CoverageMode } from './map/CoveragePanel'
 import { MapGlyph } from './map/MapGlyph'
 import { MapQualityBadge } from './map/MapQualityBadge'
 import { colorName, markerTitle } from './map/mapLabels'
@@ -121,9 +134,15 @@ interface Props {
   shellType?: string
   // Рельеф по прямой от орудия к цели: для проверки, не упрётся ли снаряд в гору
   onTerrainProfile?: (profile: TerrainProfile | null) => void
+  // Опасное место на линии огня для текущего решения: снаряд идёт впритык
+  // к рельефу или упирается в него; at — расстояние от орудия, м
+  terrainHit?: { status: 'tight' | 'blocked'; at: number; min: number } | null
   // Огонь по линии: возвышение в точку при этой дальности и разнице высот
   // (цель минус орудие) тем же способом, что и основной расчёт
   solveLine?: (distance: number, heightDiff: number) => { elevation: number; charge: number } | null
+  // Меняется, когда меняется способ выстрела (орудие, снаряд, траектория, заряд, погода):
+  // по нему пересчитываются зоны досягаемости на карте
+  solveKey?: string
   // Орудие закреплено на карте (true) или освобождено (false); высота —
   // высота орудия в точке, м, если известна
   onGunLockChange?: (locked: boolean, height: number | null) => void
@@ -232,7 +251,9 @@ export function MapPicker({
   shellType = 'HE',
   onGunLockChange,
   solveLine,
+  solveKey = '',
   onTerrainProfile,
+  terrainHit = null,
 }: Props) {
   const ru = language === 'ru'
   const unitM = t('unit.m')
@@ -263,6 +284,12 @@ export function MapPicker({
 
   // Орудие закреплено на карте: касания его не двигают
   const [gunLocked, setGunLocked] = useState(false)
+
+  // Высотные линии из сетки высот: чтобы точнее ставить орудие
+  const [contoursOn, setContoursOn] = useState(() => readStoredText('mapContours') !== 'off')
+
+  // Зоны по рельефу: куда достаёт орудие («from») и откуда достать до цели («to»)
+  const [coverageMode, setCoverageMode] = useState<CoverageMode>('off')
 
   // Линия огня: ломаная из точек, плотность огня (радиус разрыва) и номер
   // точки прицеливания, по которой стреляют сейчас. Плотность по умолчанию —
@@ -298,6 +325,91 @@ export function MapPicker({
     () => (map ? createReliefCanvas(map, night ? 'night' : 'day') : null),
     [map, night]
   )
+
+  // Зоны досягаемости: считаются при смене точки, карты или способа выстрела,
+  // а не при каждом сдвиге карты
+  const solveRef = useRef(solveLine)
+  useEffect(() => {
+    solveRef.current = solveLine
+  })
+  const reachMin = reach?.min ?? 0
+  const reachMax = reach?.max ?? 0
+  // Центр зоны: орудие («Куда достаю») или цель («Где встать»)
+  const coverageCenter = coverageMode === 'from' ? gun : coverageMode === 'to' ? target : null
+
+  // Зона считается по частям между кадрами: лучей сотни, а интерфейс не
+  // должен замирать; на карте она заполняется по кругу
+  const [coverage, setCoverage] = useState<Coverage | null>(null)
+  useEffect(() => {
+    let frame = 0
+    let cancelled = false
+    const input: CoverageInput | null =
+      coverageMode !== 'off' && map && coverageCenter && reachMax > 0
+        ? {
+            map,
+            center: coverageCenter,
+            mode: coverageMode,
+            minRange: reachMin,
+            maxRange: reachMax,
+            solve: (distance, heightDiff) => solveRef.current?.(distance, heightDiff) ?? null,
+          }
+        : null
+    const total = input ? coverageRayCount(input) : 0
+    const rays: CoverageRay[] = []
+    let next = 0
+    const step = () => {
+      if (cancelled) return
+      if (!input) {
+        setCoverage(null)
+        return
+      }
+      const until = performance.now() + 12
+      while (next < total && performance.now() < until) {
+        rays.push(...computeCoverageRays(input, next, next + 4))
+        next += 4
+      }
+      setCoverage({ center: input.center, mode: input.mode, width: (Math.PI * 2) / total, rays: [...rays] })
+      if (next < total) frame = requestAnimationFrame(step)
+    }
+    frame = requestAnimationFrame(step)
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(frame)
+    }
+    // solveKey заменяет solveLine: функция каждый раз новая
+  }, [coverageMode, map, coverageCenter, reachMin, reachMax, solveKey])
+  const spot = useMemo(
+    () => (coverage && coverage.mode === 'to' ? nearestGoodSpot(coverage, gun ?? coverage.center) : null),
+    [coverage, gun]
+  )
+
+  // Зоны — фигуры в метрах вокруг центра: на кадр три заливки, сколько бы
+  // ни было лучей, и без тёмных швов между соседними клиньями
+  const coveragePaths = useMemo(() => {
+    if (!coverage || typeof Path2D === 'undefined') return null
+    const half = coverage.width / 2 + 0.002
+    const paths = { ok: new Path2D(), tight: new Path2D(), blocked: new Path2D() }
+    for (const ray of coverage.rays) {
+      const a0 = ray.angle - Math.PI / 2 - half
+      const a1 = ray.angle - Math.PI / 2 + half
+      for (const segment of ray.segments) {
+        const path = paths[segment.status]
+        path.moveTo(Math.cos(a0) * segment.to, Math.sin(a0) * segment.to)
+        path.arc(0, 0, segment.to, a0, a1)
+        path.arc(0, 0, Math.max(0, segment.from), a1, a0, true)
+        path.closePath()
+      }
+    }
+    return paths
+  }, [coverage])
+
+  // «Куда достаю»: вода в зону не входит, а цель в воде проверяется отдельно
+  const targetInWater = useMemo(() => {
+    if (coverageMode !== 'from' || !map || !gun || !target || !isWater(map, target)) return null
+    return pointStatus(map, gun, target, (distance, heightDiff) => solveRef.current?.(distance, heightDiff) ?? null)
+    // solveKey заменяет solveLine: функция каждый раз новая
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coverageMode, map, gun, target, solveKey])
 
   // ---- метки ----
   const sync = useSync()
@@ -409,6 +521,24 @@ export function MapPicker({
     // Только при первом показе
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Орудие или карту поменяли в другом окне (карта в оверлее программы для ПК):
+  // localStorage общий, событие storage приходит только в другие окна
+  const openMapRef = useRef(openMap)
+  useEffect(() => {
+    openMapRef.current = openMap
+  })
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (!map || !event.key) return
+      if (event.key === `mapGun:${map.world}`) setGun(readGun(map.world))
+      else if (event.key === 'mapWorld' && event.newValue && event.newValue !== mapKey) {
+        openMapRef.current(event.newValue)
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [map, mapKey])
 
   // ---- размер холста ----
   // Ширина контейнера: сразу при появлении и при каждом изменении
@@ -556,12 +686,15 @@ export function MapPicker({
         }
       }
       // Здания, дороги, горизонтали: поверх спутника — при сильном приближении
+      const baseView = { x0: bx0, y0: by0, scale, width: w, height: h }
+      const demLines = contoursOn && contourInterval(scale) !== null
       if (vector) {
-        drawVector(target, vector, { x0: bx0, y0: by0, scale, width: w, height: h }, topo ? 'topo' : 'sat', sans)
+        drawVector(target, vector, baseView, topo ? 'topo' : 'sat', sans, !demLines)
       }
+      if (demLines) drawDemContours(target, map, baseView, topo ? 'topo' : 'sat', sans)
     }
 
-    const cacheKey = [map.world, topo, night, ratio, size.width, size.height, tileTick, vector ? 1 : 0].join('|')
+    const cacheKey = [map.world, topo, night, ratio, size.width, size.height, tileTick, vector ? 1 : 0, contoursOn ? 1 : 0].join('|')
     let cache = baseCache.current
     const w2 = size.width * 2
     const h2 = size.height * 2
@@ -782,6 +915,44 @@ export function MapPicker({
       ctx.textAlign = 'start'
     }
 
+    // Зоны по рельефу: зелёное достаёт, жёлтое впритык к рельефу, красное закрыто
+    if (coverage && coveragePaths) {
+      const c = toScreen(coverage.center)
+      const colors = {
+        ok: `rgba(${COVERAGE_RGB.ok},0.34)`,
+        tight: `rgba(${COVERAGE_RGB.tight},0.34)`,
+        blocked: `rgba(${COVERAGE_RGB.blocked},0.24)`,
+      } as const
+      ctx.save()
+      ctx.translate(c.x, c.y)
+      ctx.scale(scale, scale)
+      for (const status of ['ok', 'tight', 'blocked'] as const) {
+        ctx.fillStyle = colors[status]
+        ctx.fill(coveragePaths[status])
+      }
+      ctx.restore()
+      // Где встать: ближайшее хорошее место
+      if (spot) {
+        const p = toScreen(spot.point)
+        ctx.fillStyle = `rgb(${COVERAGE_RGB.ok})`
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, 8, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+        const label = `${t('mapPicker.stand-here')} · ${Math.round(spot.distance)} ${unitM}`
+        ctx.font = '12px ' + sans
+        const w = ctx.measureText(label).width
+        ctx.fillStyle = ink.plate
+        ctx.fillRect(p.x - w / 2 - 5, p.y - 30, w + 10, 18)
+        ctx.fillStyle = '#ffffff'
+        ctx.textAlign = 'center'
+        ctx.fillText(label, p.x, p.y - 17)
+        ctx.textAlign = 'start'
+      }
+    }
+
     // Досягаемость орудия: дальний край — сплошное кольцо, ближний — пунктир
     if (gun && reach && reach.max > 0) {
       const c = toScreen(gun)
@@ -825,6 +996,75 @@ export function MapPicker({
       ctx.moveTo(a.x, a.y)
       ctx.lineTo(b.x, b.y)
       ctx.stroke()
+
+      // Где снаряд идёт впритык к рельефу или упирается: участок линии и метка
+      const length = Math.hypot(target.x - gun.x, target.y - gun.y)
+      if (terrainHit && length > 0) {
+        const color = `rgb(${COVERAGE_RGB[terrainHit.status]})`
+        const span = Math.max(40, length * 0.04)
+        const at = (d: number) => {
+          const f = Math.min(1, Math.max(0, d / length))
+          return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f }
+        }
+        const p0 = at(terrainHit.at - span)
+        const p1 = at(terrainHit.at + span)
+        ctx.strokeStyle = color
+        ctx.lineWidth = 5
+        ctx.lineCap = 'round'
+        ctx.beginPath()
+        ctx.moveTo(p0.x, p0.y)
+        ctx.lineTo(p1.x, p1.y)
+        ctx.stroke()
+        ctx.lineCap = 'butt'
+
+        const p = at(terrainHit.at)
+        ctx.fillStyle = color
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+
+        const label =
+          terrainHit.status === 'blocked'
+            ? t('mapPicker.line-blocked')
+            : t('mapPicker.line-tight', Math.max(0, Math.round(terrainHit.min)), unitM)
+        ctx.font = '600 12px ' + sans
+        const w = ctx.measureText(label).width
+        ctx.fillStyle = ink.plate
+        ctx.fillRect(p.x - w / 2 - 6, p.y - 31, w + 12, 19)
+        ctx.fillStyle = color
+        ctx.textAlign = 'center'
+        ctx.fillText(label, p.x, p.y - 17)
+        ctx.textAlign = 'start'
+      }
+    }
+
+    // Цель в воде при «Куда достаю»: кольцо цвета зоны и подпись
+    if (target && targetInWater) {
+      const p = toScreen(target)
+      const color =
+        targetInWater === 'out' ? `rgb(${COVERAGE_RGB.blocked})` : `rgb(${COVERAGE_RGB[targetInWater]})`
+      ctx.strokeStyle = color
+      ctx.lineWidth = 3
+      if (targetInWater === 'out') ctx.setLineDash([5, 4])
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, 15, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.setLineDash([])
+      const label =
+        targetInWater === 'out'
+          ? t('mapPicker.coverage-out')
+          : t(({ ok: 'mapPicker.coverage-ok', tight: 'mapPicker.coverage-tight', blocked: 'mapPicker.coverage-blocked' } as const)[targetInWater])
+      ctx.font = '600 12px ' + sans
+      const w = ctx.measureText(label).width
+      ctx.fillStyle = ink.plate
+      ctx.fillRect(p.x - w / 2 - 6, p.y + 20, w + 12, 19)
+      ctx.fillStyle = color
+      ctx.textAlign = 'center'
+      ctx.fillText(label, p.x, p.y + 34)
+      ctx.textAlign = 'start'
     }
 
     // Орудие — синяя точка, цель — красная со свечением
@@ -853,7 +1093,7 @@ export function MapPicker({
       ctx.arc(p.x, p.y, 7, 0, Math.PI * 2)
       ctx.fill()
     }
-  }, [canvas, map, relief, activeView, gun, target, size, unitM, ratio, markers, now, draft, ru, night, journalTargets, tiles, tileTick, linePoints, lineAim, lineIndex, lineDensity, reach, strokes, liveStroke, vector, mapStyle, settleTick])
+  }, [canvas, map, relief, activeView, gun, target, size, unitM, ratio, markers, now, draft, ru, night, journalTargets, tiles, tileTick, linePoints, lineAim, lineIndex, lineDensity, reach, coverage, spot, contoursOn, strokes, liveStroke, vector, mapStyle, settleTick, coveragePaths, targetInWater, terrainHit])
 
   // ---- масштаб колёсиком (нужен не-пассивный обработчик) ----
   const viewRef = useRef<View | null>(null)
@@ -1284,7 +1524,7 @@ export function MapPicker({
       )}
 
       {map && (
-        <div ref={containerRef} data-tour="map" className="relative w-full rounded-lg ring-1 ring-app-line-strong">
+        <div ref={containerRef} data-tour="map" className="@container relative w-full rounded-lg ring-1 ring-app-line-strong">
           <canvas
             ref={setCanvas}
             width={Math.round(size.width * ratio)}
@@ -1486,6 +1726,26 @@ export function MapPicker({
           )}
 
 
+          {/* Справа снизу над слоем: высотные линии из сетки высот */}
+          <button
+            type="button"
+            aria-pressed={contoursOn}
+            title={t('mapPicker.contours')}
+            aria-label={t('mapPicker.contours')}
+            onClick={() => {
+              const next = !contoursOn
+              setContoursOn(next)
+              writeStored('mapContours', next ? 'on' : 'off')
+            }}
+            className={[
+              'absolute right-2 inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg shadow-lg backdrop-blur-sm transition-colors',
+              vector && tiles ? 'bottom-12' : 'bottom-2',
+              contoursOn ? 'bg-accent-solid text-white' : 'bg-black/70 text-white/90 hover:bg-black/85',
+            ].join(' ')}
+          >
+            <FieldIcon name="mountain" className="h-5 w-5" />
+          </button>
+
           {/* Справа снизу: слой карты (спутник / топо); значок — текущий режим */}
           {vector && tiles && (
             <button
@@ -1508,7 +1768,7 @@ export function MapPicker({
             </button>
           )}
 
-          {/* Снизу по центру: координаты орудия и цели */}
+          {/* Снизу по центру: координаты орудия и цели, под ними зоны по рельефу */}
           <CoordinatePlate
             gun={gun}
             gunHeight={gunHeight}
@@ -1516,7 +1776,9 @@ export function MapPicker({
             targetHeight={targetHeight}
             unit={unitM}
             flight={flight}
-          />
+          >
+            <CoveragePanel mode={coverageMode} onMode={setCoverageMode} ready={coverageCenter !== null} />
+          </CoordinatePlate>
         </div>
       )}
 

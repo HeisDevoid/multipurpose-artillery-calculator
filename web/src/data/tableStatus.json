@@ -1,0 +1,104 @@
+{
+  "bm21_rhs": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "d30_rhs": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "d44_sog": {
+    "status": "in-progress",
+    "missing": [
+      "no-air"
+    ]
+  },
+  "gvozdika_rhs": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "h12_sog": {
+    "status": "in-progress",
+    "missing": [
+      "no-air"
+    ]
+  },
+  "himars_rhs": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "kamaz_mrl": {
+    "status": "in-progress",
+    "missing": [
+      "no-air"
+    ]
+  },
+  "m101_sog": {
+    "status": "in-progress",
+    "missing": [
+      "air"
+    ]
+  },
+  "m109a6_rhsusaf": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "m119a2_rhsusaf": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "m252_rhsusaf": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "m29_sog": {
+    "status": "in-progress",
+    "missing": [
+      "no-air"
+    ]
+  },
+  "m2_sog": {
+    "status": "in-progress",
+    "missing": [
+      "no-air"
+    ]
+  },
+  "m777_sod": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "mk6": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "podnos_rhs": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "seara": {
+    "status": "in-progress",
+    "missing": [
+      "no-air"
+    ]
+  },
+  "sholef": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "sochor": {
+    "status": "in-progress",
+    "missing": []
+  },
+  "type53_sog": {
+    "status": "in-progress",
+    "missing": [
+      "no-air"
+    ]
+  },
+  "type63_sog": {
+    "status": "in-progress",
+    "missing": [
+      "no-air"
+    ]
+  }
+}

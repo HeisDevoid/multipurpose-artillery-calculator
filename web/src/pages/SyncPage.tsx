@@ -8,6 +8,9 @@ import { TotPanel } from '../components/TotPanel'
 import { fireMoment } from '../lib/tot'
 import { Row, SectionHeading, Toggle } from '../components/FormControls'
 import { PageIntro } from '../components/PageIntro'
+import { FieldIcon } from '../components/FieldIcon'
+import { MrsiPlanView } from '../components/MrsiPanel'
+import { useMrsiClock } from '../lib/useMrsiClock'
 import {
   isDesktop,
   notifyOverlayShot,
@@ -72,6 +75,13 @@ export function SyncPage({ language }: Props) {
       </PageIntro>
 
       <RoomCard />
+
+      {sync.enabled && sync.role === 'gunner' && (
+        <p className="flex items-start gap-2 rounded-md bg-app-raised px-3 py-2 text-[13.5px] text-app-text-2">
+          <FieldIcon name="info" className="mt-0.5 h-4 w-4 shrink-0 text-app-muted" />
+          {t('syncPage.stay-on-page')}
+        </p>
+      )}
 
       {sync.enabled &&
         (sync.role === 'gunner' ? (
@@ -348,6 +358,15 @@ function GunnerView({ language }: Props) {
   const solution = remote?.solution ?? null
   const fresh = remote !== null && now - remote.receivedAt < 3000
 
+  // Одновременный удар от наводчика: старт свой, по «выстрелу» с любого устройства
+  const mrsiShots = solution?.mrsi?.shots ?? null
+  const [mrsiStartedAt, setMrsiStartedAt] = useState<number | null>(null)
+  const mrsiNow = useMrsiClock(mrsiShots ?? [], mrsiShots ? mrsiStartedAt : null, () => setMrsiStartedAt(null))
+  function startMrsi() {
+    setMrsiStartedAt(Date.now())
+    playSound('fire')
+  }
+
   // Новые установки — короткий сигнал
   const receivedAt = remote?.solution ? remote.receivedAt : null
   useEffect(() => {
@@ -355,22 +374,45 @@ function GunnerView({ language }: Props) {
   }, [receivedAt])
 
   const { onShot, sendShot } = sync
+  // Выстрел с другого устройства: при одновременном ударе — старт удара
+  const remoteFireRef = useRef(() => {})
   useEffect(
     () =>
-      onShot(() => {
-        timerRef.current?.remoteFire()
-        notifyOverlayShot()
-      }),
+      onShot(() => remoteFireRef.current()),
     [onShot]
   )
+  useEffect(() => {
+    remoteFireRef.current = () => {
+      if (mrsiShots) {
+        startMrsi()
+        return
+      }
+      timerRef.current?.remoteFire()
+      notifyOverlayShot()
+    }
+  })
 
   function handleFire() {
     notifyOverlayShot()
     sendShot()
   }
 
+  // «Огонь» стрелка: при одновременном ударе — удар у всех
+  function fire() {
+    if (mrsiShots) {
+      startMrsi()
+      sendShot()
+    } else {
+      timerRef.current?.fire()
+    }
+  }
+  const fireRef = useRef(fire)
+  useEffect(() => {
+    fireRef.current = fire
+  })
+
   useHotkeys({
-    KeyF: () => timerRef.current?.fire(),
+    KeyF: () => fire(),
     KeyB: () => {
       if (solution) setCombatOpen((value) => !value)
     },
@@ -381,7 +423,7 @@ function GunnerView({ language }: Props) {
   useEffect(
     () =>
       onHotkey((action) => {
-        if (action === 'fire') timerRef.current?.fire()
+        if (action === 'fire') fireRef.current()
       }),
     []
   )
@@ -409,6 +451,8 @@ function GunnerView({ language }: Props) {
     readOnly: true,
     fireAt:
       solution?.tot != null ? fireMoment(solution.tot, solution.tof) : null,
+    terrain: solution?.terrain ?? null,
+    mrsi: mrsiShots ? { shots: mrsiShots, startedAt: mrsiStartedAt } : null,
   }
   const overlayJson = JSON.stringify(overlayState)
   const overlayJsonRef = useRef(overlayJson)
@@ -496,12 +540,48 @@ function GunnerView({ language }: Props) {
         </Row>
       </dl>
 
-      {!combatOpen && (
-        <FireTimer
-          ref={timerRef}
-          tof={solution.tof}
-          onFire={handleFire}
-        />
+      {/* Рельеф на пути снаряда: стрелок видит и может сказать наводчику */}
+      {solution.terrain && (
+        <p
+          className={[
+            'mt-3 flex items-start gap-2 rounded-lg px-3 py-2 text-[14px] font-medium',
+            solution.terrain === 'blocked' ? 'bg-danger/15 text-danger' : 'bg-warn/12 text-warn',
+          ].join(' ')}
+        >
+          <FieldIcon name="mountain" className="mt-0.5 h-[18px] w-[18px] shrink-0" />
+          {solution.terrain === 'blocked' ? t('terrain.short-blocked') : t('terrain.short-tight')}
+        </p>
+      )}
+
+      {mrsiShots ? (
+        // Одновременный удар: план от наводчика, старт кнопкой или по связке
+        <div className="mt-3 rounded-lg bg-app-raised p-3">
+          <p className="flex items-center gap-2 text-[15px] font-medium text-app-text">
+            <FieldIcon name="stack" className="h-5 w-5 text-app-muted" />
+            {t('mrsiPanel.simultaneous-impact-mrsi')}
+          </p>
+          <MrsiPlanView plan={mrsiShots} startedAt={mrsiStartedAt} now={mrsiNow} showMode={mrsiShots.some((shot) => shot.mode !== mrsiShots[0].mode)} />
+          <div className="mt-3 flex gap-2">
+            <button type="button" onClick={fire} className="btn btn-primary flex-1">
+              <FieldIcon name="fire" />
+              {mrsiStartedAt === null ? t('mrsiPanel.start-mrsi') : t('mrsiPanel.restart')}
+            </button>
+            {mrsiStartedAt !== null && (
+              <button type="button" onClick={() => setMrsiStartedAt(null)} className="btn">
+                <FieldIcon name="stop" />
+                {t('fireTimer.stop')}
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        !combatOpen && (
+          <FireTimer
+            ref={timerRef}
+            tof={solution.tof}
+            onFire={handleFire}
+          />
+        )
       )}
 
       <TotPanel

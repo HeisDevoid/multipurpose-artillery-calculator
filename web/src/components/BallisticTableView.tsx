@@ -17,6 +17,8 @@ interface Props {
   activeCharge: number | null
   // Дальность текущего решения: соседние строки подсвечиваются
   highlightRange: number | null
+  // Таблицы выгружены из игры (а не перепечатаны со скриншотов)
+  exported?: boolean
 }
 
 interface Column {
@@ -85,6 +87,7 @@ export function BallisticTableView({
   charges,
   activeCharge,
   highlightRange,
+  exported = false,
 }: Props) {
   const tables = profile.modes[mode] ?? {}
 
@@ -214,7 +217,9 @@ export function BallisticTableView({
       </div>
 
       <p className="mt-2 text-xs text-app-muted">
-        {t('ballisticTableView.transcribed-from-in-game-screenshots')}
+        {exported
+          ? t('ballisticTableView.exported-from-game')
+          : t('ballisticTableView.transcribed-from-in-game-screenshots')}
       </p>
     </details>
   )

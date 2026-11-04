@@ -14,8 +14,8 @@ import {
   type SoundEvent,
 } from '../lib/sound'
 import { setTimerSound, useTimerSound } from '../lib/timerSound'
-import { FieldIcon } from './FieldIcon'
 import { Switch } from './FormControls'
+import { SettingsCard } from './SettingsCard'
 
 const LABELS: Record<SoundEvent, MessageKey> = {
   fire: 'soundSettings.fire-button-pressed',
@@ -61,16 +61,12 @@ export function SoundSettings() {
   const button = 'btn btn-sm'
 
   return (
-    <div id="settings-sound" className="panel scroll-mt-20 p-4 sm:p-5">
-      <div className="flex items-center gap-3">
-        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
-          <FieldIcon name="sound" className="h-5 w-5" />
-        </span>
-        <h3 className="text-[17px] font-semibold text-app-text">{t('soundSettings.sounds')}</h3>
-      </div>
-      <p className="mt-2 text-[13.5px] leading-relaxed text-app-muted">
-        {t('soundSettings.your-own-file-for-each')}
-      </p>
+    <SettingsCard
+      id="settings-sound"
+      icon="sound"
+      title={t('soundSettings.sounds')}
+      description={t('soundSettings.your-own-file-for-each')}
+    >
 
       <div className="mt-4">
         <Switch
@@ -161,7 +157,7 @@ export function SoundSettings() {
           {error}
         </p>
       )}
-    </div>
+    </SettingsCard>
   )
 }
 

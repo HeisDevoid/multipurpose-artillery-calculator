@@ -5,6 +5,7 @@ import {
   advancedTourDone,
   markAdvancedTourDone,
   markTourDone,
+  physicsAsked,
   setPanel,
   tourDone,
   usePanel,
@@ -30,6 +31,17 @@ const BASIC: Step[] = [
     target: null,
     title: 'tour.welcome',
     text: 'tour.a-short-tour-of-where',
+  },
+  {
+    // Главное для точности: есть ли на сервере физика снаряда
+    target: byTour('settings'),
+    title: 'physics.title',
+    text: 'tour.physics-text',
+  },
+  {
+    target: byTour('weapon'),
+    title: 'tour.weapon-title',
+    text: 'tour.weapon-text',
   },
   {
     target: byTour('map'),
@@ -75,6 +87,16 @@ const ADVANCED: Step[] = [
     text: 'tour.the-star-adds-a-map',
   },
   {
+    target: byTour('zones'),
+    title: 'mapPicker.coverage',
+    text: 'tour.zones-text',
+  },
+  {
+    target: byTour('map'),
+    title: 'tour.terrain-title',
+    text: 'tour.terrain-text',
+  },
+  {
     target: byTour('tools'),
     title: 'mapPicker.fire-line',
     text: 'tour.pick-line-and-drop-points',
@@ -103,6 +125,11 @@ const ADVANCED: Step[] = [
     target: byTour('hotkeys'),
     title: 'tour.keys-title',
     text: 'tour.keys-text',
+  },
+  {
+    target: null,
+    title: 'tour.overlay-title',
+    text: 'tour.overlay-text',
   },
   {
     target: byTour('theme'),
@@ -186,8 +213,9 @@ export function Tour() {
   const [cardNode, setCardNode] = useState<HTMLDivElement | null>(null)
 
   // При первом запуске базовое обучение открывается само
+  // (если ещё не спросили про физику на сервере — обучение откроется после ответа)
   useEffect(() => {
-    if (tourDone()) return
+    if (tourDone() || !physicsAsked()) return
     const timer = window.setTimeout(() => setPanel('tour', true), 800)
     return () => window.clearTimeout(timer)
   }, [])

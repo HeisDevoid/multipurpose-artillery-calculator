@@ -1,7 +1,9 @@
 {
   "name": "Multipurpose Artillery Calculator",
   "short_name": "Artillery Calc",
-  "description": "Firing calculator for Arma 3 ACE3 mortars and artillery.",
+  "description": "Free firing calculator for Arma 3 with ACE3: elevation, charge and time of flight for mortars, howitzers and MLRS, terrain maps, gunner link.",
+  "lang": "en",
+  "categories": ["games", "utilities"],
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

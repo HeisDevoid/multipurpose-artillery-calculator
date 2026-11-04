@@ -76,6 +76,8 @@ export interface ArtilleryReference {
   source: {
     name: string
     status: DataStatus
+    // export — таблицы выгружены из игры скриптом (расчёт ACE), иначе перепечатаны со скриншотов
+    method?: 'export' | 'screenshots'
   }
 
   screenshots: string[]

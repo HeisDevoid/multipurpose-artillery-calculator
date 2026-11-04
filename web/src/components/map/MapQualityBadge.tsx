@@ -18,9 +18,9 @@ export function MapQualityBadge({ inline = false }: { inline?: boolean }) {
       data-quality="low"
       title={text}
       aria-label={text}
-      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-warn/15 text-warn"
+      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#ffb020] text-black shadow-md ring-2 ring-black/40"
     >
-      <FieldIcon name="warning" className="h-3.5 w-3.5" />
+      <FieldIcon name="warning" className="h-4 w-4" />
     </span>
   )
 }

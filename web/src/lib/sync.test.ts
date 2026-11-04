@@ -121,6 +121,27 @@ describe('parseMessage', () => {
     expect(parseMessage(message('now'))).toBeNull()
   })
 
+  it('carries the terrain warning and the MRSI plan, drops broken ones', () => {
+    const fields = (solution as Extract<SyncMessage, { kind: 'solution' }>)
+      .solution!
+    const shots = [
+      { mode: 'HIGH', charge: 2, elevation: 1176, tof: 45.5, fireAt: 0 },
+      { mode: 'HIGH', charge: 1, elevation: 1290, tof: 40.1, fireAt: 5.4 },
+    ]
+    const withExtras = {
+      ...solution,
+      solution: { ...fields, terrain: 'tight', mrsi: { shots } },
+    }
+    expect(parseMessage(withExtras)).toEqual(withExtras)
+
+    // Неверные рельеф и план не показываются, сами установки остаются
+    const broken = parseMessage({
+      ...solution,
+      solution: { ...fields, terrain: 'cliff', mrsi: { shots: [{ charge: 'x' }] } },
+    })
+    expect(broken).toEqual(solution)
+  })
+
   it('drops extra fields', () => {
     const parsed = parseMessage({ kind: 'shot', from: 'a', sentAt: 1, x: 1 })
     expect(parsed).toEqual({ kind: 'shot', from: 'a', sentAt: 1 })

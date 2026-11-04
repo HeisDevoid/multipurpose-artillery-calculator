@@ -9,7 +9,6 @@ import {
   type ReactNode,
 } from 'react'
 
-import { artilleryRegistry } from '../data/artillery/registry'
 import { models, type ModelId } from '../data/models'
 import type { ArtilleryCategory } from '../types/gameModel'
 import {
@@ -36,7 +35,8 @@ import {
   writeStored,
 } from '../lib/input'
 import { reportToAdjustment, sumAdjustments } from '../lib/adjust'
-import type { MrsiOption } from '../lib/mrsi'
+import type { MrsiOption, MrsiShot, TerrainStatus } from '../lib/mrsi'
+import { playSound } from '../lib/sound'
 import { recentEntries } from '../lib/journal'
 import { useFeature } from '../lib/features'
 import { togglePanel } from '../lib/uiPanels'
@@ -60,7 +60,7 @@ import type { SyncSolution } from '../lib/sync'
 import { useSync } from '../lib/syncContext'
 import { useHotkeys, type HotkeyMap } from '../lib/useHotkeys'
 import { useWeatherInputs } from '../lib/useWeatherInputs'
-import type { ArtilleryMode } from '../types/artillery'
+import type { ArtilleryMode, ArtilleryReference } from '../types/artillery'
 import type { Language } from '../types/settings'
 import { AdjustFire, type AdjustmentEntry } from './AdjustFire'
 import { AmmunitionSelector } from './AmmunitionSelector'
@@ -76,6 +76,7 @@ import type { FlightShot } from './FlightCanvas'
 import type { JournalActions } from '../lib/journalIO'
 import { InlineNumber, Row, Toggle } from './FormControls'
 import { GridInput } from './GridInput'
+import type { MapSelection } from './MapPicker'
 import { MrsiPanel, MrsiUnavailable } from './MrsiPanel'
 import { TerrainWarning } from './TerrainWarning'
 import { clearance, isBlocked, isTight, type Clearance, type TerrainProfile } from '../lib/terrainClearance'
@@ -96,6 +97,8 @@ const MapPicker = lazy(() =>
 
 interface Props {
   modelId: ModelId
+  // Таблицы орудия (грузятся по требованию, см. data/artillery/tables.ts)
+  reference: ArtilleryReference
   language: Language
   // Запись журнала, из которой восстановлены вводные
   initial?: JournalEntry | null
@@ -123,6 +126,7 @@ interface Props {
 
 export function ArtilleryCalculator({
   modelId,
+  reference,
   language,
   initial = null,
   gridInput = false,
@@ -147,7 +151,6 @@ export function ArtilleryCalculator({
   const showHints = useFeature('hints')
   const hideUnfit = useFeature('hideUnfit')
   const onlyGood = useFeature('onlyGood')
-  const reference = artilleryRegistry[modelId]
   const ammunition = reference.ammunition ?? []
 
   // Черновик: введённое ранее (другим орудием, до перезагрузки). Запись
@@ -402,6 +405,15 @@ export function ArtilleryCalculator({
 
   // Рельеф у выбранного способа и чем стрелять вместо, если он упирается
   const activeTerrain = activeResult ? terrainOf(mode, activeResult.charge) : null
+  // Для оверлея и стрелков: огонь впритык к рельефу или закрыт им
+  const terrainStatus: TerrainStatus =
+    terrainActive && activeTerrain
+      ? isBlocked(activeTerrain)
+        ? 'blocked'
+        : isTight(activeTerrain)
+          ? 'tight'
+          : null
+      : null
   const terrainAlternative = (() => {
     if (!isBlocked(activeTerrain) || !anyClear) return null
     const best = pickBest(clearGroups, chargePreference)
@@ -449,6 +461,11 @@ export function ArtilleryCalculator({
 
   // ---- горячие клавиши ----
   const timerRef = useRef<FireTimerHandle>(null)
+
+  // Одновременный удар: план (панель раскрыта) и момент старта — их видят
+  // оверлей и стрелки по связке; «огонь» при выбранном ударе начинает его
+  const [mrsiPlan, setMrsiPlan] = useState<MrsiShot[] | null>(null)
+  const [mrsiStartedAt, setMrsiStartedAt] = useState<number | null>(null)
   // Снаряд в полёте — для анимации на карте
   const [flight, setFlight] = useState<FlightShot[]>([])
   const [combatOpen, setCombatOpen] = useState(false)
@@ -469,7 +486,7 @@ export function ArtilleryCalculator({
   }
 
   const hotkeys: HotkeyMap = {
-    KeyF: () => timerRef.current?.fire(),
+    KeyF: () => fire(),
     Escape: () => {
       // Сначала закрывается боевой экран, затем останавливается таймер
       if (combatOpen) setCombatOpen(false)
@@ -720,6 +737,11 @@ export function ArtilleryCalculator({
     },
     fireAt:
       totAt !== null && solution ? fireMoment(totAt, solution.tof) : null,
+    terrain: solution ? terrainStatus : null,
+    mrsi: mrsiPlan ? { shots: mrsiPlan, startedAt: mrsiStartedAt } : null,
+    map: mapInput
+      ? { target: mapTarget, reach, category, shellType: selectedAmmo?.type }
+      : null,
     solution:
       solution && activeResult
         ? {
@@ -754,7 +776,7 @@ export function ArtilleryCalculator({
   const globalHotkeyRef = useRef<(action: HotkeyAction) => void>(() => {})
   useEffect(() => {
     globalHotkeyRef.current = (action) => {
-      if (action === 'fire') timerRef.current?.fire()
+      if (action === 'fire') fire()
       if (action === 'mode') hotkeys.KeyM()
     }
   })
@@ -816,6 +838,9 @@ export function ArtilleryCalculator({
           setAdjustHistory((list) => list.slice(0, -1))
           markEdited()
           break
+        case 'map':
+          applyMapSelection(command.selection)
+          break
       }
     }
   })
@@ -833,6 +858,8 @@ export function ArtilleryCalculator({
         title: reference.name,
         targetName: activeEntry?.name ?? null,
         tot: totAt,
+        terrain: terrainStatus,
+        mrsi: mrsiPlan ? { shots: mrsiPlan } : null,
       }
     : null
   const syncJson = JSON.stringify(syncSolution)
@@ -842,21 +869,57 @@ export function ArtilleryCalculator({
     if (sharing) shareSolution(JSON.parse(syncJson))
   }, [sharing, syncJson, shareSolution])
 
+  // Выстрел с другого устройства: при одновременном ударе — старт удара
+  const remoteFireRef = useRef(() => {})
   useEffect(
     () =>
-      onShot(() => {
-        timerRef.current?.remoteFire()
-        notifyOverlayShot()
-      }),
+      onShot(() => remoteFireRef.current()),
     [onShot]
   )
+  useEffect(() => {
+    remoteFireRef.current = () => {
+      if (mrsiPlan) {
+        startMrsi(false)
+        return
+      }
+      timerRef.current?.remoteFire()
+      notifyOverlayShot()
+    }
+  })
 
   function handleFire() {
     notifyOverlayShot()
     if (sync.active) sendShot()
   }
 
+  // Одновременный удар начат: здесь и (share) у всех по связке
+  function startMrsi(share: boolean) {
+    setMrsiStartedAt(Date.now())
+    playSound('fire')
+    if (share && sync.active) sendShot()
+  }
+
+  // «Огонь» (F, Ctrl+Alt+F): при выбранном ударе — удар, иначе таймер
+  function fire() {
+    if (mrsiPlan) startMrsi(true)
+    else timerRef.current?.fire()
+  }
+
   const alertClass = 'rounded-md bg-app-raised px-3 py-2 text-[13.5px]'
+
+  // Орудие и цель на карте (здесь или в оверлее): дистанция, азимут, высоты
+  function applyMapSelection(selection: MapSelection) {
+    setDistance(String(Math.round(selection.distance)))
+    setAzimuth(
+      azimuthUnit === 'mil'
+        ? String(Math.round(selection.azimuthMil))
+        : String(Math.round(milToDeg(selection.azimuthMil) * 10) / 10)
+    )
+    setOwnHeight(String(Math.round(selection.ownHeight)))
+    setTargetHeight(String(Math.round(selection.targetHeight)))
+    setMapTarget(selection.target)
+    markEdited()
+  }
 
   return (
     <section>
@@ -893,24 +956,17 @@ export function ArtilleryCalculator({
                   shellType={selectedAmmo?.type}
                   onGunLockChange={handleGunLock}
                   solveLine={solveLinePoint}
+                  solveKey={[modelId, selectedAmmo?.id, mode, activeResult?.charge, rangeAdjust, JSON.stringify(weatherInputs.weather)].join('|')}
                   onTerrainProfile={setTerrain}
+                  terrainHit={
+                    solution && activeTerrain && terrainStatus
+                      ? { status: terrainStatus, at: activeTerrain.at, min: activeTerrain.min }
+                      : null
+                  }
                   showMarkers={showMarkers}
                   showScreenMarkers={showScreenMarkers}
                   onPickJournalTarget={onLoadEntry}
-                  onApply={(selection) => {
-                    setDistance(String(Math.round(selection.distance)))
-                    setAzimuth(
-                      azimuthUnit === 'mil'
-                        ? String(Math.round(selection.azimuthMil))
-                        : String(
-                            Math.round(milToDeg(selection.azimuthMil) * 10) / 10
-                          )
-                    )
-                    setOwnHeight(String(Math.round(selection.ownHeight)))
-                    setTargetHeight(String(Math.round(selection.targetHeight)))
-                    setMapTarget(selection.target)
-                    markEdited()
-                  }}
+                  onApply={applyMapSelection}
                 />
               </Suspense>
               </ErrorBoundary>
@@ -1126,6 +1182,7 @@ export function ArtilleryCalculator({
               icon="weapon"
               control="full"
               label={t('artilleryCalculator.weapon')}
+              tourId="weapon"
             >
               {modelSelector}
             </Row>
@@ -1403,7 +1460,16 @@ export function ArtilleryCalculator({
         <div className="min-w-0 space-y-3">
           {showMrsi &&
             (mrsiAllowed ? (
-              solution && <MrsiPanel options={mrsiOptions} showMode={profileModes.length > 1} />
+              solution && (
+                <MrsiPanel
+                  options={mrsiOptions}
+                  showMode={profileModes.length > 1}
+                  startedAt={mrsiStartedAt}
+                  onStart={() => startMrsi(true)}
+                  onStop={() => setMrsiStartedAt(null)}
+                  onPlanChange={setMrsiPlan}
+                />
+              )
             ) : (
               <MrsiUnavailable />
             ))}
@@ -1416,6 +1482,7 @@ export function ArtilleryCalculator({
               charges={selectedAmmo?.charges}
               activeCharge={activeResult?.charge ?? null}
               highlightRange={solution?.lookupRange ?? null}
+              exported={reference.source.method === 'export'}
             />
           )}
         </div>

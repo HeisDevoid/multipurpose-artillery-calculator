@@ -5,7 +5,7 @@
  *   node scripts/import-tables.mjs <папка-источник> <json> [--profile default] [--check]
  *   node scripts/import-tables.mjs --all [--check]
  *
- * Папка содержит файлы <РЕЖИМ>-<заряд>.txt (см. data-sources/README.md).
+ * Папка содержит файлы <РЕЖИМ>-<заряд>.txt.
  * Скрипт заменяет profiles.<profile>.modes / columns / units в JSON,
  * остальные поля справочника не трогает.
  *
@@ -159,12 +159,12 @@ function importOne(sourceDir, jsonPath, profileKey, check) {
     modes,
   }
 
-  // Профиль «advanced» (улучшенная баллистика) подключается к боеприпасам обычного
-  if (profileKey === 'advanced') {
+  // Профиль с сопротивлением воздуха подключается к боеприпасам своего набора:
+  // «advanced» — к основному (default), «<набор>-advanced» — к набору <набор>
+  if (profileKey === 'advanced' || profileKey.endsWith('-advanced')) {
+    const base = profileKey === 'advanced' ? 'default' : profileKey.slice(0, -'-advanced'.length)
     for (const ammo of data.ammunition ?? []) {
-      if (ammo.profile !== undefined && ammo.profile !== 'advanced') {
-        ammo.advancedProfile = 'advanced'
-      }
+      if (ammo.profile === base) ammo.advancedProfile = profileKey
     }
   }
 
@@ -184,6 +184,41 @@ function importOne(sourceDir, jsonPath, profileKey, check) {
     .map(([mode, tables]) => `${mode}: ${Object.keys(tables).join(', ')}`)
     .join('; ')
   console.log(`записано ${jsonPath} (${charges})`)
+}
+
+// Таблица с погодными поправками снята с сопротивлением воздуха (см. lib/profileSelect.ts)
+function hasDrag(profile) {
+  return Object.values(profile?.modes ?? {}).some((tables) =>
+    Object.values(tables ?? {}).some((rows) =>
+      rows.some((row) => row.length > 5 && row.slice(5).some((value) => value !== null))
+    )
+  )
+}
+
+const modesOf = (profile) =>
+  Object.entries(profile?.modes ?? {})
+    .filter(([, tables]) => tables && Object.keys(tables).length > 0)
+    .map(([mode]) => mode)
+
+/**
+ * Каких таблиц у орудия нет: 'no-air' — без сопротивления воздуха,
+ * 'air' — с ним (хотя бы для одного снаряда и траектории).
+ */
+function missingTables(data) {
+  const missing = new Set()
+  for (const ammo of data.ammunition ?? [{}]) {
+    const profiles = [ammo.profile ?? 'default', ammo.advancedProfile]
+      .filter(Boolean)
+      .map((key) => data.profiles?.[key])
+      .filter(Boolean)
+    const noAir = new Set(profiles.filter((p) => !hasDrag(p)).flatMap(modesOf))
+    const air = new Set(profiles.filter(hasDrag).flatMap(modesOf))
+    for (const mode of data.availableModes) {
+      if (!noAir.has(mode)) missing.add('no-air')
+      if (!air.has(mode)) missing.add('air')
+    }
+  }
+  return [...missing].sort()
 }
 
 const args = process.argv.slice(2)
@@ -206,6 +241,36 @@ if (all) {
     // data-sources/<id>/advanced — таблицы при улучшенной баллистике
     const advanced = join(root, entry.name, 'advanced')
     if (existsSync(advanced)) importOne(advanced, json, 'advanced', check)
+    // Другие подпапки — наборы снарядов с другой скоростью (профиль = имя папки),
+    // у каждого может быть своя advanced/
+    for (const sub of readdirSync(join(root, entry.name), { withFileTypes: true })) {
+      if (!sub.isDirectory() || sub.name === 'advanced') continue
+      importOne(join(root, entry.name, sub.name), json, sub.name, check)
+      const subAdvanced = join(root, entry.name, sub.name, 'advanced')
+      if (existsSync(subAdvanced)) importOne(subAdvanced, json, `${sub.name}-advanced`, check)
+    }
+  }
+
+  // Статусы проверки и полнота таблиц всех орудий — отдельным маленьким
+  // файлом: список орудий показывает их сразу, а сами таблицы грузятся,
+  // только когда орудие выбрано
+  const tablesDir = join('src', 'data', 'artillery')
+  const status = Object.fromEntries(
+    readdirSync(tablesDir)
+      .filter((name) => name.endsWith('.json'))
+      .sort()
+      .map((name) => {
+        const data = JSON.parse(readFileSync(join(tablesDir, name), 'utf8'))
+        return [name.replace(/\.json$/, ''), { status: data.source.status, missing: missingTables(data) }]
+      })
+  )
+  const statusPath = join('src', 'data', 'tableStatus.json')
+  const statusOutput = `${JSON.stringify(status, null, 2)}\n`
+  const currentStatus = existsSync(statusPath) ? readFileSync(statusPath, 'utf8').replace(/\r\n/g, '\n') : ''
+  if (currentStatus !== statusOutput) {
+    if (check) fail(`${statusPath} устарел. Запустите npm run tables:import.`)
+    writeFileSync(statusPath, statusOutput)
+    console.log(`записано ${statusPath}`)
   }
 } else {
   if (positional.length !== 2 || !profileKey) {

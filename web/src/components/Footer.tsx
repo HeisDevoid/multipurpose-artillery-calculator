@@ -11,10 +11,10 @@ import { LANGUAGES } from '../i18n'
 import type { Language, Theme } from '../types/settings'
 
 const REPO_URL =
-  'https://github.com/spanoproandrei2245-bit/multipurpose-artillery-calculator'
+  'https://github.com/HeisDevoid/multipurpose-artillery-calculator'
 
 // Страница автора на GitHub
-const AUTHOR_URL = 'https://github.com/spanoproandrei2245-bit'
+const AUTHOR_URL = 'https://github.com/HeisDevoid'
 
 // Профиль автора в Steam
 const AUTHOR_STEAM_URL: string | null = 'https://steamcommunity.com/id/Aron_Heis/'

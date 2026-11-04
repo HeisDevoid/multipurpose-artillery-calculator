@@ -17,4 +17,16 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        // React — отдельным файлом: меняется редко, после обновления сайта
+        // браузер берёт его из кэша. Таблицы орудий и так в своих файлах
+        // (грузятся по одной, см. data/artillery/tables.ts)
+        codeSplitting: {
+          groups: [{ name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ }],
+        },
+      },
+    },
+  },
 })

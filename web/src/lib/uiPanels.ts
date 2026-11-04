@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react'
  * Окна, которые открываются из футера и по горячим клавишам:
  * справка по клавишам и обучение. Состояние общее для всего приложения.
  */
-export type PanelId = 'hotkeys' | 'tour' | 'tourAdvanced' | 'help'
+export type PanelId = 'hotkeys' | 'tour' | 'tourAdvanced' | 'help' | 'physics'
 
 const open = new Set<PanelId>()
 const listeners = new Set<() => void>()
@@ -73,5 +73,25 @@ export function markAdvancedTourDone() {
     localStorage.setItem(ADVANCED_KEY, 'yes')
   } catch {
     // Хранилище недоступно — предложение покажется снова.
+  }
+}
+
+// ---- физика на сервере: спросить один раз (до обучения) ----
+
+const PHYSICS_KEY = 'physicsAsked'
+
+export function physicsAsked(): boolean {
+  try {
+    return localStorage.getItem(PHYSICS_KEY) === 'yes'
+  } catch {
+    return true
+  }
+}
+
+export function markPhysicsAsked() {
+  try {
+    localStorage.setItem(PHYSICS_KEY, 'yes')
+  } catch {
+    // Хранилище недоступно — вопрос появится снова.
   }
 }

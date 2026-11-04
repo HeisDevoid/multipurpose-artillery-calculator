@@ -12,9 +12,10 @@ async function open(page: Page, path = '/', storage: Record<string, string> = {}
     if (message.type() === 'error') errors.push(`console: ${message.text()}`)
   })
   await page.addInitScript((values) => {
-    // Без обучения при первом запуске; язык и карта — заданные тестом
+    // Без обучения и вопроса про физику при первом запуске; язык и карта — заданные тестом
     localStorage.setItem('tourDone', 'yes')
     localStorage.setItem('tourAdvancedDone', 'yes')
+    localStorage.setItem('physicsAsked', 'yes')
     for (const [key, value] of Object.entries(values)) localStorage.setItem(key, value)
   }, { language: 'en', mapWorld: 'builtin:stratis', ...storage })
   await page.goto(path)
@@ -91,11 +92,21 @@ test('сбой карты не ломает калькулятор', async ({ pa
   await expect(page.locator('#calc-distance')).toBeVisible()
 })
 
-test('у орудия виден статус проверки таблиц', async ({ page }) => {
-  const errors = await open(page)
-  const badge = page.locator('[data-status]').first()
-  await expect(badge).toBeVisible()
-  await expect(badge).toHaveAttribute('aria-label', /verified in game/)
+test('орудий без обоих наборов таблиц в выборе нет', async ({ page }) => {
+  // У M2 (S.O.G.) нет таблиц без сопротивления воздуха: сохранённый выбор сменяется на Mk6
+  const errors = await open(page, '/', { selectedModel: 'm2' })
+  const select = page.getByRole('button', { name: 'Game Model' })
+  await expect(select).toContainText('Mk6 (82 mm)')
+  await expect(page.locator('[data-status="incomplete"]')).toHaveCount(0)
+  await select.click()
+  const list = page.getByRole('listbox', { name: 'Game Model' })
+  await expect(list.getByRole('option', { name: /Sholef/ })).toBeVisible()
+  await expect(list.getByRole('option', { name: /Seara|KamAZ/ })).toHaveCount(0)
+  await list.getByRole('option', { name: /Mods and DLC/ }).click()
+  await page.getByPlaceholder('Search weapons or mods…').fill('S.O.G.')
+  await expect(page.getByRole('dialog').getByText(/M2 \(60 mm\)|M29|M101|D-44|H-12|Type 53|Type 63/)).toHaveCount(0)
+  await page.getByPlaceholder('Search weapons or mods…').fill('HIMARS')
+  await expect(page.getByRole('dialog').getByText('M142 HIMARS (227 mm)')).toBeVisible()
   expect(errors).toEqual([])
 })
 
@@ -107,6 +118,37 @@ test('панель рисования и слой карты на месте', a
   await expect(page.getByRole('button', { name: 'Straight line' })).toBeVisible()
   await page.getByRole('button', { name: 'Show the topographic map' }).click()
   await expect(page.getByRole('button', { name: 'Show the satellite image' })).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('ссылка с ?lang= открывает свой язык: интерфейс, заголовок вкладки, описание', async ({ page }) => {
+  // Сохранён английский, но язык из ссылки важнее: так её видит поиск
+  const errors = await open(page, '/?lang=fr')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
+  await expect(page).toHaveTitle(/Calculateur d’artillerie Arma 3/)
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Calculateur de tir/)
+  await expect(page.getByText('Élévation', { exact: true }).first()).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('зоны по рельефу: кнопки на карте и легенда', async ({ page }) => {
+  const errors = await open(page)
+  await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 })
+  const zones = page.getByRole('group', { name: 'Terrain zones' })
+  await zones.getByRole('button', { name: 'Where I can hit' }).click()
+  await expect(zones.getByRole('button', { name: 'Where I can hit' })).toHaveAttribute('aria-pressed', 'true')
+  // Орудия на карте нет: вместо легенды подсказка
+  await expect(page.getByText('Place the gun on the map.')).toBeVisible()
+  expect(errors).toEqual([])
+})
+
+test('при первом запуске спрашивает про физику на сервере, ответ включает погоду', async ({ page }) => {
+  const errors = await open(page, '/', { physicsAsked: '' })
+  const dialog = page.getByRole('dialog', { name: /Important: does your game have air resistance/ })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: /Mine has the asterisk/ }).click()
+  await expect(dialog).toBeHidden()
+  expect(await page.evaluate(() => [localStorage.getItem('physicsAsked'), localStorage.getItem('feature:weather')])).toEqual(['yes', 'on'])
   expect(errors).toEqual([])
 })
 

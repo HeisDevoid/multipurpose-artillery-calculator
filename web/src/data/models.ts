@@ -114,6 +114,46 @@ export const models = {
     notes: 'Vanilla 2S9 Sochor 155mm self-propelled howitzer.',
   },
 
+  d30: {
+    name: '2A18M D-30A (122 mm)',
+    mod: 'RHSAFRF',
+    category: 'towed',
+    modes: ['HIGH', 'LOW'],
+    notes: 'RHS 122mm towed howitzer (weapon rhs_weap_d30: 2A18M D-30A and RHSSAF D30J, same tables). The direct fire D-30A AT is not included.',
+  },
+
+  gvozdika: {
+    name: '2S1 Gvozdika (122 mm)',
+    mod: 'RHSAFRF',
+    category: 'spg',
+    modes: ['HIGH', 'LOW'],
+    notes: 'RHS 122mm self-propelled howitzer (weapon rhs_weap_2a31; exported from rhsgref_ins_2s1).',
+  },
+
+  bm21: {
+    name: 'BM-21 Grad (122 mm)',
+    mod: 'RHSAFRF',
+    category: 'mlrs',
+    modes: ['HIGH', 'LOW'],
+    notes: 'RHS 122mm multiple rocket launcher (weapon rhs_weap_bm21; exported from rhsgref_ins_BM21).',
+  },
+
+  podnos: {
+    name: '2B14-1 Podnos (82 mm)',
+    mod: 'RHSAFRF',
+    category: 'mortar',
+    modes: ['HIGH'],
+    notes: 'RHS 82mm mortar (weapon rhs_weap_2b14; exported from rhsgref_ins_2b14).',
+  },
+
+  himars: {
+    name: 'M142 HIMARS (227 mm)',
+    mod: 'RHSUSAF',
+    category: 'mlrs',
+    modes: ['HIGH', 'LOW'],
+    notes: 'RHSUSAF 227mm rocket launcher (weapon rhs_weap_mlrs). M26 and M26A1 rockets have different speeds and tables.',
+  },
+
   type53: {
     name: 'Type 53 (82 mm)',
     mod: 'S.O.G. Prairie Fire (Vietnam DLC)',

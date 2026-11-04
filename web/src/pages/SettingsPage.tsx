@@ -4,9 +4,12 @@ import type { ReactNode } from 'react'
 import { wakeLockSupported } from '../lib/useWakeLock'
 import { OpenOnPhone } from '../components/OpenOnPhone'
 import { GLOBAL_HOTKEYS, isDesktop, toggleOverlay } from '../lib/desktop'
+import { SettingsCard } from '../components/SettingsCard'
 import { SoundSettings } from '../components/SoundSettings'
+import { openSettingsCard } from '../lib/settingsCards'
 import { FeaturePreview } from '../components/FeaturePreview'
 import { FieldIcon, type FieldIconName } from '../components/FieldIcon'
+import { setPanel } from '../lib/uiPanels'
 import { Switch, Toggle } from '../components/FormControls'
 import { setFlightOnMap, setFlightStyle, useFlightOnMap, useFlightStyle } from '../lib/animation'
 import { setFeature, useFeature } from '../lib/features'
@@ -25,35 +28,28 @@ interface SettingsPageProps {
   onKeepAwakeChange: (value: boolean) => void
 }
 
-/** Раздел настроек: значок, заголовок, пояснение и строки через разделитель. */
+/** Раздел настроек (сворачивается): значок, заголовок, пояснение и строки через разделитель. */
 function Card({
   id,
   icon,
   title,
   description,
+  defaultOpen,
   children,
-  className = '',
 }: {
   id: string
   icon: FieldIconName
   title: string
   description?: string
+  defaultOpen?: boolean
   children: ReactNode
-  className?: string
 }) {
   return (
-    <section id={id} className={`panel scroll-mt-20 p-4 sm:p-5 ${className}`}>
-      <div className="flex items-center gap-3">
-        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
-          <FieldIcon name={icon} className="h-5 w-5" />
-        </span>
-        <h3 className="text-[17px] font-semibold text-app-text">{title}</h3>
-      </div>
-      {description && <p className="mt-2 text-[13.5px] leading-relaxed text-app-muted">{description}</p>}
+    <SettingsCard id={id} icon={icon} title={title} description={description} defaultOpen={defaultOpen}>
       <div className="mt-3 divide-y divide-app-border [&>*]:py-3.5 [&>*:first-child]:pt-1 [&>*:last-child]:pb-0">
         {children}
       </div>
-    </section>
+    </SettingsCard>
   )
 }
 
@@ -89,6 +85,7 @@ export function SettingsPage({
   const flightOnMap = useFlightOnMap()
 
   const sections: { id: string; icon: FieldIconName; title: string }[] = [
+    { id: 'settings-physics', icon: 'wind', title: t('settings.physics-section') },
     { id: 'settings-calc', icon: 'charge', title: t('settingsPage.calculator-sections') },
     { id: 'settings-map', icon: 'map', title: t('settings.map-section') },
     { id: 'settings-main', icon: 'settings', title: t('settings.preferences') },
@@ -107,9 +104,12 @@ export function SettingsPage({
             key={section.id}
             href={`#${section.id}`}
             onClick={(event) => {
-              // Прокрутка без якоря в адресной строке
+              // Раздел раскрывается, прокрутка — без якоря в адресной строке
               event.preventDefault()
-              document.getElementById(section.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              openSettingsCard(section.id)
+              requestAnimationFrame(() =>
+                document.getElementById(section.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              )
             }}
             className="inline-flex items-center gap-1.5 rounded-full bg-app-raised px-2.5 py-1 text-[13px] sm:px-3 sm:py-1.5 sm:text-[13.5px] font-medium text-app-text-2 transition-colors hover:bg-app-raised-hover hover:text-app-text"
           >
@@ -246,6 +246,32 @@ export function SettingsPage({
         </div>
 
         <div className="order-first flex flex-col gap-4">
+          {/* Главное для точности: есть ли на сервере физика снаряда */}
+          <Card
+            id="settings-physics"
+            icon="wind"
+            title={t('settings.physics-section')}
+            description={t('physics.why')}
+            defaultOpen
+          >
+              <FeaturePreview id="weather">
+              <Switch
+                checked={weather}
+                onChange={(v) => setFeature('weather', v)}
+                label={t('settingsPage.weather-ballistics')}
+                description={t('settingsPage.weather-ballistics-description')}
+              />
+              <button
+                type="button"
+                onClick={() => setPanel('physics', true)}
+                className="mt-1 inline-flex cursor-pointer items-center gap-1.5 text-[13px] text-accent hover:underline"
+              >
+                <FieldIcon name="help" className="h-4 w-4" />
+                {t('physics.check')}
+              </button>
+              </FeaturePreview>
+          </Card>
+
           <Card
             id="settings-calc"
             icon="charge"
@@ -260,14 +286,6 @@ export function SettingsPage({
                 description={
                   t('settingsPage.short-over-left-right-reports')
                 }
-              />
-              </FeaturePreview>
-              <FeaturePreview id="weather">
-              <Switch
-                checked={weather}
-                onChange={(v) => setFeature('weather', v)}
-                label={t('settingsPage.weather-ballistics')}
-                description={t('settingsPage.weather-ballistics-description')}
               />
               </FeaturePreview>
               <FeaturePreview id="tot">

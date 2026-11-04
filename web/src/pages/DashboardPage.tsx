@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 
 import { ArtilleryCalculator } from '../components/ArtilleryCalculator'
 import { ModelSelector } from '../components/ModelSelector'
+import { isAvailableModel, useTables } from '../data/artillery/tables'
 import { TargetBar } from '../components/TargetBar'
-import { isModelId, type ModelId } from '../data/models'
+import type { ModelId } from '../data/models'
 import { onHotkey } from '../lib/desktop'
 import { downloadJournal, importJournalFile, type JournalActions } from '../lib/journalIO'
 import {
@@ -62,7 +63,7 @@ export function DashboardPage({
 
   // Загрузка записи журнала: переключаем модель и восстанавливаем вводные.
   function handleLoad(entry: JournalEntry) {
-    if (!isModelId(entry.modelId)) return
+    if (!isAvailableModel(entry.modelId)) return
 
     if (entry.modelId !== selectedModel) onModelChange(entry.modelId)
     setActiveId(entry.id)
@@ -76,7 +77,7 @@ export function DashboardPage({
   // Переключение сохранённых целей: N / P в окне, Ctrl+Alt+N / P в игре
   function cycleTarget(direction: 1 | -1) {
     const list = recentEntries(journal.entries).filter((e) =>
-      isModelId(e.modelId)
+      isAvailableModel(e.modelId)
     )
     const next = neighbourEntry(list, activeId, direction)
     if (next) handleLoad(next)
@@ -128,11 +129,16 @@ export function DashboardPage({
     />
   )
 
+  // Таблицы грузятся по требованию; пока новое орудие грузится, на экране прежнее
+  const tables = useTables(selectedModel)
+  if (!tables) return <section />
+
   return (
     <section>
       <ArtilleryCalculator
-        key={`${selectedModel}-${loadRequest?.nonce ?? 0}`}
-        modelId={selectedModel}
+        key={`${tables.id}-${loadRequest?.nonce ?? 0}`}
+        modelId={tables.id}
+        reference={tables.reference}
         modelSelector={selector}
         targetBar={
           <TargetBar

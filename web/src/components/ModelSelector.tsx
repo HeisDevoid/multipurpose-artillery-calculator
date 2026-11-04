@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { artilleryRegistry } from '../data/artillery/registry'
+import { availableModelIds, missingTablesOf, statusOf } from '../data/artillery/tables'
 import { categoryLabels } from '../data/categories'
 import { models, type ModelId } from '../data/models'
 import { t } from '../i18n'
@@ -16,15 +16,14 @@ interface ModelSelectorProps {
   onChange: (value: ModelId) => void
 }
 
-const modelIds = Object.keys(models) as ModelId[]
+// Только орудия с обоими наборами таблиц (с сопротивлением воздуха и без)
+const modelIds = availableModelIds
 
 /** Орудия из ванили (Arma 3) — в списке; остальные — в окне с поиском. */
 const isVanilla = (id: ModelId) => models[id].mod.startsWith('Arma 3')
 
 const MODS = '__mods__'
 
-// Проверка таблиц в игре: значок в углу плитки орудия (подробности в подсказке)
-const statusOf = (id: ModelId) => artilleryRegistry[id].source.status
 
 /**
  * Выбор орудия: значок класса отдельно от списка. В списке — ванильные
@@ -54,7 +53,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
         : isVanilla(id)
           ? t('picker.vanilla')
           : t('picker.current'),
-      icon: <ArtilleryIcon category={models[id].category} status={statusOf(id)} />,
+      icon: <ArtilleryIcon category={models[id].category} status={statusOf(id)} missing={missingTablesOf(id)} />,
       trailing: (
         <button
           type="button"
@@ -89,7 +88,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2">
-      <ArtilleryIcon category={current.category} status={statusOf(value)} />
+      <ArtilleryIcon category={current.category} status={statusOf(value)} missing={missingTablesOf(value)} />
       <Dropdown
         fullWidth
         className="min-w-0 flex-1"
@@ -115,7 +114,7 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
             group: isVanilla(id) ? t('picker.vanilla') : models[id].mod,
             source: isVanilla(id) ? undefined : /\bDLC\b/i.test(models[id].mod) ? ('dlc' as const) : ('mod' as const),
             keywords: models[id].notes,
-            icon: <ArtilleryIcon category={models[id].category} size="md" status={statusOf(id)} />,
+            icon: <ArtilleryIcon category={models[id].category} size="md" status={statusOf(id)} missing={missingTablesOf(id)} />,
           }))}
           onPick={(id) => {
             setPicking(false)

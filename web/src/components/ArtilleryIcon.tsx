@@ -1,4 +1,5 @@
 import type { ArtilleryCategory } from '../types/gameModel'
+import type { MissingTables } from '../data/artillery/tables'
 import type { DataStatus } from '../types/artillery'
 import { t } from '../i18n'
 import { DataStatusBadge } from './DataStatusBadge'
@@ -57,9 +58,11 @@ interface Props {
   size?: 'xs' | 'sm' | 'md'
   // Проверка таблиц: значок в правом нижнем углу (на кнопке выбора орудия)
   status?: DataStatus
+  // Неполные таблицы: значок предупреждения в том же углу
+  missing?: readonly MissingTables[]
 }
 
-export function ArtilleryIcon({ category, size = 'sm', status }: Props) {
+export function ArtilleryIcon({ category, size = 'sm', status, missing }: Props) {
   return (
     <span
       title={t(categoryLabels[category])}
@@ -84,7 +87,7 @@ export function ArtilleryIcon({ category, size = 'sm', status }: Props) {
       >
         <Glyph category={category} />
       </svg>
-      {status && <DataStatusBadge status={status} corner />}
+      {status && <DataStatusBadge status={status} missing={missing} corner />}
     </span>
   )
 }

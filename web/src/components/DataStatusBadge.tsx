@@ -1,31 +1,43 @@
 import { t } from '../i18n'
 import { DATA_STATUS_HINTS as HINTS, dataStatusLabel } from '../lib/dataStatus'
+import type { MissingTables } from '../data/artillery/tables'
 import type { DataStatus } from '../types/artillery'
 import { FieldIcon } from './FieldIcon'
 
 /**
- * Значок проверки таблиц орудия стрельбой в игре: зелёный щит — проверено,
- * жёлтый треугольник — ещё нет (возможны промахи). Подробности — в подсказке.
+ * Значок таблиц орудия. В углу плитки: жёлтый «!» — таблицы неполные (нет
+ * набора без сопротивления воздуха или с ним), зелёная галочка — проверены
+ * стрельбой в игре, иначе значка нет. Подробности — в подсказке.
  */
 export function DataStatusBadge({
   status,
+  missing = [],
   compact = false,
   corner = false,
 }: {
   status: DataStatus
+  // Каких наборов таблиц нет
+  missing?: readonly MissingTables[]
   // Только значок (подпись — в подсказке)
   compact?: boolean
   // Маленький значок в правом нижнем углу плитки орудия
   corner?: boolean
 }) {
-  const ok = status === 'verified'
+  const incomplete = missing.length > 0
+  const ok = status === 'verified' && !incomplete
   const label = dataStatusLabel(status)
-  const text = `${label}. ${t(HINTS[status])}`
+  const missingText = missing
+    .map((kind) => (kind === 'no-air' ? t('dataStatus.missing-no-air') : t('dataStatus.missing-air')))
+    .join(', ')
+  const text = incomplete
+    ? `${t('dataStatus.incomplete', missingText)} ${label}.`
+    : `${label}. ${t(HINTS[status])}`
   if (corner) {
+    if (!incomplete && !ok) return null
     return (
       <span
         role="img"
-        data-status={status}
+        data-status={incomplete ? 'incomplete' : status}
         title={text}
         aria-label={text}
         className={[
