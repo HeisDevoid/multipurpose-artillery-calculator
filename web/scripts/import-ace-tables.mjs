@@ -25,7 +25,7 @@
  * орудия в JSON (availableModes): у миномёта только навесная.
  */
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -263,13 +263,33 @@ function main() {
     console.log(`${label}: изменено ${changed.length}, новых ${added.length}, пропало ${removed.length}`)
     for (const k of changed.slice(0, 3)) console.log(`    было  ${a.get(k)}\n    стало ${b.get(k)}`)
   }
+  // Старые таблицы с погодными поправками в папке без сопротивления: в игре
+  // такой таблицы без сопротивления нет (у расчёта ACE потолок дальности
+  // 29 900 м, и навесная на дальних зарядах целиком за ним), а с погодой она
+  // уже есть в выгрузке для advanced/. Такие файлы мешают: орудие считается
+  // неполным и скрывается из списка
+  const stale = []
   for (const dir of [base, join(base, 'advanced')]) {
     if (!existsSync(dir)) continue
     const planneds = new Set(planned.filter((p) => p.dir === dir).map((p) => `${p.mode}-${p.charge}.txt`))
     const extra = readdirSync(dir).filter((f) => /^(HIGH|LOW)-\d+\.txt$/.test(f) && !planneds.has(f))
-    if (extra.length && planned.some((p) => p.dir === dir)) {
-      console.log(`в ${dir} есть файлы, которых нет в выгрузке (оставлены как есть): ${extra.join(', ')}`)
+    if (!extra.length || !planned.some((p) => p.dir === dir)) continue
+    const keep = []
+    for (const f of extra) {
+      const withWeather = readFileSync(join(dir, f), 'utf8')
+        .split(/\r?\n/)
+        .map((l) => l.trim().split(/\s+/))
+        .some((cells) => cells[0] !== '#' && cells.length === 12 && cells.slice(5).some((v) => v !== '-'))
+      const inAdvanced = planned.some((p) => p.physics === 'air' && `${p.mode}-${p.charge}.txt` === f)
+      if (dir === base && withWeather && inAdvanced) stale.push(join(dir, f))
+      else keep.push(f)
     }
+    if (keep.length) console.log(`в ${dir} есть файлы, которых нет в выгрузке (оставлены как есть): ${keep.join(', ')}`)
+  }
+  if (stale.length) {
+    const names = stale.map((f) => f.split(/[\\/]/).pop()).join(', ')
+    console.log(`таблицы с сопротивлением в папке без него (в игре без сопротивления их нет, с ним они в advanced/), удаляются: ${names}`)
+    changedFiles += stale.length
   }
 
   if (!flag('--write')) {
@@ -290,7 +310,8 @@ function main() {
     ]
     writeFileSync(p.file, [...header, ...p.rows.map(formatRow)].join('\n') + '\n')
   }
-  console.log(`записано файлов: ${planned.length}`)
+  for (const f of stale) unlinkSync(f)
+  console.log(`записано файлов: ${planned.length}${stale.length ? `, удалено: ${stale.length}` : ''}`)
   if (flag('--no-import')) return
   execFileSync('node', [join(WEB, 'scripts', 'import-tables.mjs'), '--all'], { cwd: WEB, stdio: 'inherit' })
 }
