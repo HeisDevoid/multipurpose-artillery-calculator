@@ -146,7 +146,7 @@ test('при первом запуске спрашивает про физик�
   const errors = await open(page, '/', { physicsAsked: '' })
   const dialog = page.getByRole('dialog', { name: /Important: does the server have air resistance/ })
   await expect(dialog).toBeVisible()
-  await dialog.getByRole('button', { name: /turn air resistance on/ }).click()
+  await dialog.getByRole('button', { name: /Mine has the asterisk/ }).click()
   await expect(dialog).toBeHidden()
   expect(await page.evaluate(() => [localStorage.getItem('physicsAsked'), localStorage.getItem('feature:weather')])).toEqual(['yes', 'on'])
   expect(errors).toEqual([])

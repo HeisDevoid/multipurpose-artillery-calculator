@@ -1,15 +1,16 @@
 import type { ReactNode } from 'react'
 
 /**
- * Анимации для вопроса «есть ли на сервере сопротивление воздуха»: как в
- * игре открыть таблицу стрельбы ACE (меню на себя → пункт с названием
- * орудия → таблица) и чем отличается пункт со звёздочкой. Надписи — как в
- * игре, по-английски.
+ * Анимация для вопроса «есть ли на сервере сопротивление воздуха»: как в
+ * игре открыть таблицу стрельбы ACE (Ctrl+Win → пункт с названием орудия →
+ * таблица). Два варианта рядом: пункт без звёздочки и со звёздочкой, и что
+ * тогда в таблице. Надписи как в игре, по-английски.
  */
 
-const LOOP = '7s'
+const LOOP = '8s'
 const FONT = 'Inter, system-ui, sans-serif'
 const MONO = 'ui-monospace, Consolas, monospace'
+const STAR = '#ffb020'
 
 // Видно на доле цикла [from, to] (с плавным появлением и исчезновением)
 function Phase({ from, to, children }: { from: number; to: number; children: ReactNode }) {
@@ -19,7 +20,7 @@ function Phase({ from, to, children }: { from: number; to: number; children: Rea
         attributeName="opacity"
         dur={LOOP}
         repeatCount="indefinite"
-        keyTimes={`0;${from};${from + 0.04};${to - 0.04};${to};1`}
+        keyTimes={`0;${from};${from + 0.03};${to - 0.03};${to};1`}
         values="0;0;1;1;0;0"
       />
       {children}
@@ -28,185 +29,199 @@ function Phase({ from, to, children }: { from: number; to: number; children: Rea
 }
 
 // Пейзаж игры: небо, холмы, грунтовая дорога
-function Scene() {
+function Scene({ id }: { id: string }) {
   return (
     <>
       <defs>
-        <linearGradient id="ace-sky" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`${id}-sky`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#7fb0dc" />
           <stop offset="1" stopColor="#cfe0ec" />
         </linearGradient>
-        <linearGradient id="ace-ground" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#bba67f" />
-          <stop offset="1" stopColor="#d8cbb1" />
+        <linearGradient id={`${id}-ground`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#a9946e" />
+          <stop offset="1" stopColor="#cdbfa4" />
         </linearGradient>
       </defs>
-      <rect width="320" height="180" fill="url(#ace-sky)" />
-      <path d="M0 74 Q 60 62 120 70 T 220 66 T 320 72 V 86 H0z" fill="#8c9a7c" />
-      <rect y="80" width="320" height="100" fill="url(#ace-ground)" />
-      <path d="M150 80 L 170 80 L 250 180 L 70 180z" fill="#d9ccb2" opacity=".7" />
-      <circle cx="58" cy="82" r="13" fill="#4f6138" />
-      <circle cx="76" cy="85" r="9" fill="#5b6e41" />
-      <circle cx="262" cy="80" r="10" fill="#4f6138" />
+      <rect width="200" height="150" fill={`url(#${id}-sky)`} />
+      <path d="M0 58 Q 40 48 90 55 T 170 52 T 200 56 V 70 H0z" fill="#8c9a7c" />
+      <rect y="64" width="200" height="86" fill={`url(#${id}-ground)`} />
+      <path d="M92 64 L 108 64 L 170 150 L 30 150z" fill="#d9ccb2" opacity=".55" />
+      <circle cx="18" cy="66" r="10" fill="#4f6138" />
+      <circle cx="32" cy="69" r="7" fill="#5b6e41" />
+      <circle cx="186" cy="64" r="8" fill="#4f6138" />
     </>
   )
 }
 
+type Icon = 'dot' | 'table' | 'self' | 'plus'
+
 // Пункт меню ACE: значок и подпись под ним (белые, с тенью, как в игре)
-function MenuItem({ x, y, label, icon = 'dot', bright = false }: { x: number; y: number; label: string; icon?: 'dot' | 'table' | 'self' | 'plus'; bright?: boolean }) {
+function MenuItem({ x, y, label, icon = 'dot' }: { x: number; y: number; label: string; icon?: Icon }) {
   return (
-    <g fontFamily={FONT} textAnchor="middle" style={{ filter: 'drop-shadow(0 0 1.5px rgba(0,0,0,.7))' }}>
-      {icon === 'dot' && <circle cx={x} cy={y} r="2" fill="#fff" />}
+    <g fontFamily={FONT} textAnchor="middle">
+      {icon === 'dot' && <circle cx={x} cy={y} r="1.8" fill="#fff" />}
       {icon === 'plus' && <path d={`M${x - 3} ${y}h6M${x} ${y - 3}v6`} stroke="#fff" strokeWidth="1.6" />}
       {icon === 'self' && <path d={`M${x - 4} ${y + 2}l4-4 4 4M${x - 3} ${y + 3}h6`} stroke="#fff" strokeWidth="1.2" fill="none" />}
-      {icon === 'table' && (
-        <g>
-          <rect x={x - 5} y={y - 4} width="10" height="8" rx="1" fill="#fff" stroke="#c84040" strokeWidth=".8" />
-          <path d={`M${x - 5} ${y - 1.5}h10M${x - 1.5} ${y - 4}v8M${x + 1.8} ${y - 4}v8`} stroke="#c84040" strokeWidth=".5" />
-        </g>
-      )}
-      <text x={x} y={y + 10} fontSize="6.5" fill={bright ? '#fff' : 'rgba(255,255,255,.88)'} fontWeight={bright ? 700 : 500}>
+      <text x={x} y={y + 9.5} fontSize="7.5" fill="#fff" fontWeight="500">
         {label}
       </text>
     </g>
   )
 }
 
+// Строки таблицы Sholef, HIGH, заряд 0 (data-sources/sholef): без
+// сопротивления воздуха и с ним (ветер, температура, плотность воздуха)
+const NO_AIR = [
+  ['850', '1417', '30.9'],
+  ['900', '1406', '30.8'],
+  ['950', '1394', '30.7'],
+  ['1000', '1383', '30.7'],
+  ['1050', '1371', '30.6'],
+  ['1100', '1359', '30.5'],
+  ['1150', '1347', '30.4'],
+  ['1200', '1335', '30.3'],
+  ['1250', '1323', '30.2'],
+].map((row) => [...row, '-', '-', '-'])
+
+const AIR = [
+  ['850', '1395', '29.7', '2.6', '0.2', '-0.9'],
+  ['900', '1382', '29.6', '2.7', '0.1', '-0.9'],
+  ['950', '1369', '29.5', '2.7', '0.2', '-1.0'],
+  ['1000', '1356', '29.4', '2.6', '0.1', '-1.0'],
+  ['1050', '1342', '29.4', '2.8', '0.2', '-1.0'],
+  ['1100', '1329', '29.2', '2.8', '0.1', '-1.2'],
+  ['1150', '1315', '29.1', '2.9', '0.3', '-1.1'],
+  ['1200', '1301', '29.0', '2.9', '0.3', '-1.1'],
+  ['1250', '1286', '28.9', '2.9', '0.1', '-1.3'],
+]
+
+const COL = 25.3
+const colX = (i: number) => 40 + COL / 2 + i * COL
+
 // Лист таблицы стрельбы ACE: слева HIGH/LOW и заряды, справа белая таблица
-function RangeSheet({ x, y, weather }: { x: number; y: number; weather: boolean }) {
-  const rows = weather
-    ? [
-        ['850', '1395', '30.3', '2.7', '-6.1', '5.9'],
-        ['900', '1383', '30.2', '2.8', '-6.3', '6.0'],
-        ['950', '1370', '30.1', '2.9', '-6.4', '6.2'],
-        ['1000', '1358', '29.9', '3.0', '-6.6', '6.3'],
-      ]
-    : [
-        ['850', '1417', '30.9', '-', '-', '-'],
-        ['900', '1406', '30.8', '-', '-', '-'],
-        ['950', '1394', '30.7', '-', '-', '-'],
-        ['1000', '1383', '30.7', '-', '-', '-'],
-      ]
-  const cols = [8, 30, 52, 78, 100, 122]
+function RangeSheet({ withAir }: { withAir: boolean }) {
+  const rows = withAir ? AIR : NO_AIR
   return (
-    <g transform={`translate(${x} ${y})`}>
-      <rect width="44" height="118" fill="#0d0d0d" />
-      <rect x="2" y="2" width="19" height="9" fill="#1e1e1e" />
-      <text x="11.5" y="8.6" fontSize="4.6" fill="#fff" textAnchor="middle" fontFamily={FONT}>HIGH</text>
-      <text x="32" y="8.6" fontSize="4.6" fill="#666" textAnchor="middle" fontFamily={FONT}>LOW</text>
+    <g transform="translate(4 4)">
+      <rect width="40" height="142" fill="#0d0d0d" />
+      <rect x="2" y="2" width="17" height="9" fill="#262626" />
+      <text x="10.5" y="8.3" fontSize="5" fill="#fff" textAnchor="middle" fontFamily={FONT}>HIGH</text>
+      <text x="29" y="8.3" fontSize="5" fill="#777" textAnchor="middle" fontFamily={FONT}>LOW</text>
       {[0, 1, 2, 3, 4].map((n) => (
         <g key={n}>
-          {n === 0 && <rect x="2" y={14} width="40" height="7" fill="#eee" />}
-          <text x="4" y={19.4 + n * 8} fontSize="4.6" fill={n === 0 ? '#111' : '#ddd'} fontFamily={FONT}>[Charge {n}]</text>
+          {n === 0 && <rect x="2" y="14.5" width="36" height="7.5" fill="#eee" />}
+          <text x="4" y={20.2 + n * 9} fontSize="5" fill={n === 0 ? '#111' : '#ddd'} fontFamily={FONT}>[Charge {n}]</text>
         </g>
       ))}
-      <rect x="44" width="146" height="118" fill="#fbfbf8" />
+      <rect x="40" width="152" height="142" fill="#fbfbf8" />
       {['RANGE', 'ELEV', 'TIME', 'WIND', 'TEMP', 'DENS'].map((h, i) => (
-        <text key={h} x={44 + cols[i] + 6} y="10" fontSize="4.2" fill="#222" textAnchor="middle" fontFamily={FONT} fontWeight="700">{h}</text>
+        <text key={h} x={colX(i)} y="9.5" fontSize="5.2" fill="#222" textAnchor="middle" fontFamily={FONT} fontWeight="700">{h}</text>
       ))}
-      <path d="M44 14H190" stroke="#999" strokeWidth=".4" />
-      {/* Погодные столбцы: серая полоса, как в игре */}
-      <rect x="114" y="14" width="22" height="104" fill="#e2e2e2" />
+      <path d="M40 13.5H192" stroke="#999" strokeWidth=".4" />
       {rows.map((row, r) => (
         <g key={r}>
-          {row.map((v, i) => (
-            <text key={i} x={44 + cols[i] + 6} y={24 + r * 9} fontSize="4.8" fill={i >= 3 && weather ? '#0a7a2f' : '#222'} textAnchor="middle" fontFamily={MONO} fontWeight={i >= 3 && weather ? 700 : 400}>
-              {v}
-            </text>
-          ))}
+          {row.map((v, i) => {
+            const weather = i >= 3
+            return (
+              <text
+                key={i}
+                x={colX(i)}
+                y={24 + r * 13}
+                fontSize="6.2"
+                textAnchor="middle"
+                fontFamily={MONO}
+                fill={weather ? (withAir ? '#0a7a2f' : '#9a9a9a') : '#222'}
+                fontWeight={weather && withAir ? 700 : 400}
+              >
+                {v}
+              </text>
+            )
+          })}
         </g>
       ))}
-      <text x="117" y="66" fontSize="4.2" fill="#888" textAnchor="middle" fontFamily={MONO}>⋮</text>
+      {/* Столбцы погоды: здесь и видна разница */}
+      <Phase from={0.68} to={0.98}>
+        <rect x={40 + 3 * COL + 1} y="2" width={3 * COL - 2.5} height="138" rx="3" fill="none" stroke={STAR} strokeWidth="1.6">
+          <animate attributeName="stroke-opacity" values="1;.35;1" dur="1.2s" repeatCount="indefinite" />
+        </rect>
+      </Phase>
     </g>
   )
 }
 
-/** Как открыть таблицу стрельбы ACE в игре: меню на себя → пункт орудия → таблица. */
-export function AceMenuDemo() {
-  return (
-    <svg viewBox="0 0 320 180" className="block w-full rounded-md" aria-hidden="true">
-      <Scene />
-      {/* Клавиши меню ACE на себя (по умолчанию) */}
-      <Phase from={0.0} to={0.2}>
-        <g fontFamily={FONT} fontSize="9" fontWeight="700" textAnchor="middle">
-          <rect x="118" y="20" width="36" height="16" rx="3" fill="#111" stroke="#fff" strokeOpacity=".5" />
-          <text x="136" y="31" fill="#fff">Ctrl</text>
-          <text x="160" y="31" fill="#fff">+</text>
-          <rect x="166" y="20" width="36" height="16" rx="3" fill="#111" stroke="#fff" strokeOpacity=".5" />
-          <text x="184" y="31" fill="#fff">Win</text>
-        </g>
-      </Phase>
-      {/* Меню ACE на себя */}
-      <Phase from={0.08} to={0.62}>
-        <MenuItem x={160} y={86} label="Self Actions" icon="self" />
-        <MenuItem x={160} y={50} label="Medical" icon="plus" />
-        <MenuItem x={210} y={66} label="Gestures" />
-        <MenuItem x={104} y={68} label="Accessories" />
-        <MenuItem x={110} y={112} label="Equipment" />
-        <MenuItem x={212} y={110} label="Team Management" />
-        <MenuItem x={124} y={142} label="Open Kestrel 4500" />
-        <MenuItem x={178} y={140} label="Sholef" icon="table" />
-      </Phase>
-      {/* Наведение на пункт с названием орудия */}
-      <Phase from={0.4} to={0.62}>
-        <circle cx="178" cy="140" r="10" fill="none" stroke="#ffb020" strokeWidth="1.4">
-          <animate attributeName="r" values="7;11;7" dur="1s" repeatCount="indefinite" />
-        </circle>
-      </Phase>
-      {/* Таблица стрельбы */}
-      <Phase from={0.6} to={0.97}>
-        <RangeSheet x={65} y={30} weather={false} />
-      </Phase>
-      {/* Курсор */}
-      <g style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,.8))' }}>
-        <path d="M0 0 L0 9 L2.5 6.8 L4.5 11 L6 10.3 L4 6.2 L7.5 6.2 Z" fill="#fff" stroke="#333" strokeWidth=".4">
-          <animateTransform
-            attributeName="transform"
-            type="translate"
-            dur={LOOP}
-            repeatCount="indefinite"
-            keyTimes="0;0.15;0.38;0.6;0.8;1"
-            values="160 92;160 92;179 141;179 141;150 120;160 92"
-          />
-        </path>
-      </g>
-    </svg>
-  )
-}
-
 /**
- * Пункт меню со звёздочкой и без: со звёздочкой у сервера сопротивление
- * воздуха, и в таблице заполнены погодные столбцы.
+ * Как открыть таблицу стрельбы ACE в игре: Ctrl+Win → пункт с названием
+ * орудия («Sholef» или «Sholef*») → таблица. withAir — вариант со звёздочкой
+ * (сопротивление воздуха есть) и заполненными столбцами погоды.
  */
-export function AsteriskDemo({ withAir }: { withAir: boolean }) {
+export function AceMenuDemo({ withAir }: { withAir: boolean }) {
+  const id = withAir ? 'ace-air' : 'ace-noair'
   return (
-    <svg viewBox="0 0 200 156" className="block w-full rounded-md" aria-hidden="true">
-      <rect width="200" height="34" fill="#a99572" />
-      <rect y="0" width="200" height="34" fill="url(#ace-ground-small)" />
-      <defs>
-        <linearGradient id="ace-ground-small" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#9c8763" />
-          <stop offset="1" stopColor="#bba67f" />
-        </linearGradient>
-      </defs>
-      {/* Пункт меню: значок таблицы и название */}
-      <g fontFamily={FONT} style={{ filter: 'drop-shadow(0 0 1.5px rgba(0,0,0,.7))' }}>
-        <rect x="56" y="8" width="12" height="10" rx="1" fill="#fff" stroke="#c84040" strokeWidth=".9" />
-        <path d="M56 11.5h12M60 8v10M64 8v10" stroke="#c84040" strokeWidth=".6" />
-        <text x="74" y="16.5" fontSize="10" fill="#fff" fontWeight="700">Sholef</text>
-        {withAir && (
-          <g>
-            <circle cx="111" cy="12.5" r="6" fill="none" stroke="#ffb020" strokeWidth="1.4">
-              <animate attributeName="r" values="5;9;5" dur="1.4s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="1;.25;1" dur="1.4s" repeatCount="indefinite" />
-            </circle>
-            <text x="108" y="18" fontSize="12" fill="#ffb020" fontWeight="800">*</text>
+    <svg viewBox="0 0 200 150" className="block w-full" aria-hidden="true">
+      <Scene id={id} />
+      <g style={{ filter: 'drop-shadow(0 0 1.2px rgba(0,0,0,.75))' }}>
+        {/* Клавиши меню ACE на себя (по умолчанию) */}
+        <Phase from={0} to={0.22}>
+          <g fontFamily={FONT} fontSize="8.5" fontWeight="700" textAnchor="middle" fill="#fff">
+            <rect x="61" y="7" width="34" height="15" rx="3" fill="#111" stroke="#fff" strokeOpacity=".5" />
+            <text x="78" y="17.6">Ctrl</text>
+            <text x="100" y="17.6">+</text>
+            <rect x="105" y="7" width="34" height="15" rx="3" fill="#111" stroke="#fff" strokeOpacity=".5" />
+            <text x="122" y="17.6">Win</text>
           </g>
-        )}
+        </Phase>
+        {/* Меню ACE на себя */}
+        <Phase from={0.08} to={0.6}>
+          <MenuItem x={100} y={40} label="Medical" icon="plus" />
+          <MenuItem x={46} y={58} label="Accessories" />
+          <MenuItem x={156} y={60} label="Gestures" />
+          <MenuItem x={100} y={78} label="Self Actions" icon="self" />
+          <MenuItem x={48} y={96} label="Equipment" />
+          <MenuItem x={156} y={96} label="Team Management" />
+          <MenuItem x={58} y={124} label="Open Kestrel 4500" />
+          {/* Наведение на пункт с названием орудия */}
+          <Phase from={0.34} to={0.6}>
+            <rect x="111" y="112" width="60" height="30" rx="5" fill="#fff" fillOpacity=".2" stroke="#fff" strokeOpacity=".7" strokeWidth=".8" />
+          </Phase>
+          {/* Пункт с названием орудия: значок таблицы, подпись, звёздочка */}
+          <g fontFamily={FONT}>
+            <rect x="131" y="118" width="10" height="8" rx="1" fill="#fff" stroke="#c84040" strokeWidth=".8" />
+            <path d="M131 120.5h10M134.5 118v8M137.8 118v8" stroke="#c84040" strokeWidth=".5" />
+            <text x="136" y="136" fontSize="9.5" fill="#fff" fontWeight="700" textAnchor="middle">Sholef</text>
+            {withAir && (
+              <g>
+                <circle cx="158" cy="131.5" r="6" fill="none" stroke={STAR} strokeWidth="1.3">
+                  <animate attributeName="r" values="5;8.5;5" dur="1.2s" repeatCount="indefinite" />
+                  <animate attributeName="stroke-opacity" values="1;.3;1" dur="1.2s" repeatCount="indefinite" />
+                </circle>
+                <text x="154" y="139" fontSize="13" fill={STAR} fontWeight="800">*</text>
+              </g>
+            )}
+          </g>
+        </Phase>
+        {/* Курсор: к пункту орудия и щелчок */}
+        <Phase from={0.08} to={0.6}>
+          <circle cx="140" cy="117" fill="none" stroke="#fff" strokeWidth="1">
+            <animate attributeName="r" dur={LOOP} repeatCount="indefinite" keyTimes="0;0.48;0.56;1" values="0;0;11;11" />
+            <animate attributeName="opacity" dur={LOOP} repeatCount="indefinite" keyTimes="0;0.48;0.56;1" values="0;1;0;0" />
+          </circle>
+          <path d="M0 0 L0 9 L2.5 6.8 L4.5 11 L6 10.3 L4 6.2 L7.5 6.2 Z" fill="#fff" stroke="#333" strokeWidth=".4">
+            <animateTransform
+              attributeName="transform"
+              type="translate"
+              dur={LOOP}
+              repeatCount="indefinite"
+              keyTimes="0;0.16;0.34;1"
+              values="100 84;100 84;140 117;140 117"
+            />
+          </path>
+        </Phase>
       </g>
-      <g transform="translate(5 36) scale(1)">
-        <RangeSheet x={0} y={0} weather={withAir} />
-      </g>
+      {/* Таблица стрельбы */}
+      <Phase from={0.58} to={0.98}>
+        <rect width="200" height="150" fill="#000" fillOpacity=".35" />
+        <RangeSheet withAir={withAir} />
+      </Phase>
     </svg>
   )
 }

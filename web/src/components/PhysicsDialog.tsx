@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { t } from '../i18n'
 import { setFeature, useFeature } from '../lib/features'
 import { markPhysicsAsked, physicsAsked, setPanel, tourDone, usePanel } from '../lib/uiPanels'
-import { AceMenuDemo, AsteriskDemo } from './AceTableDemo'
+import { AceMenuDemo } from './AceTableDemo'
 import { FieldIcon } from './FieldIcon'
 
 /**
@@ -47,7 +47,7 @@ export function PhysicsDialog() {
       aria-labelledby="physics-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4"
     >
-      <div className="panel max-h-[92vh] w-full max-w-xl overflow-y-auto p-5 shadow-2xl sm:p-6">
+      <div className="panel max-h-[92vh] w-full max-w-2xl overflow-y-auto p-5 shadow-2xl sm:p-6">
         <div className="flex items-start gap-3">
           <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-warn/15 text-warn">
             <FieldIcon name="warning" className="h-5 w-5" />
@@ -60,50 +60,18 @@ export function PhysicsDialog() {
           </div>
         </div>
 
-        <p className="label mt-5">{t('physics.how')}</p>
-        <ol className="mt-2 space-y-2 text-[14px] leading-relaxed text-app-text-2">
-          <li className="flex gap-2.5">
-            <b className="w-4 shrink-0 text-app-text">1</b>
-            {t('physics.step1')}
-          </li>
-        </ol>
+        <p className="mt-4 text-[14px] leading-relaxed text-app-text">{t('physics.how')}</p>
 
-        {/* Как в игре: меню ACE на себя, пункт с названием орудия, таблица */}
-        <div className="mt-3 overflow-hidden rounded-lg ring-1 ring-app-line-strong">
-          <AceMenuDemo />
-        </div>
-
-        <ol start={2} className="mt-4 space-y-2 text-[14px] leading-relaxed text-app-text-2">
-          <li className="flex gap-2.5">
-            <b className="w-4 shrink-0 text-app-text">2</b>
-            {t('physics.step2')}
-          </li>
-          <li className="flex gap-2.5">
-            <b className="w-4 shrink-0 text-app-text">3</b>
-            {t('physics.step3')}
-          </li>
-        </ol>
-
-        {/* Пункт меню со звёздочкой и без, и что тогда в таблице */}
-        <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-          <AsteriskSample withAir={false} />
-          <AsteriskSample withAir />
+        {/* Как в игре: Ctrl+Win, пункт с названием орудия без звёздочки и с ней, таблица */}
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <Variant withAir={false} onPick={() => answer(false)} />
+          <Variant withAir onPick={() => answer(true)} />
         </div>
 
         {/* Без ACE таблицы нет, а у артиллерии в обычной Arma 3 сопротивления воздуха нет */}
-        <p className="mt-3 rounded-md bg-app-raised px-3 py-2 text-[13px] leading-relaxed text-app-text-2">
-          {t('physics.no-ace')}
-        </p>
+        <p className="mt-3 text-[13px] leading-relaxed text-app-text-2">{t('physics.no-ace')}</p>
 
-        <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          <button type="button" onClick={() => answer(true)} className="btn btn-primary h-auto min-w-0 py-2 whitespace-normal">
-            {t('physics.yes')}
-          </button>
-          <button type="button" onClick={() => answer(false)} className="btn h-auto min-w-0 py-2 whitespace-normal">
-            {t('physics.no')}
-          </button>
-        </div>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-app-muted">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-app-line pt-3 text-[12.5px] text-app-muted">
           <span>
             {physics ? t('physics.now-on') : t('physics.now-off')} {t('physics.settings-note')}
           </span>
@@ -122,15 +90,23 @@ function closePhysics() {
   if (!tourDone()) window.setTimeout(() => setPanel('tour', true), 400)
 }
 
-/** Пункт меню ACE со звёздочкой или без и таблица за ним: так видно разницу. */
-function AsteriskSample({ withAir }: { withAir: boolean }) {
+/** Вариант ответа: как это выглядит в игре, что значит и кнопка «у меня так». */
+function Variant({ withAir, onPick }: { withAir: boolean; onPick: () => void }) {
   return (
-    <div className="rounded-lg bg-app-raised p-2.5">
-      <p className={`mb-2 text-[12px] font-semibold ${withAir ? 'text-ok' : 'text-app-muted'}`}>
-        {withAir ? t('physics.with') : t('physics.without')}
-      </p>
-      <div className="overflow-hidden rounded-md">
-        <AsteriskDemo withAir={withAir} />
+    <div className="flex flex-col overflow-hidden rounded-lg ring-1 ring-app-line">
+      <AceMenuDemo withAir={withAir} />
+      <div className="flex flex-1 flex-col gap-1 p-3">
+        <p className={`text-[15px] font-semibold ${withAir ? 'text-ok' : 'text-app-text'}`}>
+          {withAir ? t('physics.with') : t('physics.without')}
+        </p>
+        <p className="text-[13px] leading-snug text-app-muted">
+          {withAir ? t('physics.with-note') : t('physics.without-note')}
+        </p>
+        <div className="mt-auto pt-2">
+          <button type="button" onClick={onPick} className="btn h-auto w-full min-w-0 py-2 whitespace-normal">
+            {withAir ? t('physics.yes') : t('physics.no')}
+          </button>
+        </div>
       </div>
     </div>
   )
