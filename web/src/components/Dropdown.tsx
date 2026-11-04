@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 
 export interface DropdownOption<T extends string> {
   value: T
@@ -91,6 +91,23 @@ export function Dropdown<T extends string>({
 
   useEffect(() => {
     if (open) listRef.current?.focus()
+  }, [open])
+
+  // Список не выходит за края экрана: если по ширине он вылезает (кнопка у
+  // края, а список шире её), сдвигаем его вбок до отступа 8 px от края
+  useLayoutEffect(() => {
+    const list = listRef.current
+    if (!open || !list) return
+    list.style.transform = ''
+    const rect = list.getBoundingClientRect()
+    const margin = 8
+    const shift =
+      rect.left < margin
+        ? margin - rect.left
+        : rect.right > window.innerWidth - margin
+          ? window.innerWidth - margin - rect.right
+          : 0
+    if (shift) list.style.transform = `translateX(${Math.round(shift)}px)`
   }, [open])
 
   // Активная строка всегда в поле зрения

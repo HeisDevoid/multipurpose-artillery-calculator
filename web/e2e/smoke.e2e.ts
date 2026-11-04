@@ -155,6 +155,18 @@ test('при первом запуске спрашивает про физик�
   expect(errors).toEqual([])
 })
 
+test('меню «Обучение» целиком на экране', async ({ page }) => {
+  // На телефоне кнопка у левого края, а список шире её: раньше он уходил за край
+  const errors = await open(page)
+  await page.getByRole('button', { name: /Tutorial/ }).click()
+  const box = await page.getByRole('listbox', { name: 'Tutorial' }).boundingBox()
+  const width = page.viewportSize()?.width ?? 0
+  expect(box).not.toBeNull()
+  expect(box!.x).toBeGreaterThanOrEqual(0)
+  expect(box!.x + box!.width).toBeLessThanOrEqual(width)
+  expect(errors).toEqual([])
+})
+
 test('справка открывается из меню «Обучение»', async ({ page }) => {
   const errors = await open(page)
   await page.getByRole('button', { name: /Tutorial/ }).click()
