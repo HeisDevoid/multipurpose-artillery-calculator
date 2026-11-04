@@ -29,9 +29,7 @@
   },
   "kamaz_mrl": {
     "status": "in-progress",
-    "missing": [
-      "no-air"
-    ]
+    "missing": []
   },
   "m101_sog": {
     "status": "in-progress",
@@ -77,9 +75,7 @@
   },
   "seara": {
     "status": "in-progress",
-    "missing": [
-      "no-air"
-    ]
+    "missing": []
   },
   "sholef": {
     "status": "in-progress",
