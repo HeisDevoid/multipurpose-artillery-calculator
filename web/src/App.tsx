@@ -14,6 +14,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { isAvailableModel } from './data/artillery/tables'
 import type { ModelId } from './data/models'
 import { onHotkey, toggleOverlay } from './lib/desktop'
+import { DEV_BUILD } from './lib/devBuild'
 import { applyHead, initialLanguage } from './lib/seo'
 import { readInvite } from './lib/sync'
 import { usePersistentState } from './lib/usePersistentState'
@@ -185,10 +186,10 @@ function App() {
             selectedModel={selectedModel}
             onModelChange={setSelectedModel}
             language={language}
-            gridInput={gridInput}
+            gridInput={DEV_BUILD && gridInput}
             mapInput={mapInput}
             showMarkers={showMarkers}
-            showScreenMarkers={showScreenMarkers}
+            showScreenMarkers={DEV_BUILD && showScreenMarkers}
           />
         )}
 

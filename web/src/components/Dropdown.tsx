@@ -39,6 +39,9 @@ interface DropdownProps<T extends string> {
   up?: boolean
   // Дополнительные классы кнопки (размер, фон на телефоне)
   buttonClassName?: string
+  // Справа на кнопке, перед шевроном: своя кнопка (например, «в избранное»).
+  // Лежит поверх кнопки списка, а не внутри неё
+  buttonTrailing?: ReactNode
 }
 
 /**
@@ -60,6 +63,7 @@ export function Dropdown<T extends string>({
   up: upProp = false,
   tourId,
   buttonClassName = '',
+  buttonTrailing,
 }: DropdownProps<T>) {
   const id = useId()
   const [open, setOpen] = useState(false)
@@ -194,6 +198,8 @@ export function Dropdown<T extends string>({
         <span className="min-w-0 flex-1 leading-tight break-words whitespace-normal">
           {buttonLabel ?? current?.label ?? placeholder}
         </span>
+        {/* Место под кнопку справа (она лежит поверх) */}
+        {buttonTrailing && <span aria-hidden="true" className="w-6 shrink-0" />}
         {variant !== 'icon' && (
         <svg
           viewBox="0 0 24 24"
@@ -211,6 +217,10 @@ export function Dropdown<T extends string>({
         </svg>
         )}
       </button>
+
+      {buttonTrailing && (
+        <span className="absolute top-1/2 right-8 flex -translate-y-1/2">{buttonTrailing}</span>
+      )}
 
       {open && (
         <ul

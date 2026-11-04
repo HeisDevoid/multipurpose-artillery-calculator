@@ -7,6 +7,7 @@ import { t } from '../i18n'
 import { useFavorites } from '../lib/favorites'
 import { ArtilleryIcon } from './ArtilleryIcon'
 import { Dropdown, type DropdownOption } from './Dropdown'
+import { FavoriteToggle } from './FavoriteToggle'
 import { FieldIcon } from './FieldIcon'
 import { MapRequests } from './MapRequests'
 import { PickerDialog } from './PickerDialog'
@@ -23,6 +24,9 @@ const modelIds = availableModelIds
 const isVanilla = (id: ModelId) => models[id].mod.startsWith('Arma 3')
 
 const MODS = '__mods__'
+
+/** Название на закрытом списке: без калибра, он виден в раскрытом списке. */
+const shortModelName = (name: string) => name.replace(/\s*\(\d+\s*mm\)$/, '')
 
 
 /**
@@ -94,6 +98,8 @@ export function ModelSelector({ value, onChange }: ModelSelectorProps) {
         className="min-w-0 flex-1"
         label={t('modelSelector.label')}
         value={value as string}
+        buttonLabel={shortModelName(current.name)}
+        buttonTrailing={<FavoriteToggle on={isFav(value)} onToggle={() => toggleFavorite(value)} />}
         options={options}
         onChange={(next) => {
           if (next === MODS) setPicking(true)

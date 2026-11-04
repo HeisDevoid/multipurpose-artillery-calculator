@@ -39,6 +39,23 @@ export function AmmunitionSelector({
   const selected =
     ammunition.find((item) => item.id === selectedId) ?? ammunition[0]
 
+  // Снаряд один: не список, а затемнённое поле, как высота орудия под замком
+  if (ammunition.length === 1) {
+    return (
+      <>
+        <ShellIcon category={category} type={selected.type} size="sm" />
+        <div
+          role="group"
+          aria-label={t('ammunitionSelector.shell')}
+          title={t('ammunitionSelector.only-one-title')}
+          className="field flex h-auto min-h-9 min-w-0 flex-1 cursor-default items-center py-1 text-left opacity-60 hover:bg-app-raised"
+        >
+          <span className="min-w-0 flex-1 leading-tight break-words">{formatLabel(selected)}</span>
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       <ShellIcon category={category} type={selected.type} size="sm" />

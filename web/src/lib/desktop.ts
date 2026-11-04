@@ -9,6 +9,7 @@ import type { MapSelection } from '../components/MapPicker'
 import type { ArtilleryMode } from '../types/artillery'
 import type { ArtilleryCategory } from '../types/gameModel'
 import type { Language } from '../types/settings'
+import { DEV_BUILD } from './devBuild'
 import type { MapTarget } from './journal'
 import type { MrsiRun, TerrainStatus } from './mrsi'
 
@@ -37,7 +38,8 @@ export const GLOBAL_HOTKEYS: readonly {
   { keys: 'Ctrl + Alt + F', action: 'fire' },
   { keys: 'Ctrl + Alt + O', action: 'overlay' },
   { keys: 'Ctrl + Alt + D', action: 'input' },
-  { keys: 'Ctrl + Alt + S', action: 'screen-markers' },
+  // Метки с экрана игры: экспериментальные, только в сборке для разработки
+  ...(DEV_BUILD ? [{ keys: 'Ctrl + Alt + S', action: 'screen-markers' as const }] : []),
   { keys: 'Ctrl + Alt + M', action: 'mode' },
   { keys: 'Ctrl + Alt + N', action: 'next-target' },
   { keys: 'Ctrl + Alt + P', action: 'previous-target' },

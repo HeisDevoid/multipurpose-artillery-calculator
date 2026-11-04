@@ -76,6 +76,7 @@ import { FieldIcon, type FieldIconName } from './FieldIcon'
 import { useFlightOnMap } from '../lib/animation'
 import { FlightCanvas, type FlightShot } from './FlightCanvas'
 import { useFavorites } from '../lib/favorites'
+import { FavoriteToggle } from './FavoriteToggle'
 import { shellKind } from '../lib/shellKind'
 import type { ArtilleryCategory } from '../types/gameModel'
 import { MAPS_BASE } from '../lib/builtinMaps'
@@ -1802,6 +1803,9 @@ export function MapPicker({
             className="min-w-0 flex-1"
             buttonClassName="max-sm:pl-2.5"
             placeholder="-"
+            buttonTrailing={
+              current ? <FavoriteToggle on={isFavorite(current.key)} onToggle={() => toggleFavorite(current.key)} /> : undefined
+            }
             buttonLabel={
               current?.lowQuality ? (
                 <span className="flex items-center gap-1.5">
