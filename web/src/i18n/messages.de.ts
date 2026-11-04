@@ -1,6 +1,7 @@
 import type { ru } from './messages'
 
 export const de: Record<keyof typeof ru, string> = {
+  "footer.donate": "Auf Donatello unterstützen",
   "footer.donate-hint": "Für die Domain der Website",
   "settings.physics-why": "Wirkt sich auf alle Werte aus.",
   "settingsPage.weather-ballistics": "Sternchen * im ACE-Menü",

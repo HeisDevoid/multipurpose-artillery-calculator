@@ -1,6 +1,7 @@
 import type { ru } from './messages'
 
 export const zh: Record<keyof typeof ru, string> = {
+  "footer.donate": "在 Donatello 上支持",
   "footer.donate-hint": "为网站域名出一份力",
   "settings.physics-why": "影响所有诸元。",
   "settingsPage.weather-ballistics": "ACE 菜单中有 *",

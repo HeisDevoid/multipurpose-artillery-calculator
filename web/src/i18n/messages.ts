@@ -4,6 +4,7 @@
  * версии: тест следит, чтобы ключи и подстановки у языков совпадали.
  */
 export const ru = {
+  "footer.donate": "Поддержать на Donatello",
   "footer.donate-hint": "Скинуться на домен для сайта",
   "settings.physics-why": "Влияет на все установки.",
   "settingsPage.weather-ballistics": "В меню ACE есть звёздочка *",
@@ -705,6 +706,7 @@ export const ru = {
 } as const
 
 export const en: Record<keyof typeof ru, string> = {
+  "footer.donate": "Support on Donatello",
   "footer.donate-hint": "Chip in for the site domain",
   "settings.physics-why": "Affects every solution.",
   "settingsPage.weather-ballistics": "Asterisk * in the ACE menu",

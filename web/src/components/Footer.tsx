@@ -16,8 +16,8 @@ const REPO_URL =
 // Профиль автора в Steam: на него ведёт ник в «О программе»
 const AUTHOR_STEAM_URL = 'https://steamcommunity.com/id/Aron_Heis/'
 
-// Страница Buy Me a Coffee (поддержать проект). null: пункта нет
-const DONATE_URL: string | null = null
+// Поддержать проект на Donatello (Buy Me a Coffee не работает в Украине). null: пункта нет
+const DONATE_URL: string | null = 'https://donatello.to/HeisDevoid'
 
 // Релизы с установщиком программы для ПК
 const RELEASES_URL = `${REPO_URL}/releases`
@@ -263,9 +263,9 @@ function AboutButton() {
               ? [
                   {
                     href: DONATE_URL,
-                    title: 'Buy Me a Coffee',
+                    title: t('footer.donate'),
                     text: t('footer.donate-hint'),
-                    icon: <FieldIcon name="coffee" className="h-[18px] w-[18px]" />,
+                    icon: <FieldIcon name="heart" className="h-[18px] w-[18px]" />,
                   },
                 ]
               : []),

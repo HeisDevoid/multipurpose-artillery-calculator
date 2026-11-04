@@ -1,6 +1,7 @@
 import type { ru } from './messages'
 
 export const ja: Record<keyof typeof ru, string> = {
+  "footer.donate": "Donatello で応援",
   "footer.donate-hint": "サイトのドメイン代に",
   "settings.physics-why": "すべての諸元に影響します。",
   "settingsPage.weather-ballistics": "ACE メニューに * がある",
