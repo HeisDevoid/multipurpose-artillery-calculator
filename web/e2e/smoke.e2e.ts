@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 
 /**
- * Смоук-тесты собранного сайта: главное работает от начала до конца.
- * Ошибки в консоли и необработанные исключения роняют тест.
+ * Smoke tests of the built site: the main things work from start to finish.
+ * Console errors and unhandled exceptions fail a test.
  */
 
 async function open(page: Page, path = '/', storage: Record<string, string> = {}) {
@@ -12,7 +12,7 @@ async function open(page: Page, path = '/', storage: Record<string, string> = {}
     if (message.type() === 'error') errors.push(`console: ${message.text()}`)
   })
   await page.addInitScript((values) => {
-    // Без обучения и вопроса про физику при первом запуске; язык и карта — заданные тестом
+    // No tutorial and no physics question on the first start; the test sets the language and the map
     localStorage.setItem('tourDone', 'yes')
     localStorage.setItem('tourAdvancedDone', 'yes')
     localStorage.setItem('physicsAsked', 'yes')
@@ -22,8 +22,8 @@ async function open(page: Page, path = '/', storage: Record<string, string> = {}
   return errors
 }
 
-test('главная открывается без ошибок', async ({ page }) => {
-  // MQTT (~330 КБ) нужен только для связки — при обычном открытии не грузится
+test('the main page opens without errors', async ({ page }) => {
+  // MQTT (~330 KB) is needed only for Link: it is not loaded on a normal start
   const scripts: string[] = []
   page.on('request', (request) => {
     if (request.resourceType() === 'script') scripts.push(request.url())
@@ -37,23 +37,23 @@ test('главная открывается без ошибок', async ({ page 
   expect(errors).toEqual([])
 })
 
-test('расчёт по введённой дистанции даёт возвышение', async ({ page }) => {
+test('an entered distance gives an elevation', async ({ page }) => {
   const errors = await open(page, '/', { selectedModel: 'mk6' })
   await page.locator('#calc-distance').fill('1000')
   const elevation = page.locator('.row', { hasText: 'Elevation' }).first()
-  // Число в мил появляется (анимация цифр — ждём, пока не станет числом)
+  // The number in mils appears (digits are animated: wait until it is a number)
   await expect(elevation).toContainText(/\d{3,4}/, { timeout: 10_000 })
   expect(errors).toEqual([])
 })
 
-test('карта загружается, клики ставят орудие и цель', async ({ page, isMobile }) => {
-  test.skip(isMobile, 'правая кнопка мыши — только на компьютере')
+test('the map loads, clicks place the gun and the target', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'the right mouse button exists only on a computer')
   const errors = await open(page)
   const canvas = page.locator('canvas').first()
   await expect(canvas).toBeVisible({ timeout: 20_000 })
   await expect(page.getByText('no gun', { exact: false })).toBeVisible()
   const box = (await canvas.boundingBox())!
-  // Stratis: остров в середине карты
+  // Stratis: the island is in the middle of the map
   await canvas.click({ position: { x: box.width * 0.45, y: box.height * 0.5 } })
   await canvas.click({ position: { x: box.width * 0.55, y: box.height * 0.45 }, button: 'right' })
   await expect(page.locator('#calc-distance')).not.toHaveValue('', { timeout: 10_000 })
@@ -62,7 +62,7 @@ test('карта загружается, клики ставят орудие и
   expect(errors).toEqual([])
 })
 
-test('смена языка переводит интерфейс', async ({ page }) => {
+test('changing the language translates the interface', async ({ page }) => {
   const errors = await open(page)
   await page.getByRole('button', { name: 'English' }).click()
   await page.getByRole('option', { name: /Deutsch/ }).click()
@@ -71,7 +71,7 @@ test('смена языка переводит интерфейс', async ({ pag
   expect(errors).toEqual([])
 })
 
-test('настройки открываются и возвращают назад', async ({ page }) => {
+test('the settings open and lead back', async ({ page }) => {
   const errors = await open(page)
   await page.getByRole('button', { name: 'Settings' }).click()
   await expect(page.getByRole('switch').first()).toBeVisible()
@@ -80,30 +80,30 @@ test('настройки открываются и возвращают наза
   expect(errors).toEqual([])
 })
 
-test('сбой приложения — экран ошибки вместо белой страницы', async ({ page }) => {
+test('an app crash shows the error screen instead of a white page', async ({ page }) => {
   await open(page, '/?crashtest=app')
   await expect(page.getByRole('alert')).toContainText('Something broke')
   await expect(page.getByRole('button', { name: /Reload/ })).toBeVisible()
 })
 
-test('сбой карты не ломает калькулятор', async ({ page }) => {
+test('a map crash does not break the calculator', async ({ page }) => {
   await open(page, '/?crashtest=map')
   await expect(page.getByRole('alert')).toContainText('The map did not open')
   await expect(page.locator('#calc-distance')).toBeVisible()
 })
 
-test('орудий без обоих наборов таблиц в выборе нет', async ({ page }) => {
-  // У M2 (S.O.G.) нет таблиц без сопротивления воздуха: сохранённый выбор сменяется на Mk6
+test('weapons without both table sets are not in the list', async ({ page }) => {
+  // M2 (S.O.G.) has no tables without air resistance: the stored choice changes to Mk6
   const errors = await open(page, '/', { selectedModel: 'm2' })
   const select = page.getByRole('button', { name: 'Game Model' })
-  // На кнопке название без калибра, калибр виден в раскрытом списке
+  // The button shows the name without the calibre, the calibre is in the open list
   await expect(select).toHaveText('Mk6')
   await expect(page.locator('[data-status="incomplete"]')).toHaveCount(0)
   await select.click()
   const list = page.getByRole('listbox', { name: 'Game Model' })
   await expect(list.getByRole('option', { name: /Sholef/ })).toBeVisible()
   await expect(list.getByRole('option', { name: /Mk6 \(82 mm\)/ })).toBeVisible()
-  // У Seara таблицы без сопротивления есть на всех дальностях до потолка ACE (29 900 м)
+  // Seara has tables without air resistance at all ranges up to the ACE limit (29,900 m)
   await expect(list.getByRole('option', { name: /Seara/ })).toBeVisible()
   await list.getByRole('option', { name: /Mods and DLC/ }).click()
   await page.getByPlaceholder('Search weapons or mods…').fill('S.O.G.')
@@ -113,7 +113,7 @@ test('орудий без обоих наборов таблиц в выборе
   expect(errors).toEqual([])
 })
 
-test('панель рисования и слой карты на месте', async ({ page }) => {
+test('the drawing toolbar and the map layer are in place', async ({ page }) => {
   const errors = await open(page)
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 })
   await page.getByRole('button', { name: 'Drawing' }).click()
@@ -124,8 +124,8 @@ test('панель рисования и слой карты на месте', a
   expect(errors).toEqual([])
 })
 
-test('ссылка с ?lang= открывает свой язык: интерфейс, заголовок вкладки, описание', async ({ page }) => {
-  // Сохранён английский, но язык из ссылки важнее: так её видит поиск
+test('a link with ?lang= opens its language: interface, tab title, description', async ({ page }) => {
+  // English is stored, but the language from the link wins: this is how search sees it
   const errors = await open(page, '/?lang=fr')
   await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
   await expect(page).toHaveTitle(/Calculateur d’artillerie Arma 3/)
@@ -134,18 +134,18 @@ test('ссылка с ?lang= открывает свой язык: интерф�
   expect(errors).toEqual([])
 })
 
-test('зоны по рельефу: кнопки на карте и легенда', async ({ page }) => {
+test('terrain zones: the buttons on the map and the legend', async ({ page }) => {
   const errors = await open(page)
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 20_000 })
   const zones = page.getByRole('group', { name: 'Terrain zones' })
   await zones.getByRole('button', { name: 'Where I can hit' }).click()
   await expect(zones.getByRole('button', { name: 'Where I can hit' })).toHaveAttribute('aria-pressed', 'true')
-  // Орудия на карте нет: вместо легенды подсказка
+  // No gun on the map: a hint instead of the legend
   await expect(page.getByText('Place the gun on the map.')).toBeVisible()
   expect(errors).toEqual([])
 })
 
-test('при первом запуске спрашивает про физику на сервере, ответ включает погоду', async ({ page }) => {
+test('the first start asks about physics on the server, the answer turns the weather on', async ({ page }) => {
   const errors = await open(page, '/', { physicsAsked: '' })
   const dialog = page.getByRole('dialog', { name: /Important: does your game have air resistance/ })
   await expect(dialog).toBeVisible()
@@ -155,8 +155,8 @@ test('при первом запуске спрашивает про физик�
   expect(errors).toEqual([])
 })
 
-test('меню «Обучение» целиком на экране', async ({ page }) => {
-  // На телефоне кнопка у левого края, а список шире её: раньше он уходил за край
+test('the Tutorial menu is fully on screen', async ({ page }) => {
+  // On a phone the button is at the left edge and the list is wider: it used to run off the screen
   const errors = await open(page)
   await page.getByRole('button', { name: /Tutorial/ }).click()
   const box = await page.getByRole('listbox', { name: 'Tutorial' }).boundingBox()
@@ -167,7 +167,7 @@ test('меню «Обучение» целиком на экране', async ({ 
   expect(errors).toEqual([])
 })
 
-test('справка открывается из меню «Обучение»', async ({ page }) => {
+test('the help opens from the Tutorial menu', async ({ page }) => {
   const errors = await open(page)
   await page.getByRole('button', { name: /Tutorial/ }).click()
   await page.getByRole('option', { name: /Help and FAQ/ }).click()

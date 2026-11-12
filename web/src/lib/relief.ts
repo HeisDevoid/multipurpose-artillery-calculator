@@ -2,7 +2,7 @@ import type { Heightmap } from './heightmap'
 
 type Rgb = readonly [number, number, number]
 
-/** day — цветная карта (светлая тема), night — тёмный монохром. */
+/** day: a colour map (the light theme), night: a dark monochrome. */
 export type ReliefPalette = 'day' | 'night'
 
 interface Palette {
@@ -11,8 +11,8 @@ interface Palette {
   land: readonly (readonly [number, Rgb])[]
 }
 
-// day: море — синие, суша — от зелёного к светло-бурому.
-// night: приглушённые оливковые тона для тёмной темы, море темнее суши.
+// day: the sea is blue, the land goes from green to light brown.
+// night: muted olive tones for the dark theme, the sea darker than the land.
 const PALETTES: Record<ReliefPalette, Palette> = {
   day: {
     seaDeep: [28, 58, 102],
@@ -36,7 +36,7 @@ const PALETTES: Record<ReliefPalette, Palette> = {
   },
 }
 
-// Свет с северо-запада, сверху (x — восток, y — север, z — вверх)
+// Light from the north-west, from above (x is east, y is north, z is up)
 const LIGHT = (() => {
   const v = [-1, 1, 1.4]
   const length = Math.hypot(v[0], v[1], v[2])
@@ -68,8 +68,8 @@ export function heightColor(
 }
 
 /**
- * Цветной рельеф с отмывкой: RGBA, по пикселю на узел сетки.
- * Строка 0 изображения — север (как на карте).
+ * Coloured terrain with hill shading: RGBA, one pixel per grid node.
+ * Image row 0 is the north (as on the map).
  */
 export function renderRelief(
   map: Heightmap,
@@ -90,13 +90,13 @@ export function renderRelief(
 
       let brightness = 1
       if (h > 0) {
-        // Нормаль по разностям соседних узлов
+        // The normal from the differences of neighbouring nodes
         const dzdx = (at(i + 1, j) - at(i - 1, j)) / (2 * step)
         const dzdy = (at(i, j + 1) - at(i, j - 1)) / (2 * step)
         const length = Math.hypot(dzdx, dzdy, 1)
         const dot =
           (-dzdx * LIGHT[0] + -dzdy * LIGHT[1] + LIGHT[2]) / length
-        // 1 — ровная местность; склоны к свету светлее, от света темнее
+        // 1 is flat ground; slopes facing the light are lighter, the ones facing away darker
         brightness = Math.min(1.25, Math.max(0.35, 0.3 + (0.7 * dot) / LIGHT[2]))
       }
 

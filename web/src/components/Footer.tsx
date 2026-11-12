@@ -13,13 +13,13 @@ import type { Language, Theme } from '../types/settings'
 const REPO_URL =
   'https://github.com/HeisDevoid/multipurpose-artillery-calculator'
 
-// Профиль автора в Steam: на него ведёт ник в «О программе»
+// The author's Steam profile: the name in About leads to it
 const AUTHOR_STEAM_URL = 'https://steamcommunity.com/id/Aron_Heis/'
 
-// Поддержать проект на Donatello (Buy Me a Coffee не работает в Украине). null: пункта нет
+// Support the project on Donatello. null: the item is hidden
 const DONATE_URL: string | null = 'https://donatello.to/HeisDevoid'
 
-// Релизы с установщиком программы для ПК
+// Releases with the Windows app installer
 const RELEASES_URL = `${REPO_URL}/releases`
 
 export type View = 'dashboard' | 'sync' | 'settings'
@@ -30,7 +30,7 @@ interface Props {
   language: Language
   onLanguageChange: (language: Language) => void
   theme: Theme
-  // Центр кнопки — откуда расходится круг смены темы
+  // The centre of the button: where the theme circle spreads from
   onToggleTheme: (origin: { x: number; y: number }) => void
 }
 
@@ -61,7 +61,7 @@ function FlagGb() {
   )
 }
 
-// Простые флаги: полосы и круг, без внешних файлов
+// Simple flags: stripes and a circle, no external files
 function Stripes({ colors, vertical = false }: { colors: string[]; vertical?: boolean }) {
   const n = colors.length
   return (
@@ -118,7 +118,7 @@ const FLAGS: Record<Language, () => JSX.Element> = {
   zh: FlagCn,
 }
 
-/** Выбор языка: кнопка с флагом и меню вверх. */
+/** Language choice: a button with a flag and a menu that opens upwards. */
 function LanguageSelect({
   language,
   onChange,
@@ -197,8 +197,8 @@ function LanguageSelect({
   )
 }
 
-/** Версия, автор и ссылка на проект — во всплывающей подписи за одной иконкой. */
-/** Значок GitHub. */
+/** The version, the author and the project link in a popover behind one icon. */
+/** The GitHub icon. */
 function GithubMark() {
   return (
     <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden="true">
@@ -239,7 +239,7 @@ function AboutButton() {
           </p>
 
           {[
-            // Автор: ник ведёт в его профиль Steam
+            // The author: the name leads to the Steam profile
             {
               href: AUTHOR_STEAM_URL,
               title: 'Heis',
@@ -258,7 +258,7 @@ function AboutButton() {
               text: t('footer.report-hint'),
               icon: <FieldIcon name="help" className="h-4 w-4" />,
             },
-            // Поддержать проект (например, на домен): пункт виден, когда задана ссылка
+            // Support the project (for example, for a domain): the item shows when the link is set
             ...(DONATE_URL
               ? [
                   {
@@ -293,7 +293,7 @@ function AboutButton() {
   )
 }
 
-/** Программа для ПК: версия и проверка обновлений вручную, с результатом или ошибкой. */
+/** Windows app: the version and a manual update check, with the result or an error. */
 function UpdateCheck() {
   const status = useUpdateStatus()
   const text =
@@ -335,7 +335,7 @@ function UpdateCheck() {
 }
 
 /**
- * Подвал: ссылка на проект слева; справа — связка, настройки и язык.
+ * The footer: the project link on the left; Link, the settings and the language on the right.
  */
 export function Footer({
   view,
@@ -347,9 +347,9 @@ export function Footer({
 }: Props) {
   const sync = useSync()
 
-  // Телефон: сверху «О программе», обучение (тянется) и настройки шириной
-  // в две кнопки; ниже связка (тянется), тема и язык. Пустых мест нет.
-  // Компьютер: всё в одну строку, справа от «О программе».
+  // Phone: About, the tutorial (stretches) and the settings two buttons wide
+  // on top; Link (stretches), the theme and the language below. No empty spots.
+  // Computer: everything in one row, to the right of About.
   return (
     <footer className="mx-auto grid w-full max-w-[1240px] grid-cols-[auto_1fr_auto_auto] items-center gap-2 px-4 py-4 sm:flex sm:flex-nowrap sm:px-6 sm:py-5">
       <AboutButton />
@@ -407,7 +407,7 @@ export function Footer({
           className="btn btn-ghost hidden sm:inline-flex"
         >
           <FieldIcon name="keyboard" className="h-[18px] w-[18px]" />
-          {/* На средней ширине — только значок, подпись в подсказке */}
+          {/* At a medium width only the icon, the label is in the tooltip */}
           <span className="hidden xl:inline">{t('footer.keyboard-shortcuts')}</span>
         </button>
 

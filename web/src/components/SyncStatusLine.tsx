@@ -1,7 +1,7 @@
 import { t } from '../i18n'
 import { syncStatusColor, syncStatusText, useSync } from '../lib/syncContext'
 
-/** Короткая строка о связке под таймером калькулятора. */
+/** A short line about Link under the calculator timer. */
 export function SyncStatusLine() {
   const sync = useSync()
   if (!sync.enabled) return null

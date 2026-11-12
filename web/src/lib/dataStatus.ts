@@ -7,7 +7,7 @@ export const DATA_STATUS_HINTS: Record<DataStatus, MessageKey> = {
   pending: 'dataStatus.pending-hint',
 }
 
-/** Название статуса для списков: «проверено в игре» или «не проверено». */
+/** The status name for lists: "verified in game" or "not verified". */
 export function dataStatusLabel(status: DataStatus): string {
   return status === 'verified' ? t('dataStatus.verified') : t('dataStatus.unverified')
 }

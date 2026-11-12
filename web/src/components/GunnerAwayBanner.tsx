@@ -3,9 +3,9 @@ import { useSync } from '../lib/syncContext'
 import { FieldIcon } from './FieldIcon'
 
 /**
- * Стрелок в связке ушёл со страницы «Связка»: установки от наводчика
- * обновляются только на ней (и оверлей берёт их оттуда). Плашка сверху
- * с кнопкой вернуться.
+ * A gunner in Link has left the Link page: the settings from fire direction
+ * are updated only there (and the overlay takes them from there). A banner on top
+ * with a button to go back.
  */
 export function GunnerAwayBanner({ onBack }: { onBack: () => void }) {
   const sync = useSync()

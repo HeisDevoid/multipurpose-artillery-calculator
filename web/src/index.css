@@ -4,9 +4,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Дизайн: спокойный минимализм. Чёрный фон, мягкие скруглённые
- * контролы без рамок, список «подпись — значение», один шрифт (Inter).
- * Синий — только для ссылок и главного действия.
+ * Design: calm minimalism. A black background, soft rounded
+ * controls without borders, a "label: value" list, one font (Inter).
+ * Blue only for links and the main action.
  */
 :root {
   --color-background: #ffffff;
@@ -137,14 +137,14 @@
 }
 
 @layer components {
-  /* Блок-раздел: чуть светлее фона, без рамки */
+  /* A section block: slightly lighter than the background, no border */
   .panel {
     position: relative;
     border-radius: 12px;
     background-color: var(--color-surface);
   }
 
-  /* Мелкая подпись над полем или в углу */
+  /* A small label above a field or in a corner */
   .label {
     font-size: 13px;
     line-height: 1.4;
@@ -152,7 +152,7 @@
     color: var(--color-muted);
   }
 
-  /* Крупные показания (боевой экран, оверлей) */
+  /* Large readings (combat screen, overlay) */
   .readout {
     font-weight: 500;
     font-variant-numeric: tabular-nums;
@@ -165,7 +165,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Строка списка: подпись слева, значение справа */
+  /* A list row: the label on the left, the value on the right */
   .row {
     display: flex;
     min-height: 2.75rem;
@@ -178,7 +178,7 @@
     font-weight: 500;
     color: var(--color-text);
   }
-  /* Телефон: подписи чуть мельче и ближе к полям, чтобы влезать в одну строку */
+  /* Phone: labels slightly smaller and closer to the fields, so they fit on one line */
   @media (max-width: 639px) {
     .row {
       gap: 0.75rem;
@@ -194,7 +194,7 @@
     color: var(--color-text-2);
   }
 
-  /* ---- кнопки (мягкие, как в Joy UI) ---- */
+  /* ---- buttons (soft) ---- */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -260,7 +260,7 @@
     font-weight: 600;
   }
 
-  /* ---- поля ---- */
+  /* ---- fields ---- */
   .field {
     width: 100%;
     border: 1px solid transparent;
@@ -290,7 +290,7 @@
     font-size: 1.125rem;
   }
 
-  /* Значение-поле в строке списка: справа, компактное */
+  /* A value field in a list row: on the right, compact */
   .field-inline {
     height: 2.25rem;
     width: 8.5rem;
@@ -307,7 +307,7 @@
     background-repeat: no-repeat;
   }
 
-  /* ---- группа переключателей ---- */
+  /* ---- toggle group ---- */
   .seg {
     position: relative;
     display: inline-flex;
@@ -362,7 +362,7 @@
     opacity: 0.35;
   }
 
-  /* ---- метки-статусы (чипы) ---- */
+  /* ---- status chips ---- */
   .tag {
     display: inline-flex;
     align-items: center;
@@ -401,7 +401,7 @@
     color: var(--color-muted);
   }
 
-  /* Рамка-подсказка, как «Скачайте оверлей…» */
+  /* A hint frame, like "Download the overlay…" */
   .note {
     border: 1px solid var(--color-line-strong);
     border-radius: 8px;
@@ -409,7 +409,7 @@
     color: var(--color-text-2);
   }
 
-  /* Раскрывающийся раздел: строка с шевроном */
+  /* A collapsible section: a row with a chevron */
   .disclosure > summary {
     display: flex;
     align-items: center;
@@ -434,7 +434,7 @@
     transform: translateY(2px) rotate(-135deg);
   }
 
-  /* Полоса прогресса (таймер, отсчёт) */
+  /* Progress bar (timer, countdown) */
   .progress {
     height: 6px;
     overflow: hidden;
@@ -453,7 +453,7 @@
   }
 }
 
-/* Окно-оверлей программы для ПК: прозрачный фон */
+/* The Windows app overlay window: a transparent background */
 html.overlay,
 html.overlay body {
   background: transparent;
@@ -469,7 +469,7 @@ html.overlay body {
   }
 }
 
-/* Смена темы: круг расходится от кнопки (View Transitions API) */
+/* Theme change: a circle spreads from the button (View Transitions API) */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -482,7 +482,7 @@ html.overlay body {
   z-index: 2;
 }
 
-/* Значок темы поворачивается при смене */
+/* The theme icon rotates on a change */
 @keyframes theme-icon-spin {
   from {
     transform: rotate(-90deg) scale(0.5);
@@ -497,7 +497,7 @@ html.overlay body {
   animation: theme-icon-spin 0.45s ease-out;
 }
 
-/* Плавное появление окон обучения */
+/* Tutorial windows fade in */
 @keyframes tour-fade {
   from {
     opacity: 0;
@@ -517,7 +517,7 @@ html.overlay body {
   }
 }
 
-/* Число коротко вспыхивает при обновлении расчёта */
+/* A number flashes briefly when the solution updates */
 @keyframes num-pop {
   from {
     opacity: 0.45;
@@ -539,8 +539,8 @@ html.overlay body {
 }
 
 /*
- * Анимации по видам (настройки → Анимации). Переезд обучения и круг при смене
- * темы встроены и всегда включены: у них класс keep-motion / tour-fade-always.
+ * Animations by kind (settings → Animations). The tutorial glide and the theme change circle
+ * are built in and always on: they have the keep-motion / tour-fade-always class.
  */
 :root[data-m-numbers="off"] .num-pop {
   animation: none !important;
@@ -560,7 +560,7 @@ html.overlay body {
   animation: tour-fade 0.35s ease-out;
 }
 
-/* Нажатие «Огонь»: короткая отдача кнопки и расходящееся кольцо */
+/* Pressing Fire: a short button recoil and a spreading ring */
 @keyframes fire-kick {
   0% {
     transform: scale(1);
@@ -578,7 +578,7 @@ html.overlay body {
   animation: fire-kick 0.45s ease-out;
 }
 
-/* Снаряд прилетел: красная волна вокруг таймера и «прыжок» отсчёта */
+/* The shell has landed: a red wave around the timer and a "jump" of the countdown */
 @keyframes impact-pulse {
   0% {
     box-shadow: 0 0 0 0 rgb(228 116 116 / 0.6);

@@ -11,12 +11,12 @@ function subscribe(listener: () => void) {
 
 const isDark = () => document.documentElement.classList.contains('dark')
 
-/** Включена ли тёмная тема; меняется вместе с классом на <html>. */
+/** Whether the dark theme is on; changes together with the class on <html>. */
 export function useIsDark(): boolean {
   return useSyncExternalStore(subscribe, isDark, () => true)
 }
 
-/** Значение CSS-переменной темы (например, --color-accent) для холста. */
+/** The value of a theme CSS variable (for example, --color-accent) for a canvas. */
 export function themeColor(name: string): string {
   return getComputedStyle(document.documentElement)
     .getPropertyValue(name)

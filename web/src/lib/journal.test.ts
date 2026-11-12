@@ -14,10 +14,10 @@ import {
   type JournalEntry,
 } from './journal'
 
-// Запись в формате v0.6 — без азимута, погоды и боковой поправки.
+// An entry in the v0.6 format: without azimuth, weather and lateral correction.
 const OLD_ENTRY = {
   id: 'a',
-  name: 'Вышка',
+  name: 'Tower',
   createdAt: '2026-10-13T10:00:00.000Z',
   dayKey: '2026-10-13',
   modelId: 'mk6',
@@ -170,11 +170,11 @@ describe('export and import', () => {
 
   it('searches by name, model and distance', () => {
     const entry = OLD_ENTRY as JournalEntry
-    expect(matchesQuery(entry, 'выш')).toBe(true)
-    expect(matchesQuery(entry, 'ВЫШКА')).toBe(true)
+    expect(matchesQuery(entry, 'tow')).toBe(true)
+    expect(matchesQuery(entry, 'TOWER')).toBe(true)
     expect(matchesQuery(entry, 'mk6', 'Mk6 (82 mm)')).toBe(true)
     expect(matchesQuery(entry, '1200')).toBe(true)
-    expect(matchesQuery(entry, 'мост')).toBe(false)
+    expect(matchesQuery(entry, 'bridge')).toBe(false)
     expect(matchesQuery(entry, '  ')).toBe(true)
   })
 })

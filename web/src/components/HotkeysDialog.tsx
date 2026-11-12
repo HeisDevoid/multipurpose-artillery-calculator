@@ -6,7 +6,7 @@ import { setPanel, usePanel } from '../lib/uiPanels'
 import { FieldIcon } from './FieldIcon'
 import { SectionHeading } from './FormControls'
 
-/** Справка по горячим клавишам: открывается из футера или клавишей «?». */
+/** Keyboard shortcut help: opens from the footer or with the "?" key. */
 export function HotkeysDialog() {
   const open = usePanel('hotkeys')
 

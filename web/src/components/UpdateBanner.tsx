@@ -6,14 +6,14 @@ import { FieldIcon } from './FieldIcon'
 
 type Phase = { kind: 'idle' } | { kind: 'installing'; share: number | null } | { kind: 'failed' }
 
-/** Программа для ПК: плашка «доступна новая версия» с установкой в один клик. */
+/** Windows app: a "new version available" banner with a one-click install. */
 export function UpdateBanner() {
   const status = useUpdateStatus()
-  // «Позже» прячет плашку для этой версии
+  // "Later" hides the banner for this version
   const [hiddenVersion, setHiddenVersion] = useState<string | null>(null)
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' })
 
-  // Проверки при запуске, во время работы и при повторном запуске программы
+  // Checks on start, while running and on a second launch of the app
   useEffect(() => startUpdateChecks(), [])
 
   const update = status.kind === 'available' ? status.update : null

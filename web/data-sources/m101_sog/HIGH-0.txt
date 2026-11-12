@@ -1,7 +1,7 @@
 # M101 (S.O.G. Prairie Fire), HIGH, Charge 0
-# Снято 17.10.2026. Столбцы поправок на погоду в игре пустые («-»), поэтому 5 столбцов.
-# Сверено 26.10.2026 с кадрами без сопротивления воздуха: совпадает построчно. С сопротивлением навесной таблицы нет.
-# Один скриншот.
+# Taken 17.10.2026. The weather correction columns are empty in the game ("-"), hence 5 columns.
+# Checked 26.10.2026 against frames without air resistance: matches line by line. There is no high trajectory table with air resistance.
+# One screenshot.
 850 1417 3.9 0.7 30.9
 900 1406 4.2 0.7 30.8
 950 1394 4.5 0.7 30.7

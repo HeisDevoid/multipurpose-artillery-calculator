@@ -24,12 +24,12 @@ const solution: SyncMessage = {
   sentAt: 1_700_000_000_000,
   solution: {
     title: 'M252',
-    targetName: 'Цель 1',
+    targetName: 'Target 1',
     charge: 2,
     mode: 'HIGH',
     elevation: 1123.4,
     azimuth: '3218',
-    azimuthUnit: 'мил',
+    azimuthUnit: 'mil',
     tof: 24.3,
     tot: null,
   },
@@ -65,7 +65,7 @@ describe('room keys', () => {
     const c = await deriveRoom('K7P4-QX9B')
     expect(a.topic).toBe(b.topic)
     expect(a.topic).not.toBe(c.topic)
-    // Имя канала не содержит сам код
+    // The channel name does not contain the code itself
     expect(a.topic).not.toContain('K7P4')
   })
 
@@ -116,7 +116,7 @@ describe('parseMessage', () => {
     expect(parseMessage(message(1_700_000_060_000))).toEqual(
       message(1_700_000_060_000)
     )
-    // Версии до 0.12 не присылают tot
+    // Versions before 0.12 do not send tot
     expect(parseMessage(message(undefined))).toEqual(solution)
     expect(parseMessage(message('now'))).toBeNull()
   })
@@ -134,7 +134,7 @@ describe('parseMessage', () => {
     }
     expect(parseMessage(withExtras)).toEqual(withExtras)
 
-    // Неверные рельеф и план не показываются, сами установки остаются
+    // A wrong terrain and plan are not shown, the settings themselves stay
     const broken = parseMessage({
       ...solution,
       solution: { ...fields, terrain: 'cliff', mrsi: { shots: [{ charge: 'x' }] } },
@@ -206,28 +206,28 @@ describe('transport helpers', () => {
 describe('ReplayGuard', () => {
   const now = 1_700_000_000_000
 
-  it('пропускает новое сообщение и отбрасывает его повтор', () => {
+  it('lets a new message through and drops its replay', () => {
     const guard = new ReplayGuard()
     const shot = { kind: 'shot' as const, from: 'a', sentAt: now - 1000 }
     expect(guard.accept(shot, now)).toBe(true)
     expect(guard.accept({ ...shot }, now + 500)).toBe(false)
   })
 
-  it('старый выстрел и старый «я в сети» не принимаются', () => {
+  it('an old shot and an old "I am online" are not accepted', () => {
     const guard = new ReplayGuard()
     expect(guard.accept({ kind: 'shot', from: 'a', sentAt: now - MAX_EVENT_AGE_MS - 1 }, now)).toBe(false)
     expect(guard.accept({ kind: 'hello', from: 'a', sentAt: now - MAX_EVENT_AGE_MS - 1, role: 'gunner' }, now)).toBe(false)
     expect(guard.accept({ kind: 'hello', from: 'a', sentAt: now - 5000, role: 'gunner' }, now)).toBe(true)
   })
 
-  it('решение старее уже показанного не заменяет его', () => {
+  it('a solution older than the one shown does not replace it', () => {
     const guard = new ReplayGuard()
     const solution = (sentAt: number) => ({ kind: 'solution' as const, from: 'fdc', sentAt, solution: null })
     expect(guard.accept(solution(now - 60_000), now)).toBe(true)
     expect(guard.accept(solution(now - 10_000), now)).toBe(true)
-    // Перехваченное раньше решение, присланное снова, — отброшено
+    // A solution intercepted earlier and sent again is dropped
     expect(guard.accept(solution(now - 30_000), now)).toBe(false)
-    // Сохранённое на брокере решение может быть старым — принимается, если новее показанного
+    // A solution stored on the broker may be old: it is accepted if newer than the one shown
     expect(guard.accept(solution(now - 1000), now)).toBe(true)
   })
 })

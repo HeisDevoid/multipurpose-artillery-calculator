@@ -1,6 +1,6 @@
 # Seara (227 mm), HIGH, Charge 0
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rockets_230mm_GAT, 114.75 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rockets_230mm_GAT, 114.75 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 1000 1172 - - 21.4
 1050 1143 25.5 1.2 21.1
 1100 1111 29.5 1.2 20.8

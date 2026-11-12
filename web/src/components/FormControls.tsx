@@ -10,17 +10,17 @@ interface FieldProps {
   label: string
   value: string
   onChange: (value: string) => void
-  // Enter в поле (например, «Учесть разрыв»)
+  // Enter in the field (for example, "Apply the burst")
   onEnter?: () => void
   className?: string
-  // Элемент справа от подписи (например, переключатель)
+  // An element to the right of the label (for example, a switch)
   aside?: ReactNode
   placeholder?: string
   hint?: ReactNode
-  // Текстовое поле без проверки числа (например, координаты)
+  // A text field without a number check (for example, coordinates)
   inputMode?: 'decimal' | 'numeric'
   validate?: boolean
-  // Значок-подсказка перед подписью
+  // A hint icon before the label
   icon?: FieldIconName
 }
 
@@ -42,8 +42,8 @@ export function NumberField({
 
   return (
     <div className={className}>
-      {/* Фиксированная высота строки подписи: поля в соседних
-          колонках выравниваются, даже если у одного есть переключатель. */}
+      {/* A fixed height of the label row: fields in neighbouring
+          columns line up even when one of them has a switch. */}
       <div className="mb-1.5 flex min-h-7 flex-wrap items-center justify-between gap-x-2 gap-y-1">
         <label htmlFor={id} className="label flex min-w-0 items-center gap-1.5">
           {icon && <FieldIcon name={icon} />}
@@ -83,15 +83,15 @@ interface ToggleProps<T extends string> {
     label: string
     disabled?: boolean
     icon?: FieldIconName
-    // Подсказка при наведении (по умолчанию её нет)
+    // A tooltip on hover (none by default)
     title?: string
   }[]
   onChange: (value: T) => void
   label: string
   className?: string
-  // Только значки: подпись остаётся в подсказке и для экранного диктора
+  // Icons only: the label stays in the tooltip and for the screen reader
   iconOnly?: boolean
-  // Кнопки одной ширины (сетка): не зависит от длины подписей на разных языках
+  // Buttons of equal width (a grid): it does not depend on label length in different languages
   equal?: boolean
 }
 
@@ -105,11 +105,11 @@ export function Toggle<T extends string>({
   equal = false,
 }: ToggleProps<T>) {
   const ref = useRef<HTMLDivElement>(null)
-  // Подвижная «таблетка» под выбранной кнопкой: переключение скользит
+  // A sliding "pill" under the selected button: the switch glides
   const [pill, setPill] = useState<{ x: number; w: number } | null>(null)
-  // Равные колонки: если подпись не влезает, сначала прячутся значки (1),
-  // потом уменьшается шрифт (2), потом колонки делятся по длине подписей (3),
-  // в крайнем случае подпись переносится (4). Многоточия нет: текст виден целиком.
+  // Equal columns: when a label does not fit, the icons are hidden first (1),
+  // then the font shrinks (2), then the columns are split by label length (3),
+  // and as a last resort the label wraps (4). No ellipsis: the text is always fully visible.
   const [fit, setFit] = useState(0)
   const widthRef = useRef(0)
 
@@ -118,7 +118,7 @@ export function Toggle<T extends string>({
     if (!root) return
     const measure = () => {
       if (equal) {
-        // Стало шире — пробуем снова со значками
+        // It got wider: try with the icons again
         if (root.clientWidth > widthRef.current + 8 && widthRef.current > 0) setFit(0)
         widthRef.current = root.clientWidth
         const overflow = [...root.querySelectorAll<HTMLElement>('button > span')].some(
@@ -130,7 +130,7 @@ export function Toggle<T extends string>({
       setPill(el ? { x: el.offsetLeft, w: el.offsetWidth } : null)
     }
     const frame = requestAnimationFrame(measure)
-    // Ширины кнопок меняются, когда догружается шрифт или меняется язык
+    // Button widths change when the font finishes loading or the language changes
     const observer = new ResizeObserver(measure)
     observer.observe(root)
     root.querySelectorAll('button').forEach((b) => observer.observe(b))
@@ -193,13 +193,13 @@ export function Toggle<T extends string>({
   )
 }
 
-/** Заголовок раздела (справа — необязательный элемент). */
+/** A section heading (an optional element on the right). */
 export function SectionHeading({
   title,
   aside,
   as: Tag = 'h3',
 }: {
-  // Старый номер раздела больше не показывается
+  // The old section number is no longer shown
   index?: string
   title: string
   aside?: ReactNode
@@ -213,7 +213,7 @@ export function SectionHeading({
   )
 }
 
-/** Полоса прогресса 0…1; alert — красная (сплэш, разрыв). */
+/** A progress bar 0…1; alert is red (splash, impact). */
 export function ProgressBar({
   progress,
   alert = false,
@@ -231,7 +231,7 @@ export function ProgressBar({
   )
 }
 
-/** Переключатель «вкл/выкл» с подписью и пояснением. */
+/** An on/off switch with a label and a description. */
 export function Switch({
   checked,
   onChange,
@@ -245,8 +245,8 @@ export function Switch({
   description?: ReactNode
   disabled?: boolean
 }) {
-  // Переключает только сам тумблер (с запасом под палец), а не вся строка:
-  // на телефоне при прокрутке легко задеть подпись или описание
+  // Only the toggle itself switches (with a margin for a finger), not the whole row:
+  // on a phone it is easy to touch the label or the description while scrolling
   return (
     <div className={['flex items-start justify-between gap-4', disabled ? 'opacity-50' : ''].join(' ')}>
       <span className="min-w-0">
@@ -283,7 +283,7 @@ export function Switch({
   )
 }
 
-/** Строка списка «подпись — значение» (внутри <dl>). */
+/** A "label: value" list row (inside a <dl>). */
 export function Row({
   label,
   htmlFor,
@@ -296,12 +296,12 @@ export function Row({
   label: ReactNode
   htmlFor?: string
   icon?: FieldIconName
-  // Единая ширина контролов справа: full — на всю ширину, unit — поле
-  // с единицей справа (единицы выровнены в одну колонку). На телефоне
-  // контролы уже, чтобы подписи слева (~9 rem) помещались в одну строку.
+  // One width for the controls on the right: full is the whole width, unit is a field
+  // with a unit on the right (the units line up in one column). On a phone
+  // the controls are narrower, so that the labels on the left (~9 rem) fit on one line.
   control?: 'full' | 'unit'
   unit?: string
-  // Для обучения: подсвечиваемая строка
+  // For the tutorial: the highlighted row
   tourId?: string
   children: ReactNode
 }) {
@@ -313,8 +313,8 @@ export function Row({
           {htmlFor ? <label htmlFor={htmlFor}>{label}</label> : label}
         </span>
       </dt>
-      {/* Поля единой ширины не сжимаются: длинная подпись переносится, а поля
-          во всех строках начинаются на одной линии */}
+      {/* Fields of one width do not shrink: a long label wraps, and the fields
+          in all rows start on the same line */}
       <dd className={['flex items-center justify-end gap-2', control ? 'shrink-0' : 'min-w-0'].join(' ')}>
         {control ? (
           <>
@@ -340,7 +340,7 @@ export function Row({
   )
 }
 
-/** Числовое поле прямо в строке списка, с единицами справа. */
+/** A number field right in a list row, with the units on the right. */
 export function InlineNumber({
   id,
   value,
@@ -356,9 +356,9 @@ export function InlineNumber({
   onChange: (value: string) => void
   unit?: string
   placeholder?: string
-  // Подпись для экранного диктора, если строка без <label>
+  // A label for the screen reader when the row has no <label>
   label?: string
-  // Поле тянется на всю ширину контейнера (в строке с единой шириной)
+  // The field takes the full width of the container (in a row with one width)
   block?: boolean
   readOnly?: boolean
 }) {

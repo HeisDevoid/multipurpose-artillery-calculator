@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react'
 import type { FlightShot } from './FlightCanvas'
 
 /**
- * Полоска между орудием и целью на плашке с координатами: пока снаряды
- * в полёте, она раскрывается и по ней едет точка от орудия к цели
- * (у залпа — по точке на снаряд).
+ * The strip between the gun and the target on the coordinate plate: while shells
+ * are in flight, it opens and a dot travels along it from the gun to the target
+ * (a volley has a dot per shell).
  */
 export function FlightTrack({ shots }: { shots: readonly FlightShot[] }) {
-  // Доли пути каждого снаряда; пусто — ничего не летит
+  // The path fractions of every shell; empty: nothing is flying
   const [progress, setProgress] = useState<number[]>([])
 
   useEffect(() => {

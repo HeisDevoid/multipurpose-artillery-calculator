@@ -113,7 +113,7 @@ describe('parseReference', () => {
   })
 })
 
-// Проверка настоящих справочников: защита от опечаток при перепечатке.
+// Checks of the real references: protection against typos when retyping.
 describe('bundled tables', () => {
   const references = Object.values(artilleryCatalog)
 
@@ -136,9 +136,9 @@ describe('bundled tables', () => {
               for (let i = 0; i < rows.length; i += 1) {
                 expect(rows[i][4]).toBeGreaterThan(0)
                 if (i === 0) continue
-                // HIGH: с ростом дальности возвышение падает,
-                // LOW: растёт. На дальних дистанциях игра округляет до
-                // целого мила, и соседние строки бывают равны.
+                // HIGH: elevation falls as the range grows,
+                // LOW: it grows. At long ranges the game rounds to
+                // a whole mil, and neighbouring rows may be equal.
                 if (mode === 'HIGH') {
                   expect(rows[i][1]).toBeLessThanOrEqual(rows[i - 1][1])
                 } else {

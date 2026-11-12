@@ -16,9 +16,9 @@ const MODES: { id: Exclude<CoverageMode, 'off'>; icon: FieldIconName; label: Mes
 ]
 
 /**
- * Зоны по рельефу — нижняя строка плашки координат: «Куда достаю» (вокруг
- * орудия) и «Где встать» (вокруг цели), под ними легенда цветов или
- * подсказка, если на карте нет орудия или цели.
+ * Terrain zones, the bottom row of the coordinate plate: "Where I can hit" (around
+ * the gun) and "Where to stand" (around the target), with a colour legend under them or
+ * a hint if there is no gun or target on the map.
  */
 export function CoveragePanel({
   mode,
@@ -27,7 +27,7 @@ export function CoveragePanel({
 }: {
   mode: CoverageMode
   onMode: (mode: CoverageMode) => void
-  // Зона построена: орудие (или цель для «Где встать») стоит на карте
+  // The zone is built: the gun (or the target for "Where to stand") is on the map
   ready: boolean
 }) {
   return (

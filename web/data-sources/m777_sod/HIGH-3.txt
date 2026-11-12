@@ -1,6 +1,6 @@
 # M777 (155 mm), HIGH, Charge 3
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): SOD_weap_M776, 648 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): SOD_weap_M776, 648 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 25600 1274 0.5 0.2 125
 25700 1272 0.5 0.2 125
 25800 1271 0.5 0.2 125

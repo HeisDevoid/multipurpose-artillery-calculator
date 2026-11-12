@@ -19,18 +19,18 @@ function abs(value: number | null | undefined) {
   return value === null || value === undefined ? value : Math.abs(value)
 }
 
-/** Модуль скорости ветра со знаком выбранного направления. */
+/** The wind speed magnitude with the sign of the chosen direction. */
 function signedWind(value: number | null, positive: boolean): number | null {
   if (value === null) return null
   return positive ? Math.abs(value) : -Math.abs(value)
 }
 
 /**
- * Состояние полей погоды и пересчёт их в условия для баллистики.
+ * The state of the weather fields and their conversion into conditions for the ballistics.
  *
- * azimuthDeg нужен для режима «скорость и направление»: ветер
- * раскладывается на встречную и боковую составляющие относительно
- * линии огня.
+ * azimuthDeg is needed for the "speed and direction" mode: the wind
+ * is split into head and cross components relative to
+ * the line of fire.
  */
 export function useWeatherInputs(
   saved: JournalWeather | null,
@@ -45,8 +45,8 @@ export function useWeatherInputs(
   const [windSpeed, setWindSpeed] = useState(numberToField(saved?.windSpeed))
   const [windFrom, setWindFrom] = useState(numberToField(saved?.windFrom))
 
-  // Kestrel показывает величину ветра без знака, поэтому
-  // направление выбирается отдельной кнопкой, а в поле — модуль.
+  // Kestrel shows the wind magnitude without a sign, so
+  // the direction is chosen with a separate button, and the field holds the magnitude.
   const [headwind, setHeadwind] = useState(
     numberToField(abs(saved?.headwind))
   )

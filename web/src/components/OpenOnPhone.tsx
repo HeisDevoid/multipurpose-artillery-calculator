@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 
 
-/** Адрес, который телефон не сможет открыть: только этот компьютер. */
+/** An address a phone cannot open: this computer only. */
 function isLocalOnly(hostname: string): boolean {
   return (
     hostname === 'localhost' ||
@@ -14,8 +14,8 @@ function isLocalOnly(hostname: string): boolean {
 }
 
 /**
- * QR-код со ссылкой на текущую страницу: открыть приложение на
- * телефоне, отсканировав экран компьютера.
+ * A QR code with a link to the current page: open the app on a
+ * phone by scanning the computer screen.
  */
 export function OpenOnPhone() {
   const url = window.location.origin + window.location.pathname
@@ -28,7 +28,7 @@ export function OpenOnPhone() {
         if (!cancelled) setImage(data)
       })
       .catch(() => {
-        // Без картинки остаётся ссылка текстом.
+        // Without the picture the link stays as text.
       })
     return () => {
       cancelled = true

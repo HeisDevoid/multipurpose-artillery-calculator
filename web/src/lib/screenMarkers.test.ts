@@ -8,7 +8,7 @@ import {
   visibleArea,
 } from './screenMarkers'
 
-// Бледная «бумажная» карта
+// A pale "paper" map
 const PAPER = [222, 218, 200]
 
 function image(width: number, height: number) {
@@ -36,9 +36,9 @@ describe('classifyPixel', () => {
 
   it('ignores the pale map and dark lines', () => {
     expect(classifyPixel(222, 218, 200)).toBeNull()
-    expect(classifyPixel(150, 190, 140)).toBeNull() // лес
-    expect(classifyPixel(170, 200, 230)).toBeNull() // вода
-    expect(classifyPixel(20, 20, 20)).toBeNull() // сетка, подписи
+    expect(classifyPixel(150, 190, 140)).toBeNull() // forest
+    expect(classifyPixel(170, 200, 230)).toBeNull() // water
+    expect(classifyPixel(20, 20, 20)).toBeNull() // grid, labels
   })
 })
 
@@ -57,10 +57,10 @@ describe('findBlobs', () => {
 
   it('skips long roads, specks and label letters', () => {
     const { data, fill } = image(300, 120)
-    fill(0, 100, 300, 4, [217, 102, 0]) // дорога
-    fill(10, 10, 2, 2, [230, 0, 0]) // соринка
-    fill(40, 30, 16, 16, [230, 0, 0]) // значок
-    fill(62, 32, 7, 10, [230, 0, 0]) // буквы подписи
+    fill(0, 100, 300, 4, [217, 102, 0]) // road
+    fill(10, 10, 2, 2, [230, 0, 0]) // speck
+    fill(40, 30, 16, 16, [230, 0, 0]) // icon
+    fill(62, 32, 7, 10, [230, 0, 0]) // label letters
     fill(72, 32, 7, 10, [230, 0, 0])
     const blobs = findBlobs(data, 300, 120)
     expect(blobs).toHaveLength(1)
@@ -70,7 +70,7 @@ describe('findBlobs', () => {
 
 describe('calibration', () => {
   it('maps pixels to metres with north up', () => {
-    // 1 пиксель = 2 м; пиксель (100, 100) — точка 5000 / 3000
+    // 1 pixel = 2 m; pixel (100, 100) is the point 5000 / 3000
     const c = calibrate(
       { px: 100, py: 100, x: 5000, y: 3000 },
       { px: 300, py: 300, x: 5400, y: 2600 }

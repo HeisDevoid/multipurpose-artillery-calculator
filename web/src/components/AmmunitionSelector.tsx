@@ -11,7 +11,7 @@ interface AmmunitionSelectorProps {
   ammunition: readonly AmmunitionOption[]
   selectedId: string
   onSelect: (id: string) => void
-  // Класс орудия — форма значка снаряда
+  // The weapon class sets the shape of the shell icon
   category: ArtilleryCategory
 }
 
@@ -19,7 +19,7 @@ function formatLabel(item: AmmunitionOption): string {
   return `${item.designation} [${item.type}]`
 }
 
-/** Снаряд в строке списка: выбор, если вариантов несколько. */
+/** The shell in a list row: a choice when there are several. */
 export function AmmunitionSelector({
   ammunition,
   selectedId,
@@ -39,7 +39,7 @@ export function AmmunitionSelector({
   const selected =
     ammunition.find((item) => item.id === selectedId) ?? ammunition[0]
 
-  // Снаряд один: не список, а затемнённое поле, как высота орудия под замком
+  // A single shell: not a list but a dimmed field, like the gun height under the lock
   if (ammunition.length === 1) {
     return (
       <>

@@ -8,16 +8,16 @@ export interface PickerItem {
   id: string
   title: string
   subtitle?: string
-  // Заголовок группы в сетке (мод, автор…)
+  // A group heading in the grid (mod, author…)
   group?: string
-  // Картинка карточки; без неё — icon
+  // The card picture; icon without it
   thumb?: string
   icon?: ReactNode
-  // Дополнительные слова для поиска
+  // Extra words for the search
   keywords?: string
-  // DLC или мод: по этому работает фильтр вверху окна
+  // DLC or mod: the filter at the top of the window works by this
   source?: 'dlc' | 'mod'
-  // Значок в углу карточки (например, предупреждение о качестве)
+  // A badge in the card corner (for example, a quality warning)
   badge?: ReactNode
 }
 
@@ -30,16 +30,16 @@ interface Props {
   selectedId?: string
   onPick: (id: string) => void
   onClose: () => void
-  // Избранное: звёздочка на карточке
+  // Favourites: a star on the card
   favorites?: readonly string[]
   onToggleFavorite?: (id: string) => void
-  // Внизу: дополнительные действия (например, «Предложить карту»)
+  // At the bottom: extra actions (for example, "Suggest a map")
   footer?: ReactNode
 }
 
 /**
- * Окно выбора с поиском: поле поиска сверху по центру, карточки сеткой,
- * сгруппированные по моду или автору. Для карт и орудий из модов.
+ * A picker window with search: the search field at the top centre, cards in a grid,
+ * grouped by mod or author. For maps and weapons from mods.
  */
 export function PickerDialog({
   title,
@@ -55,7 +55,7 @@ export function PickerDialog({
   const [query, setQuery] = useState('')
   const [source, setSource] = useState<SourceFilter>('all')
   const inputRef = useRef<HTMLInputElement>(null)
-  // Фильтр нужен, только если есть и DLC, и моды
+  // The filter is needed only when there are both DLC and mods
   const hasSources = items.some((i) => i.source === 'dlc') && items.some((i) => i.source === 'mod')
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export function PickerDialog({
     })
   }, [items, query, source])
 
-  // Избранные — сверху отдельной группой, остальные по группам в порядке появления
+  // Favourites on top as a group of their own, the rest by group in order of appearance
   const groups = useMemo(() => {
     const favourite = shown.filter((i) => favorites.includes(i.id))
     const order: string[] = []
@@ -211,10 +211,10 @@ export function PickerDialog({
                         ) : (
                           item.icon
                         )}
-                        {/* Значок (например, упрощённый снимок карты) — в правом нижнем углу превью */}
+                        {/* A badge (for example, a simplified map image) in the bottom right corner of the preview */}
                         {item.badge && <span className="absolute right-1.5 bottom-1.5">{item.badge}</span>}
                       </span>
-                      {/* Название сверху, автор прижат к низу: у всех карточек на одной линии */}
+                      {/* The name at the top, the author pressed to the bottom: on one line in all cards */}
                       <span className="flex flex-1 flex-col px-2.5 py-2">
                         <span className="block text-[14px] leading-snug font-medium break-words text-app-text">
                           {item.title}

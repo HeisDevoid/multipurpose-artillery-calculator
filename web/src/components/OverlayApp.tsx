@@ -20,21 +20,21 @@ import { FieldIcon } from './FieldIcon'
 import { ProgressBar } from './FormControls'
 import { MrsiPlanView } from './MrsiPanel'
 
-// Карта в оверлее — по требованию, как и в основном окне
+// The map in the overlay loads on demand, as in the main window
 const MapPicker = lazy(() => import('./MapPicker').then((m) => ({ default: m.MapPicker })))
 
-// Предупреждение «сплэш» за столько секунд до разрыва (как в FireTimer)
+// The "splash" warning this many seconds before impact (as in FireTimer)
 const SPLASH_WARNING_S = 5
 const IMPACT_HOLD_MS = 4000
 
-// Размер окна: установки / с панелью ввода / с картой
+// Window size: settings / with the input panel / with the map
 const WIDTH = 380
 const COMPACT_HEIGHT = 230
 const TERRAIN_EXTRA = 44
 const EDITING_HEIGHT = 580
 const MAP_WIDTH = 560
 const MAP_HEIGHT = 900
-// Одновременный удар: строка выстрела в плане
+// Simultaneous impact: a shot row in the plan
 const MRSI_BASE_HEIGHT = 300
 const MRSI_ROW = 30
 
@@ -60,34 +60,34 @@ interface Shot {
 const noop = () => {}
 
 /**
- * Окно поверх игры: заряд, азимут и возвышение в том же порядке, что в HUD
- * артиллерии Arma (CH, AZ, EL), время полёта и отсчёт до разрыва.
- * «Ввод» меняет вводные основного окна, не переключаясь на него (с картой,
- * если она включена): основное окно считает и присылает новое решение.
- * Рельеф на пути снаряда и одновременный удар видны и по связке.
- * Огонь — по глобальной клавише, звук подаёт основное окно.
+ * A window over the game: charge, azimuth and elevation in the same order as in the
+ * Arma artillery HUD (CH, AZ, EL), time of flight and the countdown to impact.
+ * "Input" changes the inputs of the main window without switching to it (with the map
+ * if it is on): the main window calculates and sends the new solution.
+ * Terrain on the shell path and simultaneous impact are visible over Link too.
+ * Fire is on a global key, the main window plays the sound.
  */
 export function OverlayApp() {
   const [state, setState] = useState<OverlayState | null>(null)
   const [shot, setShot] = useState<Shot | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [editing, setEditing] = useState(false)
-  // Счётчик запросов «курсор в поле дистанции» (Ctrl+Alt+D)
+  // A counter of "cursor to the distance field" requests (Ctrl+Alt+D)
   const [focusRequest, setFocusRequest] = useState(0)
 
-  // Свои значения полей: пока поле в фокусе, ответ основного окна
-  // не перебивает то, что набирается.
+  // The fields' own values: while a field has focus, the main window's answer
+  // does not overwrite what is being typed.
   const [draft, setDraft] = useState(EMPTY_FIELDS)
   const inputsRef = useRef<Partial<Record<OverlayField, HTMLInputElement>>>(
     {}
   )
 
-  // Последнее состояние для обработчика клавиши «огонь»
+  // The latest state for the fire key handler
   const stateRef = useRef<OverlayState | null>(null)
 
-  // Панель ввода — только для своих вводных, не для данных по связке
+  // The input panel is only for own inputs, not for data over Link
   const canEdit = editing && state !== null && !state.readOnly
-  // С картой: «Ввод» открывает карту поверх игры
+  // With the map: Input opens the map over the game
   const mapMode = canEdit && Boolean(state?.map)
   const solution = state?.solution ?? null
   const mrsi = solution ? (state?.mrsi ?? null) : null
@@ -110,7 +110,7 @@ export function OverlayApp() {
     return stop
   }, [])
 
-  // Размер окна под то, что в нём показано
+  // The window size fits what it shows
   const mrsiShots = mrsi?.shots.length ?? 0
   const width = mapMode ? MAP_WIDTH : WIDTH
   const height = mapMode
@@ -132,7 +132,7 @@ export function OverlayApp() {
           return
         }
         const current = stateRef.current
-        // Одновременный удар начинает основное окно: время старта приходит в состоянии
+        // The main window starts the simultaneous impact: the start time comes with the state
         if (action !== 'fire' || !current?.solution || current.mrsi) return
         const firedAt = Date.now()
         setNow(firedAt)
@@ -141,7 +141,7 @@ export function OverlayApp() {
     []
   )
 
-  // Поле появляется только после отрисовки панели ввода
+  // The field appears only after the input panel is drawn
   useEffect(() => {
     if (focusRequest === 0) return
     void focusCurrentWindow().then(() => {
@@ -151,12 +151,12 @@ export function OverlayApp() {
     })
   }, [focusRequest])
 
-  // Карта в оверлее: окну нужен фокус для кликов и колёсика
+  // The map in the overlay: the window needs focus for clicks and the wheel
   useEffect(() => {
     if (mapMode) void focusCurrentWindow()
   }, [mapMode])
 
-  // Выстрел из основного окна или по связке
+  // A shot from the main window or over Link
   useEffect(
     () =>
       onOverlayShot(() => {
@@ -182,7 +182,7 @@ export function OverlayApp() {
     return () => window.clearInterval(interval)
   }, [shot])
 
-  // Огонь по времени: отсчёт до выстрела
+  // Time on target: the countdown to the shot
   const fireAt = state?.fireAt ?? null
   useEffect(() => {
     if (fireAt === null) return
@@ -195,11 +195,11 @@ export function OverlayApp() {
   }, [fireAt])
   const totLeft = fireAt === null ? null : (fireAt - now) / 1000
 
-  // Одновременный удар: свои часы (звук подаёт основное окно)
+  // Simultaneous impact: its own clock (the main window plays the sound)
   const mrsiNow = useMrsiClock(mrsi?.shots ?? [], mrsi?.startedAt ?? null, noop, false)
 
-  // Оверлей — отдельное окно: язык приходит вместе с состоянием,
-  // словарь догружается (пока его нет — по-английски)
+  // The overlay is a separate window: the language comes with the state,
+  // the dictionary loads later (English until it arrives)
   const language = state?.language ?? 'ru'
   setI18nLanguage(language)
   const [, setDictionaryTick] = useState(0)
@@ -213,7 +213,7 @@ export function OverlayApp() {
     sendOverlayCommand({ type: 'field', field, value })
   }
 
-  // Enter — к следующему полю, Escape — убрать курсор
+  // Enter goes to the next field, Escape removes the cursor
   function handleFieldKey(
     event: KeyboardEvent<HTMLInputElement>,
     field: OverlayField
@@ -281,7 +281,7 @@ export function OverlayApp() {
       </div>
 
       {solution && mrsi ? (
-        // Одновременный удар: азимут общий, по выстрелам — заряд и возвышение
+        // Simultaneous impact: the azimuth is shared, the charge and elevation are per shot
         <div data-tauri-drag-region className="mt-2">
           <div data-tauri-drag-region className="flex items-end justify-between gap-3">
             <p className="flex items-center gap-1.5 text-[13px] font-medium text-app-text">
@@ -303,7 +303,7 @@ export function OverlayApp() {
           </div>
         </div>
       ) : solution ? (
-        // Порядок как в HUD артиллерии Arma: CH, AZ, EL
+        // The order as in the Arma artillery HUD: CH, AZ, EL
         <div
           data-tauri-drag-region
           className={[
@@ -346,7 +346,7 @@ export function OverlayApp() {
         </p>
       )}
 
-      {/* Рельеф на пути снаряда: видно и по связке, чтобы стрелок мог сказать об этом */}
+      {/* Terrain on the shell path: visible over Link too, so the gunner can report it */}
       {terrain && (
         <p
           className={[
@@ -406,7 +406,7 @@ export function OverlayApp() {
 
       {canEdit && (
         <div className="mt-3 flex flex-1 flex-col gap-2.5 border-t border-app-line-strong pt-3">
-          {/* Карта поверх игры: орудие и цель ставятся здесь, считает основное окно */}
+          {/* The map over the game: the gun and the target are placed here, the main window calculates */}
           {mapMode && state.map && (
             <Suspense fallback={<p className="label py-10 text-center">{t('artilleryCalculator.loading-the-map')}</p>}>
               <MapPicker
@@ -450,7 +450,7 @@ export function OverlayApp() {
   )
 }
 
-/** Одно значение установок: подпись, как в HUD игры (CH / AZ / EL), и крупное число. */
+/** One setting value: a label as in the game HUD (CH / AZ / EL) and a large number. */
 function Readout({
   label,
   game,
@@ -486,7 +486,7 @@ function Readout({
   )
 }
 
-/** Заряды, которыми можно достать цель, и режим HIGH/LOW. */
+/** The charges that can reach the target, and the HIGH/LOW mode. */
 function ChargeRow({ state }: { state: OverlayState }) {
   if (state.charges.length === 0 && state.modes.length < 2) return null
 
@@ -521,7 +521,7 @@ function ChargeRow({ state }: { state: OverlayState }) {
   )
 }
 
-/** Доклад о разрыве по линии орудие — цель. */
+/** A burst report along the gun to target line. */
 function SpotReport({ state }: { state: OverlayState }) {
   const [range, setRange] = useState('')
   const [rangeSide, setRangeSide] = useState<'over' | 'short'>('over')

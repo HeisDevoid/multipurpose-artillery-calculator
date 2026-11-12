@@ -5,9 +5,9 @@ import type { DataStatus } from '../types/artillery'
 import { FieldIcon } from './FieldIcon'
 
 /**
- * Значок таблиц орудия. В углу плитки: жёлтый «!» — таблицы неполные (нет
- * набора без сопротивления воздуха или с ним), зелёная галочка — проверены
- * стрельбой в игре, иначе значка нет. Подробности — в подсказке.
+ * The badge of the weapon tables. In the corner of the tile: a yellow "!" means the tables
+ * are incomplete (no set without air resistance or with it), a green check mark means
+ * verified by firing in the game, otherwise there is no badge. Details are in the tooltip.
  */
 export function DataStatusBadge({
   status,
@@ -16,11 +16,11 @@ export function DataStatusBadge({
   corner = false,
 }: {
   status: DataStatus
-  // Каких наборов таблиц нет
+  // Which table sets are missing
   missing?: readonly MissingTables[]
-  // Только значок (подпись — в подсказке)
+  // The badge only (the label is in the tooltip)
   compact?: boolean
-  // Маленький значок в правом нижнем углу плитки орудия
+  // A small badge in the bottom right corner of the weapon tile
   corner?: boolean
 }) {
   const incomplete = missing.length > 0

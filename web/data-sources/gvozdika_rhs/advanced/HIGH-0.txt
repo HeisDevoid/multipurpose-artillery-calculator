@@ -1,6 +1,6 @@
 # 2S1 Gvozdika (122 mm), HIGH, Charge 0
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_2a31, 179.4 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_2a31, 179.4 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 1700 1273 6.5 0.7 33.2 1.9 4.5 -4.0 0.2 -0.3 -2.4 2.2
 1750 1261 6.7 0.7 33.0 1.8 4.5 -4.0 0.3 -0.2 -2.3 2.4
 1800 1250 7.2 0.7 32.9 1.8 4.5 -4.1 0.3 -0.2 -2.4 2.3

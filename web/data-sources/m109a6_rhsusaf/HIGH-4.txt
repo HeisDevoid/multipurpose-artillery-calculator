@@ -1,6 +1,6 @@
 # M109A6 (155 mm), HIGH, Charge 4
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_m284, 810 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_m284, 810 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 22900 1422 0.1 0.1 163
 23000 1421 0.1 0.1 163
 23100 1420 0.1 0.1 163

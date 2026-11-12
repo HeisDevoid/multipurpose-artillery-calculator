@@ -4,7 +4,7 @@ import type { ArtilleryCategory } from '../types/gameModel'
 import { drawFlight, IMPACT_FX_SECONDS, type FlightParams } from './flightFx'
 import type { ShellKind } from './shellKind'
 
-/** Холст-заглушка: считает вызовы рисования. */
+/** A stub canvas: counts the drawing calls. */
 function fakeContext() {
   const calls: string[] = []
   const gradient = { addColorStop: () => {} }
@@ -47,7 +47,7 @@ function params(over: Partial<FlightParams>): FlightParams {
 }
 
 describe('drawFlight', () => {
-  it('рисует полёт, разрыв и последствия для всех орудий, снарядов и стилей', () => {
+  it('draws the flight, the burst and the aftermath for all weapons, shells and styles', () => {
     for (const style of ['minimal', 'detailed'] as const) {
       for (const category of CATEGORIES) {
         for (const kind of KINDS) {
@@ -56,7 +56,7 @@ describe('drawFlight', () => {
             expect(() =>
               drawFlight(ctx, params({ category, kind, style, elapsed }))
             ).not.toThrow()
-            // Пока снаряд летит или только что разорвался — что-то нарисовано
+            // While the shell flies or has just burst, something is drawn
             if (elapsed <= 20.3) expect(calls.length).toBeGreaterThan(0)
           }
         }
@@ -64,7 +64,7 @@ describe('drawFlight', () => {
     }
   })
 
-  it('ничего не рисует до выстрела и после конца эффектов', () => {
+  it('draws nothing before the shot and after the effects end', () => {
     const before = fakeContext()
     drawFlight(before.ctx, params({ elapsed: -1 }))
     expect(before.calls).toEqual([])
@@ -74,14 +74,14 @@ describe('drawFlight', () => {
     expect(after.calls).toEqual([])
   })
 
-  it('вспышка у орудия рисуется в первые доли секунды и только по флагу', () => {
+  it('the muzzle flash is drawn in the first fractions of a second and only by the flag', () => {
     for (const style of ['minimal', 'detailed'] as const) {
       const flash = fakeContext()
       drawFlight(flash.ctx, params({ style, elapsed: 0.1, muzzle: true }))
       const plain = fakeContext()
       drawFlight(plain.ctx, params({ style, elapsed: 0.1 }))
       expect(flash.calls.length).toBeGreaterThan(plain.calls.length)
-      // позже 0.35 с вспышки уже нет
+      // after 0.35 s there is no flash
       const late = fakeContext()
       const lateOff = fakeContext()
       drawFlight(late.ctx, params({ style, elapsed: 1, muzzle: true }))
@@ -90,7 +90,7 @@ describe('drawFlight', () => {
     }
   })
 
-  it('нулевое время полёта не ломает расчёт', () => {
+  it('a zero time of flight does not break the calculation', () => {
     const { ctx, calls } = fakeContext()
     drawFlight(ctx, params({ tof: 0 }))
     expect(calls).toEqual([])

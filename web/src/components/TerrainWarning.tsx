@@ -12,8 +12,8 @@ const W = 320
 const H = 96
 
 /**
- * Предупреждение о рельефе по пути снаряда: текст и профиль (земля и дуга).
- * Красное — снаряд упрётся, жёлтое — пройдёт впритык над бугром.
+ * A warning about terrain on the shell path: a text and a profile (ground and arc).
+ * Red means the shell hits, yellow means it passes tight over a bump.
  */
 export function TerrainWarning({
   terrain,
@@ -24,7 +24,7 @@ export function TerrainWarning({
   terrain: TerrainProfile
   hit: Clearance
   elevationMil: number
-  // Чем стрелять вместо: «навесная, заряд 2»; null — подходящего нет
+  // What to fire instead: "high, charge 2"; null: nothing suitable
   alternative: string | null
 }) {
   const unitM = t('unit.m')
@@ -60,9 +60,9 @@ export function TerrainWarning({
 }
 
 /**
- * Профиль: рельеф по прямой от орудия к цели и дуга снаряда. Дуга видна
- * целиком, но график не выше четырёх перепадов рельефа: у навесной дуги
- * вершина уходит за край, зато гребень не сплющивается в линию.
+ * The profile: the terrain along a straight line from the gun to the target and the shell arc. The arc is
+ * visible in full, but the chart is no higher than four terrain drops: the top of a high
+ * arc goes off the edge, but the ridge is not flattened into a line.
  */
 function ProfileChart({
   terrain,

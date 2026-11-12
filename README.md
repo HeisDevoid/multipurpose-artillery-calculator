@@ -78,8 +78,10 @@ The Windows app also needs [Rust](https://rustup.rs) and the [Visual Studio C++ 
 ## Stats
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HeisDevoid/multipurpose-artillery-calculator/stats/stats.svg" alt="Downloads of the Windows installer and update checks by installed apps, by version" width="100%">
+  <img src="https://raw.githubusercontent.com/HeisDevoid/multipurpose-artillery-calculator/stats/stats.svg" alt="Installer downloads by version and daily use of the site and the Windows app" width="100%">
 </p>
+
+Daily use is counted without a server and without personal data: once a day the site and the Windows app download a small file from the [`usage`](https://github.com/HeisDevoid/multipurpose-artillery-calculator/releases/tag/usage) release, and GitHub counts the downloads. It can be turned off in the settings (Anonymous statistics).
 
 ## License
 

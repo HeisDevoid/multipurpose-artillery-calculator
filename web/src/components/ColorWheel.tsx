@@ -38,7 +38,7 @@ function hexToHsl(hex: string): { h: number; l: number } {
   return { h, l: l * 100 }
 }
 
-/** Круг оттенков и ползунок яркости: любой цвет в виде #rrggbb. */
+/** A hue wheel and a brightness slider: any colour as #rrggbb. */
 function Wheel({ value, onChange }: { value: MarkerColor; onChange: (c: MarkerColor) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const current = hexToHsl(markerRgb(value))
@@ -98,7 +98,7 @@ function Wheel({ value, onChange }: { value: MarkerColor; onChange: (c: MarkerCo
           mask: `radial-gradient(circle, transparent ${SIZE / 2 - RING - 0.5}px, #000 ${SIZE / 2 - RING}px)`,
         }}
       />
-      {/* Ручка поверх маски */}
+      {/* The handle over the mask */}
       <span
         aria-hidden="true"
         className="pointer-events-none absolute h-4 w-4 rounded-full border-2 border-white shadow-md"
@@ -126,8 +126,8 @@ function Wheel({ value, onChange }: { value: MarkerColor; onChange: (c: MarkerCo
 }
 
 /**
- * Выбор цвета: ряд готовых цветов и «радужная» кнопка. При наведении (или
- * нажатии на телефоне) выезжает панель с кругом оттенков и ползунком яркости.
+ * Colour choice: a row of ready colours and a "rainbow" button. On hover (or
+ * on a tap on a phone) a panel with the hue wheel and the brightness slider slides out.
  */
 export function ColorField({
   value,
@@ -141,10 +141,10 @@ export function ColorField({
   onChange: (color: MarkerColor) => void
   names: (color: MarkerColor) => string
   placement?: 'top' | 'bottom'
-  // Только кнопка с текущим цветом (панель с готовыми цветами и кругом)
+  // Only the button with the current colour (a panel with ready colours and the wheel)
   compact?: boolean
-  // Круг оттенков раскрывается под цветами внутри окна (по нажатию на цвет),
-  // а не поверх: так он не закрывает поля рядом
+  // The hue wheel opens under the colours inside the window (when a colour is pressed),
+  // not over them: this way it does not cover the fields nearby
   inline?: boolean
 }) {
   const [open, setOpen] = useState(false)
@@ -181,7 +181,7 @@ export function ColorField({
       aria-label={names(color)}
       onClick={() => {
         onChange(color)
-        // На телефоне наведения нет: круг оттенков открывается нажатием
+        // A phone has no hover: the hue wheel opens with a tap
         setOpen(true)
       }}
       style={{ backgroundColor: markerRgb(color) }}

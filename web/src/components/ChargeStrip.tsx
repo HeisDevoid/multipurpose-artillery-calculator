@@ -6,7 +6,7 @@ import { FieldIcon } from './FieldIcon'
 
 export interface ChargeGroup {
   mode: ArtilleryMode
-  // Подпись траектории («Навесная»), когда режимов больше одного
+  // The trajectory label ("High") when there is more than one mode
   label: string
   results: readonly ChargeResult[]
 }
@@ -16,18 +16,18 @@ interface Props {
   activeMode: ArtilleryMode
   activeCharge: number | null
   onPick: (mode: ArtilleryMode, charge: number) => void
-  // Не показывать заряды, которые не достают до цели
+  // Hide the charges that do not reach the target
   hideUnfit?: boolean
-  // Только заряды, чем-то хорошие: лучший, самый быстрый, самый точный (и выбранный)
+  // Only the charges that are good at something: the best, the fastest, the most precise (and the chosen one)
   onlyGood?: boolean
-  // Рельеф по пути: где снаряд упрётся (нет данных — null)
+  // Terrain on the way: where the shell hits (null: no data)
   terrainOf?: (mode: ArtilleryMode, charge: number) => Clearance | null
 }
 
 /**
- * Все способы выстрела по текущей дистанции: каждый заряд (и каждая
- * траектория) — карточкой с возвышением и временем полёта. Видно сразу,
- * какой брать и какие есть альтернативы: ⚡ — быстрее всех, ◎ — точнее всех.
+ * All ways to fire at the current distance: every charge (and every
+ * trajectory) as a card with elevation and time of flight. It shows at once
+ * which to take and what the alternatives are: ⚡ is the fastest, ◎ is the most precise.
  */
 export function ChargeStrip({
   groups,
@@ -48,7 +48,7 @@ export function ChargeStrip({
           const hit = terrainOf?.(group.mode, charge) ?? null
           return isBlocked(hit) ? hit : null
         }
-        // Лучший, быстрый и точный — среди тех, что не упираются в рельеф
+        // The best, fast and precise ones are among those that do not hit terrain
         const clear = group.results.filter((r) => blockedAt(r.charge) === null)
         const ranked = clear.some((r) => r.solution !== null) ? clear : group.results
         const fastestCharge = pickCharge(ranked, 'fastest')?.charge
@@ -66,7 +66,7 @@ export function ChargeStrip({
             r.charge === preciseCharge
           )
         })
-        // Траектория, по которой до цели не достать, при скрытии пропадает целиком
+        // A trajectory that cannot reach the target disappears entirely when hiding is on
         if (visible.length === 0) return null
         const best = bestCharge
         const fastest = fastestCharge

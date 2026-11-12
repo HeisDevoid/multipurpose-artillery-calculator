@@ -79,7 +79,8 @@ import { useFavorites } from '../lib/favorites'
 import { FavoriteToggle } from './FavoriteToggle'
 import { shellKind } from '../lib/shellKind'
 import type { ArtilleryCategory } from '../types/gameModel'
-import { MAPS_BASE } from '../lib/builtinMaps'
+import { mapFolder } from '../lib/builtinMaps'
+import { pinchView, type TouchPoint } from '../lib/pinch'
 import { ScreenMarkers } from './ScreenMarkers'
 import { CoordinatePlate } from './map/CoordinatePlate'
 import { DrawToolbar, type DrawTool } from './map/DrawToolbar'
@@ -94,20 +95,20 @@ export interface MapSelection {
   azimuthMil: number
   ownHeight: number
   targetHeight: number
-  // Точка цели — сохраняется в журнал
+  // The target point: saved to the journal
   target: MapTarget
 }
 
-/** Цель из журнала, поставленная на карте. */
+/** A journal target placed on the map. */
 export interface JournalMapTarget {
   id: string
   name: string
   target: MapTarget
-  // Цель, с которой сейчас работает калькулятор
+  // The target the calculator works with now
   active: boolean
 }
 
-/** Сохранённая цель в быстром списке на карте. */
+/** A saved target in the quick list on the map. */
 export interface QuickTarget {
   id: string
   name: string
@@ -118,45 +119,45 @@ export interface QuickTarget {
 interface Props {
   language: Language
   onApply: (selection: MapSelection) => void
-  // Цели журнала: показываются на карте, клик — загрузить цель
+  // Journal targets: shown on the map, a click loads the target
   journalTargets?: readonly JournalMapTarget[]
   onPickJournalTarget?: (id: string) => void
-  // Точка текущей цели (например, загруженной из журнала)
+  // The current target point (for example, one loaded from the journal)
   currentTarget?: MapTarget | null
-  // Быстрый выбор сохранённых целей: список слева на карте
+  // Quick pick of saved targets: a list on the left of the map
   quickTargets?: readonly QuickTarget[]
-  // Журнал целей: экспорт, импорт, переименование, удаление; без него панели нет
+  // The target journal: export, import, renaming, removal; without it there is no panel
   targetActions?: JournalActions
-  // Радиус досягаемости орудия, м: показывается кольцами вокруг орудия
+  // The gun's reach, m: shown as rings around the gun
   reach?: { min: number; max: number } | null
-  // Снаряд в полёте: анимация от орудия к цели
+  // The shell in flight: an animation from the gun to the target
   flight?: readonly FlightShot[]
   category?: ArtilleryCategory
   shellType?: string
-  // Рельеф по прямой от орудия к цели: для проверки, не упрётся ли снаряд в гору
+  // The terrain along a straight line from the gun to the target: to check whether the shell hits a hill
   onTerrainProfile?: (profile: TerrainProfile | null) => void
-  // Опасное место на линии огня для текущего решения: снаряд идёт впритык
-  // к рельефу или упирается в него; at — расстояние от орудия, м
+  // A dangerous spot on the line of fire for the current solution: the shell passes tight
+  // over terrain or hits it; at is the distance from the gun, m
   terrainHit?: { status: 'tight' | 'blocked'; at: number; min: number } | null
-  // Огонь по линии: возвышение в точку при этой дальности и разнице высот
-  // (цель минус орудие) тем же способом, что и основной расчёт
+  // Line fire: the elevation to a point at this range and height difference
+  // (target minus gun), calculated the same way as the main solution
   solveLine?: (distance: number, heightDiff: number) => { elevation: number; charge: number } | null
-  // Меняется, когда меняется способ выстрела (орудие, снаряд, траектория, заряд, погода):
-  // по нему пересчитываются зоны досягаемости на карте
+  // Changes when the way to fire changes (weapon, shell, trajectory, charge, weather):
+  // the reach zones on the map are recalculated from it
   solveKey?: string
-  // Орудие закреплено на карте (true) или освобождено (false); высота —
-  // высота орудия в точке, м, если известна
+  // The gun is locked on the map (true) or released (false); height is
+  // the gun height at the point, m, if known
   onGunLockChange?: (locked: boolean, height: number | null) => void
-  // Метки на карте и распознавание меток с экрана игры — из настроек
+  // Map markers and recognition of markers from the game screen: from the settings
   showMarkers?: boolean
   showScreenMarkers?: boolean
 }
 
 interface View {
-  // Мировые координаты левого верхнего угла холста, м
+  // World coordinates of the canvas top left corner, m
   x0: number
   y0: number
-  // Пикселей на метр
+  // Pixels per metre
   scale: number
 }
 
@@ -164,7 +165,7 @@ type Placing = 'gun' | 'target' | 'marker' | 'line' | 'pen' | 'draw-line' | 'era
 
 const isDrawTool = (p: Placing) => p === 'pen' || p === 'draw-line' || p === 'eraser'
 
-// Клик ближе — попадание в метку, пиксели
+// A click closer than this hits a marker, pixels
 const MARKER_HIT_PX = 14
 
 const MAX_SCALE = 4
@@ -182,7 +183,7 @@ function readGun(world: string): MapPoint | null {
       return value as MapPoint
     }
   } catch {
-    // Нет сохранённой позиции
+    // No saved position
   }
   return null
 }
@@ -202,7 +203,7 @@ function readLine(world: string): MapPoint[] {
         .slice(0, 50)
     }
   } catch {
-    // Нет сохранённой линии
+    // No saved line
   }
   return []
 }
@@ -233,8 +234,8 @@ function fitView(map: Heightmap, width: number, height: number): View {
 }
 
 /**
- * Экспериментально: карта по сетке высот из игры. Клик ставит орудие
- * и цель — дистанция, азимут и высоты подставляются в калькулятор.
+ * Experimental: a map from the game height grid. A click places the gun
+ * and the target, and the distance, azimuth and heights go into the calculator.
  */
 export function MapPicker({
   language,
@@ -260,22 +261,22 @@ export function MapPicker({
   const unitM = t('unit.m')
 
   const flightOnMap = useFlightOnMap()
-  // Избранные карты: ключи пунктов списка, показываются сверху
+  // Favourite maps: keys of list items, shown on top
   const [favorites, toggleFavorite] = useFavorites('favMaps')
-  // Встроенные карты (спутник + высоты) и тайлы открытой карты
+  // Built-in maps (satellite + heights) and the tiles of the open map
   const [builtin, setBuiltin] = useState<BuiltinMapEntry[]>([])
   const [tiles, setTiles] = useState<MapTiles | null>(null)
-  // Векторный слой (здания, дороги, горизонтали) и стиль карты
+  // The vector layer (buildings, roads, contour lines) and the map style
   const [vector, setVector] = useState<MapVector | null>(null)
   const [mapStyle, setMapStyle] = useState<MapStyle>(() =>
     readStoredText('mapStyle') === 'topo' ? 'topo' : 'sat'
   )
-  // Какой пункт списка открыт: «builtin:stratis» или «local:altis»
+  // Which list item is open: "builtin:stratis" or "local:altis"
   const [mapKey, setMapKey] = useState('')
   const [map, setMap] = useState<Heightmap | null>(null)
-  // Окно «Предложить карту»
+  // The "Suggest a map" window
   const [suggesting, setSuggesting] = useState(false)
-  // Окно выбора карты мода (с поиском)
+  // The mod map window (with search)
   const [pickingMod, setPickingMod] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -283,18 +284,18 @@ export function MapPicker({
   const [target, setTarget] = useState<MapPoint | null>(null)
   const [placing, setPlacing] = useState<Placing>('gun')
 
-  // Орудие закреплено на карте: касания его не двигают
+  // The gun is locked on the map: taps do not move it
   const [gunLocked, setGunLocked] = useState(false)
 
-  // Высотные линии из сетки высот: чтобы точнее ставить орудие
+  // Contour lines from the height grid: for placing the gun more precisely
   const [contoursOn, setContoursOn] = useState(() => readStoredText('mapContours') !== 'off')
 
-  // Зоны по рельефу: куда достаёт орудие («from») и откуда достать до цели («to»)
+  // Terrain zones: where the gun reaches ("from") and where to reach the target from ("to")
   const [coverageMode, setCoverageMode] = useState<CoverageMode>('off')
 
-  // Линия огня: ломаная из точек, плотность огня (радиус разрыва) и номер
-  // точки прицеливания, по которой стреляют сейчас. Плотность по умолчанию —
-  // рекомендуемая для орудия; выбранная вручную запоминается.
+  // The line of fire: a polyline of points, the fire density (burst radius) and the number
+  // of the aim point being fired at now. The default density is the one
+  // recommended for the weapon; one chosen by hand is remembered.
   const [linePoints, setLinePoints] = useState<MapPoint[]>([])
   const [densityChoice, setDensityChoice] = useState<FireDensity['id'] | null>(
     () => FIRE_DENSITIES.find((d) => d.id === readStoredText('lineDensity'))?.id ?? null
@@ -311,14 +312,23 @@ export function MapPicker({
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [view, setView] = useState<View | null>(null)
 
-  // Холст в состоянии: эффекты перезапускаются, когда он появляется
-  // или пересоздаётся (после выбора карты, «Добавить карту»)
+  // The canvas is in state: effects restart when it appears
+  // or is recreated (after a map is chosen, "Add a map")
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null)
   const dragRef = useRef<{
+    id: number
     x: number
     y: number
     view: View
     moved: boolean
+  } | null>(null)
+  // Fingers on the map, canvas pixels. Two of them zoom and drag the map together
+  const touchesRef = useRef(new Map<number, TouchPoint>())
+  const pinchRef = useRef<{
+    ids: [number, number]
+    from: [TouchPoint, TouchPoint]
+    view: View
+    last: View
   } | null>(null)
 
   const night = useIsDark()
@@ -327,19 +337,19 @@ export function MapPicker({
     [map, night]
   )
 
-  // Зоны досягаемости: считаются при смене точки, карты или способа выстрела,
-  // а не при каждом сдвиге карты
+  // Reach zones: calculated when the point, the map or the way to fire changes,
+  // not on every map shift
   const solveRef = useRef(solveLine)
   useEffect(() => {
     solveRef.current = solveLine
   })
   const reachMin = reach?.min ?? 0
   const reachMax = reach?.max ?? 0
-  // Центр зоны: орудие («Куда достаю») или цель («Где встать»)
+  // The zone centre: the gun ("Where I can hit") or the target ("Where to stand")
   const coverageCenter = coverageMode === 'from' ? gun : coverageMode === 'to' ? target : null
 
-  // Зона считается по частям между кадрами: лучей сотни, а интерфейс не
-  // должен замирать; на карте она заполняется по кругу
+  // The zone is calculated in parts between frames: there are hundreds of rays, and the
+  // interface must not freeze; on the map it fills in around the circle
   const [coverage, setCoverage] = useState<Coverage | null>(null)
   useEffect(() => {
     let frame = 0
@@ -377,15 +387,15 @@ export function MapPicker({
       cancelled = true
       cancelAnimationFrame(frame)
     }
-    // solveKey заменяет solveLine: функция каждый раз новая
+    // solveKey stands in for solveLine: the function is new every time
   }, [coverageMode, map, coverageCenter, reachMin, reachMax, solveKey])
   const spot = useMemo(
     () => (coverage && coverage.mode === 'to' ? nearestGoodSpot(coverage, gun ?? coverage.center) : null),
     [coverage, gun]
   )
 
-  // Зоны — фигуры в метрах вокруг центра: на кадр три заливки, сколько бы
-  // ни было лучей, и без тёмных швов между соседними клиньями
+  // Zones are shapes in metres around the centre: three fills per frame however many
+  // rays there are, and no dark seams between neighbouring wedges
   const coveragePaths = useMemo(() => {
     if (!coverage || typeof Path2D === 'undefined') return null
     const half = coverage.width / 2 + 0.002
@@ -404,15 +414,15 @@ export function MapPicker({
     return paths
   }, [coverage])
 
-  // «Куда достаю»: вода в зону не входит, а цель в воде проверяется отдельно
+  // "Where I can hit": water is not part of the zone, and a target in water is checked separately
   const targetInWater = useMemo(() => {
     if (coverageMode !== 'from' || !map || !gun || !target || !isWater(map, target)) return null
     return pointStatus(map, gun, target, (distance, heightDiff) => solveRef.current?.(distance, heightDiff) ?? null)
-    // solveKey заменяет solveLine: функция каждый раз новая
+    // solveKey stands in for solveLine: the function is new every time
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coverageMode, map, gun, target, solveKey])
 
-  // ---- метки ----
+  // ---- markers ----
   const sync = useSync()
   const author =
     sync.callsign.trim() ||
@@ -429,14 +439,14 @@ export function MapPicker({
         : [],
     [allMarkers, map, showMarkers]
   )
-  // Новая метка: где поставлена и что вписать
+  // A new marker: where it is placed and what to write
   const [draft, setDraft] = useState<{
     point: MapPoint
     label: string
     color: MarkerColor
   } | null>(null)
 
-  // ---- рисунок на карте ----
+  // ---- drawing on the map ----
   const [strokes, setStrokes] = useState<DrawStroke[]>([])
   const [liveStroke, setLiveStroke] = useState<DrawStroke | null>(null)
   const [drawColor, setDrawColor] = useState<MarkerColor>('red')
@@ -449,7 +459,7 @@ export function MapPicker({
   }
   const [markerColor, setMarkerColor] = useState<MarkerColor>('red')
 
-  // Часы для «сколько метке»
+  // A clock for "how old the marker is"
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     const interval = window.setInterval(() => setNow(Date.now()), 15_000)
@@ -471,9 +481,9 @@ export function MapPicker({
     setDraft(null)
   }
 
-  // ---- загрузка списка и последней карты ----
+  // ---- loading the list and the last map ----
   function openMap(key: string) {
-    // Старые версии хранили «local:…» и просто имя мира: берём только имя
+    // Old versions stored "local:…" and just the world name: only the name is taken
     const world = key.includes(':') ? key.split(':', 2)[1] : key
     const load = loadBuiltinMap(world).then((result) =>
       result
@@ -519,12 +529,12 @@ export function MapPicker({
         keys[0]
       if (key) openMap(key)
     })
-    // Только при первом показе
+    // Only on the first show
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Орудие или карту поменяли в другом окне (карта в оверлее программы для ПК):
-  // localStorage общий, событие storage приходит только в другие окна
+  // The gun or the map was changed in another window (the map in the Windows app overlay):
+  // localStorage is shared, and the storage event reaches only the other windows
   const openMapRef = useRef(openMap)
   useEffect(() => {
     openMapRef.current = openMap
@@ -541,8 +551,8 @@ export function MapPicker({
     return () => window.removeEventListener('storage', onStorage)
   }, [map, mapKey])
 
-  // ---- размер холста ----
-  // Ширина контейнера: сразу при появлении и при каждом изменении
+  // ---- canvas size ----
+  // The container width: right when it appears and on every change
   const containerRef = useCallback((element: HTMLDivElement | null) => {
     if (!element) return
     const measure = () => {
@@ -555,14 +565,14 @@ export function MapPicker({
     return () => observer.disconnect()
   }, [])
 
-  // Чёткость на экранах с масштабированием
+  // Sharpness on scaled screens
   const ratio = window.devicePixelRatio || 1
 
-  // Загруженные тайлы спутника; готовый тайл — повод перерисовать
+  // Loaded satellite tiles; a ready tile is a reason to redraw
   const tileCache = useRef(new Map<string, HTMLImageElement>())
   const [tileTick, setTileTick] = useState(0)
   const baseCache = useRef<{ key: string; x0: number; y0: number; scale: number; canvas: HTMLCanvasElement } | null>(null)
-  // Пока крутится колесо, основа лишь масштабируется; через 140 мс после последнего шага — чёткая перерисовка
+  // While the wheel turns, the base is only scaled; 140 ms after the last step it is redrawn sharp
   const [settleTick, setSettleTick] = useState(0)
   const zoomingUntil = useRef(0)
   const settleTimer = useRef<number | null>(null)
@@ -590,7 +600,7 @@ export function MapPicker({
   const activeView =
     view ?? (map && size.width > 0 ? fitView(map, size.width, size.height) : null)
 
-  // ---- отрисовка ----
+  // ---- drawing ----
   useEffect(() => {
     if (!canvas || !map || !relief || !activeView) return
     const ctx = canvas.getContext('2d')
@@ -602,7 +612,7 @@ export function MapPicker({
       y: (y0 - p.y) * scale,
     })
 
-    // Цвета холста — из темы интерфейса
+    // Canvas colours come from the interface theme
     const gunColor = themeColor('--color-gun') || '#4393e4'
     const targetColor = themeColor('--color-target') || '#e47474'
     const ink = night
@@ -627,7 +637,7 @@ export function MapPicker({
     const sans = "'Inter Variable', system-ui, sans-serif"
     const mono = sans
 
-    // Нет спутника — только топо
+    // No satellite image: topo only
     const topo = (mapStyle === 'topo' || tiles === null) && vector !== null
     if (topo) {
       ink.grid = 'rgba(0,0,0,0.14)'
@@ -635,9 +645,9 @@ export function MapPicker({
       ink.gridText = 'rgba(0,0,0,0.6)'
     }
 
-    // Основа (фон, рельеф, спутник, векторный слой) рисуется один раз на холст
-    // вдвое больше экрана и при перетаскивании только сдвигается: так карта не
-    // перерисовывается заново на каждое движение мыши
+    // The base (background, terrain, satellite, vector layer) is drawn once on a canvas
+    // twice the size of the screen and only shifted while dragging: this way the map is not
+    // redrawn on every mouse movement
     const extent = mapExtent(map)
     const half = map.step / 2
     const paintBase = (target: CanvasRenderingContext2D, bx0: number, by0: number, w: number, h: number) => {
@@ -647,8 +657,8 @@ export function MapPicker({
       target.fillRect(0, 0, w, h)
       target.imageSmoothingEnabled = true
       if (!topo) {
-        // Пиксель изображения i — узел x = i·step, покрывает ±step/2
-        // Рисуем только видимый кусок рельефа: целиком он при сильном приближении огромен
+        // Image pixel i is node x = i·step and covers ±step/2
+        // Only the visible part of the terrain is drawn: in full it is huge at high zoom
         const total = extent + map.step
         const u0 = Math.max(0, bx0 + half)
         const u1 = Math.min(total, bx0 + w / scale + half)
@@ -668,7 +678,7 @@ export function MapPicker({
           )
         }
       }
-      // Спутниковый снимок поверх рельефа: пока тайл грузится, виден рельеф
+      // The satellite image over the terrain: the terrain shows while a tile loads
       if (tiles && !topo) {
         const z = tileLevel(tiles, scale * ratio)
         const visible = visibleTiles(tiles, z, {
@@ -681,12 +691,12 @@ export function MapPicker({
           const image = tileImage(tile.url)
           if (!image.complete || image.naturalWidth === 0) continue
           const p = toPx({ x: tile.x, y: tile.y })
-          // +0.5 px — без щелей между тайлами при дробном масштабе
+          // +0.5 px: no gaps between tiles at a fractional scale
           const side = tile.meters * scale + 0.5
           target.drawImage(image, p.x, p.y, side, side)
         }
       }
-      // Здания, дороги, горизонтали: поверх спутника — при сильном приближении
+      // Buildings, roads, contour lines: over the satellite image at high zoom
       const baseView = { x0: bx0, y0: by0, scale, width: w, height: h }
       const demLines = contoursOn && contourInterval(scale) !== null
       if (vector) {
@@ -707,8 +717,8 @@ export function MapPicker({
       x0 + size.width / scale <= cache!.x0 + w2 / scale &&
       y0 <= cache!.y0 &&
       y0 - size.height / scale >= cache!.y0 - h2 / scale
-    // Зум: пока колесо крутится, старая основа просто масштабируется (дёшево),
-    // а настоящая перерисовка — когда зум остановился
+    // Zoom: while the wheel turns, the old base is just scaled (cheap),
+    // and the real redraw happens when the zoom stops
     const zoomRatio = sameScene ? scale / cache!.scale : 1
     const stretch =
       sameScene && !inside && cache!.scale !== scale && zoomRatio > 0.55 && zoomRatio < 1.8 && performance.now() < zoomingUntil.current
@@ -716,7 +726,7 @@ export function MapPicker({
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
       ctx.fillStyle = topo ? TOPO_PAPER : ink.bg
       ctx.fillRect(0, 0, size.width, size.height)
-      // Точка кэша (cache.x0, cache.y0) после смены масштаба
+      // The cache point (cache.x0, cache.y0) after the scale change
       ctx.drawImage(
         cache!.canvas,
         (cache!.x0 - x0) * scale,
@@ -730,7 +740,7 @@ export function MapPicker({
       surface.height = Math.round(h2 * ratio)
       const sctx = surface.getContext('2d')
       if (!sctx) return
-      // Экран лежит в середине холста основы
+      // The screen lies in the middle of the base canvas
       const bx0 = x0 - size.width / 2 / scale
       const by0 = y0 + size.height / 2 / scale
       paintBase(sctx, bx0, by0, w2, h2)
@@ -748,7 +758,7 @@ export function MapPicker({
     )
     }
 
-    // Сетка: 100 м / 1 км / 10 км — по масштабу
+    // The grid: 100 m / 1 km / 10 km depending on the scale
     const spacing =
       GRID_SPACINGS.find((s) => s * scale >= 48) ??
       GRID_SPACINGS[GRID_SPACINGS.length - 1]
@@ -779,7 +789,7 @@ export function MapPicker({
       ctx.fillText(String(Math.floor(y / 100)).padStart(3, '0'), 3, sy - 3)
     }
 
-    // Рисунок: штрихи под метками и целями
+    // Drawing: strokes under the markers and the targets
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
     ctx.lineWidth = 3
@@ -799,7 +809,7 @@ export function MapPicker({
       ctx.stroke()
     }
 
-    // Метки: значок цвета метки, подпись и возраст; старые бледнее
+    // Markers: an icon in the marker colour, a label and the age; old ones are paler
     ctx.font = `12px ${sans}`
     for (const marker of markers) {
       const p = toScreen(marker)
@@ -828,7 +838,7 @@ export function MapPicker({
     }
     ctx.globalAlpha = 1
 
-    // Цели журнала: перекрестие в рамке и название
+    // Journal targets: a crosshair in a frame and the name
     ctx.font = `11px ${mono}`
     for (const saved of journalTargets) {
       if (saved.target.world !== map.world) continue
@@ -866,14 +876,14 @@ export function MapPicker({
       ctx.setLineDash([])
     }
 
-    // Линия огня по цели (лесополоса): полоса поражения, ось и точки
+    // Fire along a target line (a tree line): the hit strip, the axis and the points
     if (linePoints.length > 0) {
       const pts = linePoints.map(toScreen)
       const lineColor = '#ffb020'
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
       if (pts.length > 1) {
-        // Полоса шириной в зону поражения
+        // A strip as wide as the hit zone
         ctx.strokeStyle = 'rgba(255,176,32,0.22)'
         ctx.lineWidth = Math.max(4, lineDensity.radius * 2 * scale)
         ctx.beginPath()
@@ -916,7 +926,7 @@ export function MapPicker({
       ctx.textAlign = 'start'
     }
 
-    // Зоны по рельефу: зелёное достаёт, жёлтое впритык к рельефу, красное закрыто
+    // Terrain zones: green reaches, yellow is tight over terrain, red is blocked
     if (coverage && coveragePaths) {
       const c = toScreen(coverage.center)
       const colors = {
@@ -932,7 +942,7 @@ export function MapPicker({
         ctx.fill(coveragePaths[status])
       }
       ctx.restore()
-      // Где встать: ближайшее хорошее место
+      // Where to stand: the nearest good spot
       if (spot) {
         const p = toScreen(spot.point)
         ctx.fillStyle = `rgb(${COVERAGE_RGB.ok})`
@@ -954,7 +964,7 @@ export function MapPicker({
       }
     }
 
-    // Досягаемость орудия: дальний край — сплошное кольцо, ближний — пунктир
+    // The gun's reach: the far edge is a solid ring, the near one is dashed
     if (gun && reach && reach.max > 0) {
       const c = toScreen(gun)
       ctx.lineWidth = 1.5
@@ -972,7 +982,7 @@ export function MapPicker({
         ctx.stroke()
         ctx.setLineDash([])
       }
-      // Подпись на верхней точке дальнего кольца
+      // The label at the top point of the far ring
       const label = `${t('mapPicker.max')} ${Math.round(reach.max)} ${unitM}`
       ctx.font = '11px ' + sans
       const w = ctx.measureText(label).width
@@ -987,7 +997,7 @@ export function MapPicker({
       }
     }
 
-    // Линия огня
+    // The line of fire
     if (gun && target) {
       const a = toScreen(gun)
       const b = toScreen(target)
@@ -998,7 +1008,7 @@ export function MapPicker({
       ctx.lineTo(b.x, b.y)
       ctx.stroke()
 
-      // Где снаряд идёт впритык к рельефу или упирается: участок линии и метка
+      // Where the shell passes tight over terrain or hits it: a part of the line and a mark
       const length = Math.hypot(target.x - gun.x, target.y - gun.y)
       if (terrainHit && length > 0) {
         const color = `rgb(${COVERAGE_RGB[terrainHit.status]})`
@@ -1042,7 +1052,7 @@ export function MapPicker({
       }
     }
 
-    // Цель в воде при «Куда достаю»: кольцо цвета зоны и подпись
+    // A target in water with "Where I can hit": a ring in the zone colour and a label
     if (target && targetInWater) {
       const p = toScreen(target)
       const color =
@@ -1068,7 +1078,7 @@ export function MapPicker({
       ctx.textAlign = 'start'
     }
 
-    // Орудие — синяя точка, цель — красная со свечением
+    // The gun is a blue dot, the target a red one with a glow
     if (gun) {
       const p = toScreen(gun)
       ctx.fillStyle = gunColor
@@ -1096,7 +1106,7 @@ export function MapPicker({
     }
   }, [canvas, map, relief, activeView, gun, target, size, unitM, ratio, markers, now, draft, ru, night, journalTargets, tiles, tileTick, linePoints, lineAim, lineIndex, lineDensity, reach, coverage, spot, contoursOn, strokes, liveStroke, vector, mapStyle, settleTick, coveragePaths, targetInWater, terrainHit])
 
-  // ---- масштаб колёсиком (нужен не-пассивный обработчик) ----
+  // ---- zooming with the wheel (needs a non-passive handler) ----
   const viewRef = useRef<View | null>(null)
   const pointsRef = useRef<{ gun: MapPoint | null; target: MapPoint | null }>({
     gun: null,
@@ -1107,7 +1117,7 @@ export function MapPicker({
     pointsRef.current = { gun, target }
   })
 
-  // Где рисовать полёт: от орудия к цели в координатах холста
+  // Where to draw the flight: from the gun to the target in canvas coordinates
   const flightEnds = useCallback(() => {
     const v = viewRef.current
     const { gun: g, target: t } = pointsRef.current
@@ -1157,13 +1167,21 @@ export function MapPicker({
     return () => canvas.removeEventListener('wheel', onWheel)
   }, [canvas])
 
-  // ---- перетаскивание и клики ----
-  // Мышь: ЛКМ — орудие (или метка), ПКМ — цель, перетаскивание — сдвиг.
-  // Касание: что ставить, выбирает переключатель под картой.
+  // ---- dragging and clicks ----
+  // Mouse: left button places the gun (or a marker), right button the target, dragging shifts the map.
+  // Touch: the switch under the map chooses what to place.
   function onPointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
     if (!activeView) return
     event.currentTarget.setPointerCapture(event.pointerId)
-    // Режим рисования: ЛКМ или касание рисуют, остальные кнопки двигают карту
+    if (event.pointerType === 'touch') {
+      touchesRef.current.set(event.pointerId, canvasPoint(event))
+      // A second finger turns whatever the first one started (a drag, a stroke) into a pinch
+      if (touchesRef.current.size >= 2) {
+        if (!pinchRef.current) startPinch(activeView)
+        return
+      }
+    }
+    // Drawing mode: the left button or a touch draws, the other buttons move the map
     if (isDrawTool(placing) && (event.pointerType !== 'mouse' || event.button === 0)) {
       const point = pointOf(event, activeView)
       if (placing === 'eraser') {
@@ -1179,6 +1197,7 @@ export function MapPicker({
       return
     }
     dragRef.current = {
+      id: event.pointerId,
       x: event.clientX,
       y: event.clientY,
       view: activeView,
@@ -1186,7 +1205,22 @@ export function MapPicker({
     }
   }
 
-  /** Точка мира под курсором. */
+  /** Pointer position relative to the canvas, px. */
+  function canvasPoint(event: React.PointerEvent<HTMLCanvasElement>): TouchPoint {
+    const rect = event.currentTarget.getBoundingClientRect()
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top }
+  }
+
+  /** Two fingers are down: the gesture starts from the view on screen. */
+  function startPinch(from: View) {
+    const [a, b] = [...touchesRef.current.entries()]
+    dragRef.current = null
+    drawRef.current = null
+    setLiveStroke(null)
+    pinchRef.current = { ids: [a[0], b[0]], from: [a[1], b[1]], view: from, last: from }
+  }
+
+  /** The world point under the cursor. */
   function pointOf(event: React.PointerEvent<HTMLCanvasElement>, v: View): MapPoint {
     const rect = event.currentTarget.getBoundingClientRect()
     return {
@@ -1195,7 +1229,7 @@ export function MapPicker({
     }
   }
 
-  /** Ластик: стереть штрихи ближе 10 пикселей к точке. */
+  /** Eraser: erase strokes closer than 10 pixels to the point. */
   function eraseAt(point: MapPoint, scale: number) {
     const reachM = 10 / scale
     const next = strokesRef.current.filter((s) => distanceToStroke(s, point) > reachM)
@@ -1209,7 +1243,32 @@ export function MapPicker({
   const panRef = useRef<View | null>(null)
   const panFrame = useRef<number | null>(null)
 
+  /** At most one view update per frame: pointers report more often than the screen redraws. */
+  function schedulePan(next: View) {
+    panRef.current = next
+    if (panFrame.current === null) {
+      panFrame.current = requestAnimationFrame(() => {
+        panFrame.current = null
+        if (panRef.current) setView(panRef.current)
+      })
+    }
+  }
+
   function onPointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (touchesRef.current.has(event.pointerId)) {
+      touchesRef.current.set(event.pointerId, canvasPoint(event))
+    }
+    const pinch = pinchRef.current
+    if (pinch) {
+      const a = touchesRef.current.get(pinch.ids[0])
+      const b = touchesRef.current.get(pinch.ids[1])
+      if (!a || !b || !map) return
+      const minScale = fitView(map, size.width, size.height).scale / 2
+      pinch.last = pinchView(pinch.view, pinch.from, [a, b], minScale, MAX_SCALE)
+      markZoom()
+      schedulePan(pinch.last)
+      return
+    }
     const drawing = drawRef.current
     if (drawing && activeView) {
       const point = pointOf(event, activeView)
@@ -1233,26 +1292,19 @@ export function MapPicker({
       return
     }
     const drag = dragRef.current
-    if (!drag) return
+    if (!drag || drag.id !== event.pointerId) return
     const dx = event.clientX - drag.x
     const dy = event.clientY - drag.y
     if (!drag.moved && Math.hypot(dx, dy) < 4) return
     drag.moved = true
-    // Не чаще одного обновления на кадр: мышь шлёт события чаще экрана
-    panRef.current = {
+    schedulePan({
       scale: drag.view.scale,
       x0: drag.view.x0 - dx / drag.view.scale,
       y0: drag.view.y0 + dy / drag.view.scale,
-    }
-    if (panFrame.current === null) {
-      panFrame.current = requestAnimationFrame(() => {
-        panFrame.current = null
-        if (panRef.current) setView(panRef.current)
-      })
-    }
+    })
   }
 
-  /** Подставить орудие и цель в расчёт — сразу, без кнопки. */
+  /** Put the gun and the target into the calculation at once, without a button. */
   function applyPoints(gunPoint: MapPoint | null, targetPoint: MapPoint | null) {
     if (!map || !gunPoint || !targetPoint) return
     const ownHeight = heightAt(map, gunPoint)
@@ -1274,7 +1326,7 @@ export function MapPicker({
     if (map) writeStored(`mapLine:${map.world}`, JSON.stringify(points))
   }
 
-  /** Точка линии огня — целью расчёта. */
+  /** A line of fire point becomes the calculation target. */
   function aimAt(index: number) {
     const point = lineAim[index]
     if (!point) return
@@ -1282,7 +1334,7 @@ export function MapPicker({
     placeTarget(point)
   }
 
-  // Замок орудия выезжает после «удержания» курсора на кнопке орудия
+  // The gun lock slides out after the cursor is "held" on the gun button
   const [lockShown, setLockShown] = useState(false)
   const lockTimer = useRef<number | null>(null)
   function cancelLockTimer() {
@@ -1329,14 +1381,39 @@ export function MapPicker({
   }
 
   function onPointerUp(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (touchesRef.current.delete(event.pointerId)) {
+      const pinch = pinchRef.current
+      if (pinch) {
+        if (!pinch.ids.includes(event.pointerId)) return
+        pinchRef.current = null
+        if (touchesRef.current.size >= 2) {
+          startPinch(pinch.last)
+          return
+        }
+        // The finger that stays keeps dragging the map and places nothing when it lifts
+        const [rest] = [...touchesRef.current.entries()]
+        if (rest) {
+          const rect = event.currentTarget.getBoundingClientRect()
+          dragRef.current = {
+            id: rest[0],
+            x: rest[1].x + rect.left,
+            y: rest[1].y + rect.top,
+            view: pinch.last,
+            moved: true,
+          }
+        }
+        return
+      }
+    }
     if (drawRef.current) {
       finishDrawing()
       return
     }
     const drag = dragRef.current
+    if (drag && drag.id !== event.pointerId) return
     dragRef.current = null
     if (!drag || drag.moved || !map) return
-    // Средняя кнопка — только сдвиг
+    // The middle button only shifts the map
     if (event.button === 1) return
 
     const rect = event.currentTarget.getBoundingClientRect()
@@ -1354,7 +1431,7 @@ export function MapPicker({
           ? 'gun'
           : placing
 
-    // Орудие закреплено — касание ставит цель
+    // The gun is locked: a touch places the target
     if (gunLocked && action === 'gun') action = 'target'
 
     if (action === 'marker') {
@@ -1367,7 +1444,7 @@ export function MapPicker({
       return
     }
 
-    // Клик по цели журнала — загрузить её
+    // A click on a journal target loads it
     const journalHit = journalTargets.find(
       (t) =>
         t.target.world === map.world &&
@@ -1382,12 +1459,12 @@ export function MapPicker({
 
     if (action === 'gun') {
       placeGun(point)
-      // На телефоне следующим касанием — цель
+      // On a phone the next touch places the target
       if (!mouse) setPlacing('target')
       return
     }
 
-    // Клик рядом с меткой — цель ставится точно в неё
+    // A click next to a marker places the target exactly on it
     const hit = markers.find(
       (m) =>
         Math.hypot(m.x - point.x, m.y - point.y) * drag.view.scale <=
@@ -1396,7 +1473,7 @@ export function MapPicker({
     placeTarget(hit ? { x: hit.x, y: hit.y } : point)
   }
 
-  // Огонь по линии: возвышение и азимут в каждую точку прицеливания
+  // Line fire: elevation and azimuth to every aim point
   const lineRows = useMemo(() => {
     if (!map || !gun) return []
     const own = heightAt(map, gun) ?? 0
@@ -1406,11 +1483,11 @@ export function MapPicker({
       return { azimuthMil: line.azimuthMil, solved: solveLine?.(line.distance, height - own) ?? null }
     })
   }, [map, gun, lineAim, solveLine])
-  // Заряд показывается, только если по линии он меняется
+  // The charge is shown only if it changes along the line
   const lineMixedCharges =
     new Set(lineRows.flatMap((row) => (row.solved ? [row.solved.charge] : []))).size > 1
 
-  // Профиль рельефа для калькулятора; при закрытии карты — пусто
+  // The terrain profile for the calculator; empty when the map is closed
   const terrainProfile = useMemo(
     () => (map && gun && target ? sampleProfile(map, gun, target) : null),
     [map, gun, target]
@@ -1430,7 +1507,7 @@ export function MapPicker({
   const buttonClass = 'btn btn-sm'
 
 
-  // ---- список карт: ванильные — в списке, карты модов — в окне с поиском ----
+  // ---- the map list: vanilla maps are in the list, mod maps in a window with search ----
   const MOD_MAPS = '__mods__'
   const mapEntries = builtin.map((m) => ({
     key: `builtin:${m.world}`,
@@ -1439,7 +1516,7 @@ export function MapPicker({
     kind: mapKind(m),
     official: mapKind(m) === 'official',
     lowQuality: m.quality === 'low',
-    preview: `${MAPS_BASE}${m.world}/preview.webp`,
+    preview: `${mapFolder(m.world)}preview.webp`,
   }))
   const current = mapEntries.find((e) => e.key === mapKey)
   function mapLabel(key: string): string {
@@ -1452,7 +1529,7 @@ export function MapPicker({
   const sortedList = [
     ...listed.filter((e) => isFavorite(e.key)),
     ...listed.filter((e) => !isFavorite(e.key) && e.official),
-    // Выбранная карта мода, которой нет в избранном, тоже видна в списке
+    // A selected mod map that is not a favourite is visible in the list too
     ...listed.filter((e) => !isFavorite(e.key) && !e.official),
   ]
   const mapOptions: DropdownOption<string>[] = sortedList.map((e) => ({
@@ -1534,6 +1611,8 @@ export function MapPicker({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={() => {
+              touchesRef.current.clear()
+              pinchRef.current = null
               dragRef.current = null
               drawRef.current = null
               setLiveStroke(null)
@@ -1555,7 +1634,7 @@ export function MapPicker({
             />
           )}
 
-          {/* Справа: что ставит касание, ниже — рисование */}
+          {/* On the right: what a touch places, drawing below */}
           <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
           <div
             role="toolbar"
@@ -1597,8 +1676,8 @@ export function MapPicker({
               )
               if (tool.id !== 'gun') return <span key={tool.id}>{button}</span>
 
-              // Орудие: если подержать курсор (или палец) на кнопке, слева
-              // выезжает замок. Закреплённое орудие показывает замок всегда.
+              // The gun: if the cursor (or a finger) is held on the button, a lock
+              // slides out on the left. A locked gun always shows the lock.
               return (
                 <div
                   key={tool.id}
@@ -1661,7 +1740,7 @@ export function MapPicker({
           />
           </div>
 
-          {/* Слева: один список «Метки» (сохранённые цели и метки) */}
+          {/* On the left: one "Markers" list (saved targets and markers) */}
           {(targetActions || showMarkers) && (
             <div className="absolute top-2 left-2 flex max-w-[60%] flex-col items-start gap-2">
               <MapPointsPanel
@@ -1727,7 +1806,7 @@ export function MapPicker({
           )}
 
 
-          {/* Справа снизу над слоем: высотные линии из сетки высот */}
+          {/* Bottom right above the layer: contour lines from the height grid */}
           <button
             type="button"
             aria-pressed={contoursOn}
@@ -1747,7 +1826,7 @@ export function MapPicker({
             <FieldIcon name="mountain" className="h-5 w-5" />
           </button>
 
-          {/* Справа снизу: слой карты (спутник / топо); значок — текущий режим */}
+          {/* Bottom right: the map layer (satellite / topo); the icon is the current mode */}
           {vector && tiles && (
             <button
               type="button"
@@ -1769,7 +1848,7 @@ export function MapPicker({
             </button>
           )}
 
-          {/* Снизу по центру: координаты орудия и цели, под ними зоны по рельефу */}
+          {/* Bottom centre: the gun and target coordinates, the terrain zones under them */}
           <CoordinatePlate
             gun={gun}
             gunHeight={gunHeight}
@@ -1789,7 +1868,7 @@ export function MapPicker({
         </p>
       )}
 
-      {/* ---- Панель под картой: список карт тянется, кнопки масштаба справа ---- */}
+      {/* ---- The panel under the map: the map list stretches, the zoom buttons are on the right ---- */}
       <div className="mt-3 flex items-center gap-1.5 sm:gap-2">
         {builtin.length > 0 && <MapGlyph big />}
         {builtin.length > 0 && (
@@ -1821,8 +1900,8 @@ export function MapPicker({
         )}
         {map && (
           <>
-            <button type="button" className="btn shrink-0 px-3 max-sm:w-9 max-sm:px-0" aria-label="−" onClick={() => zoomAt(1 / 1.6, size.width / 2, size.height / 2)}><FieldIcon name="minus" /></button>
-            <button type="button" className="btn shrink-0 px-3 max-sm:w-9 max-sm:px-0" aria-label="+" onClick={() => zoomAt(1.6, size.width / 2, size.height / 2)}><FieldIcon name="plus" /></button>
+            <button type="button" className="btn shrink-0 px-3 max-sm:w-9 max-sm:px-0 pointer-coarse:hidden" aria-label="−" onClick={() => zoomAt(1 / 1.6, size.width / 2, size.height / 2)}><FieldIcon name="minus" /></button>
+            <button type="button" className="btn shrink-0 px-3 max-sm:w-9 max-sm:px-0 pointer-coarse:hidden" aria-label="+" onClick={() => zoomAt(1.6, size.width / 2, size.height / 2)}><FieldIcon name="plus" /></button>
             <button
               type="button"
               className="btn shrink-0 max-sm:w-9 max-sm:px-0"
@@ -1841,7 +1920,7 @@ export function MapPicker({
         <>
           {(placing === 'line' || linePoints.length > 0) && (
             <div className="mt-3 rounded-lg bg-app-surface p-3">
-              {/* Заголовок и действия с линией */}
+              {/* The heading and the line actions */}
               <div className="flex flex-wrap items-center gap-2">
                 <span className="flex items-center gap-2 font-semibold text-app-text">
                   <FieldIcon name="drawLine" className="h-[18px] w-[18px] text-app-muted" />
@@ -1873,7 +1952,7 @@ export function MapPicker({
                 </div>
               </div>
 
-              {/* Плотность огня; рекомендуемая подходит текущему орудию */}
+              {/* Fire density; the recommended one fits the current weapon */}
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
                 <span className="text-[13.5px] text-app-muted">{t('mapPicker.fire-density')}</span>
                 <Dropdown
@@ -1924,7 +2003,7 @@ export function MapPicker({
                     </p>
                   ) : (
                     <>
-                      {/* Текущая точка крупно; стрелки — соседние точки */}
+                      {/* The current point in large type; the arrows are the neighbouring points */}
                       <div className="mt-3 flex items-center gap-2 rounded-lg bg-app-raised p-2">
                         <button
                           type="button"
@@ -1965,7 +2044,7 @@ export function MapPicker({
                         </button>
                       </div>
 
-                      {/* Все точки: нажатие наводит на точку */}
+                      {/* All points: a press aims at the point */}
                       <div className="mt-2 max-h-56 overflow-y-auto rounded-lg bg-app-raised/40">
                         <div
                           className={[
@@ -2035,7 +2114,7 @@ export function MapPicker({
               source: e.kind === 'dlc' ? ('dlc' as const) : ('mod' as const),
               badge: e.lowQuality ? <MapQualityBadge /> : undefined,
             }))
-            // DLC — первыми
+            // DLC first
             .sort((a, b) => (a.source === b.source ? 0 : a.source === 'dlc' ? -1 : 1))}
           onPick={(key) => {
             setPickingMod(false)
@@ -2064,7 +2143,7 @@ export function MapPicker({
   )
 }
 
-/** «Плотная · шаг 30 м»: название плотности и шаг между точками прицеливания. */
+/** "Dense · 30 m step": the density name and the step between aim points. */
 function densityLabel(density: FireDensity, unitM: string): string {
   const names: Record<FireDensity['id'], string> = {
     dense: t('mapPicker.density-dense'),
@@ -2075,7 +2154,7 @@ function densityLabel(density: FireDensity, unitM: string): string {
   return `${names[density.id]} · ${t('mapPicker.spacing')} ${density.radius * 2} ${unitM}`
 }
 
-/** Возвышение и азимут в точку линии крупно. */
+/** Elevation and azimuth to a line point in large type. */
 function LineSolution({
   row,
 }: {

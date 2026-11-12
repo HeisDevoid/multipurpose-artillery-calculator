@@ -1,17 +1,17 @@
 import { MILS_PER_TURN } from './ballistics'
 
 export interface GridPoint {
-  // Метры от начала сетки карты: восток, север
+  // Metres from the origin of the map grid: east, north
   x: number
   y: number
-  // Размер квадрата, который задаёт координата, м (точность)
+  // The size of the square the coordinate sets, m (precision)
   precision: number
 }
 
 /**
- * Разбор координаты сетки Arma: 6, 8 или 10 цифр
- * (100 м, 10 м, 1 м). Пробелы и прочие символы игнорируются.
- * Берётся центр квадрата, чтобы ошибка не превышала половины клетки.
+ * Parsing an Arma grid coordinate: 6, 8 or 10 digits
+ * (100 m, 10 m, 1 m). Spaces and other characters are ignored.
+ * The square centre is taken, so that the error does not exceed half a cell.
  */
 export function parseGrid(value: string): GridPoint | null {
   const digits = value.replace(/\D/g, '')
@@ -27,7 +27,7 @@ export function parseGrid(value: string): GridPoint | null {
   }
 }
 
-/** Дистанция (м) и азимут (мил, 0 = север, по часовой) от a к b. */
+/** The distance (m) and the azimuth (mils, 0 = north, clockwise) from a to b. */
 export function gridVector(a: GridPoint, b: GridPoint) {
   const dx = b.x - a.x
   const dy = b.y - a.y
@@ -39,7 +39,7 @@ export function gridVector(a: GridPoint, b: GridPoint) {
       ((((angle * MILS_PER_TURN) / (2 * Math.PI)) % MILS_PER_TURN) +
         MILS_PER_TURN) %
       MILS_PER_TURN,
-    // Худшая точность из двух координат
+    // The worse precision of the two coordinates
     precision: Math.max(a.precision, b.precision),
   }
 }

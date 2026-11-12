@@ -1,28 +1,28 @@
 #!/usr/bin/env node
 /**
- * Таблицы стрельбы прямо из игры, без скриншотов. В игре скрипт
- * tools/arma/export_tables.sqf (отладочная консоль, на месте наводчика)
- * считает все заряды расширением ACE — тем же расчётом, что окно
- * «Artillery Table», — и кладёт строки «MACTABLE|…» в буфер обмена и в RPT.
- * Этот скрипт раскладывает их по data-sources/<id>/.
+ * Range tables straight from the game, without screenshots. In the game the script
+ * tools/arma/export_tables.sqf (debug console, in the gunner's seat)
+ * calculates all charges with the ACE extension, the same calculation as the
+ * "Artillery Table" window, and puts "MACTABLE|…" lines into the clipboard and the RPT.
+ * This script sorts them into data-sources/<id>/.
  *
- *   node scripts/import-ace-tables.mjs <id> [источник] [--group N] [--write] [--no-import] [--root <папка>]
+ *   node scripts/import-ace-tables.mjs <id> [source] [--group N] [--write] [--no-import] [--root <folder>]
  *
- * Источник (по умолчанию — буфер обмена Windows):
- *   --file <путь>   текст с выгрузкой (например, вставленный из буфера)
- *   --rpt [путь]    RPT игры; без пути — самый новый из %LOCALAPPDATA%\Arma 3
+ * Source (the Windows clipboard by default):
+ *   --file <path>   a text with the export (for example, pasted from the clipboard)
+ *   --rpt [path]    the game RPT; without a path, the newest one in %LOCALAPPDATA%\Arma 3
  *
- * Без --write только сравнивает выгрузку с текущими файлами и ничего не
- * меняет. С --write пишет файлы и запускает импорт таблиц (--no-import —
- * без импорта). Таблицы без сопротивления воздуха (погодные столбцы
- * пустые) ложатся в папку орудия, с сопротивлением — в advanced/.
- * --group — набор магазинов, если у орудия их несколько с разной скоростью.
- * --vehicle — какую выгрузку взять, если в RPT их несколько (часть названия
- * или класса техники); без него берётся последняя выгрузка, похожая на <id>.
- * --profile — второй набор снарядов орудия: файлы в data-sources/<id>/<набор>/
- * (у его снаряда в JSON profile: «<набор>»).
- * --modes HIGH,LOW — какие траектории писать; по умолчанию те, что есть у
- * орудия в JSON (availableModes): у миномёта только навесная.
+ * Without --write it only compares the export with the current files and changes
+ * nothing. With --write it writes the files and runs the table import (--no-import
+ * skips the import). Tables without air resistance (empty weather columns)
+ * go to the weapon folder, tables with it go to advanced/.
+ * --group: the magazine set when a weapon has several with different speeds.
+ * --vehicle: which export to take when the RPT has several (a part of the vehicle
+ * name or class); without it the last export that looks like <id> is taken.
+ * --profile: a second shell set of the weapon: files in data-sources/<id>/<set>/
+ * (its shell has profile: "<set>" in the JSON).
+ * --modes HIGH,LOW: which trajectories to write; by default the ones the weapon
+ * has in its JSON (availableModes): a mortar has only the high one.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
@@ -46,7 +46,7 @@ function fail(message) {
 }
 
 
-// ---- источник ----
+// ---- source ----
 function readSource() {
   const file = option('--file')
   if (file) return readFileSync(file, 'utf8')
@@ -54,15 +54,15 @@ function readSource() {
     let rpt = option('--rpt')
     if (!rpt) {
       const dir = join(process.env.LOCALAPPDATA ?? '', 'Arma 3')
-      if (!existsSync(dir)) fail(`нет папки ${dir}: укажите --rpt <путь>`)
+      if (!existsSync(dir)) fail(`no folder ${dir}: pass --rpt <path>`)
       const files = readdirSync(dir)
         .filter((f) => f.endsWith('.rpt'))
         .map((f) => join(dir, f))
         .sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)
-      if (files.length === 0) fail(`в ${dir} нет файлов .rpt`)
+      if (files.length === 0) fail(`no .rpt files in ${dir}`)
       rpt = files[0]
     }
-    console.log(`источник: ${rpt}`)
+    console.log(`source: ${rpt}`)
     return readFileSync(rpt, 'utf8')
   }
   try {
@@ -72,11 +72,11 @@ function readSource() {
       { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }
     )
   } catch {
-    return fail('не удалось прочитать буфер обмена: укажите --file или --rpt')
+    return fail('cannot read the clipboard: pass --file or --rpt')
   }
 }
 
-// ---- разбор: все выгрузки BEGIN…END (в RPT их может быть несколько) ----
+// ---- parsing: all BEGIN…END exports (an RPT may hold several) ----
 export function parseExports(text) {
   const lines = text
     .split(/\r?\n/)
@@ -119,12 +119,12 @@ function parseBlock(block) {
         af: Number(af),
         expected: Number(expected),
         got: Number(got),
-        // Сколько ответов расширения пришло (в старых выгрузках поля нет)
+        // How many extension answers arrived (old exports have no such field)
         received: received === undefined ? null : Number(received),
         rows: [],
       }
       const key = [g, physics, mode, charge].join('|')
-      // Один и тот же ключ дважды — в RPT перемешаны два одновременных запуска
+      // The same key twice: two simultaneous runs are mixed in the RPT
       if (tableOf.has(key)) result.mixed = true
       result.tables.push(table)
       tableOf.set(key, table)
@@ -139,7 +139,7 @@ function parseBlock(block) {
   return result
 }
 
-/** Строка файла: 5 столбцов, если погодные пустые (как в остальных таблицах), иначе 12. */
+/** A file line: 5 columns when the weather ones are empty (as in the other tables), otherwise 12. */
 export function formatRow(values) {
   const weatherEmpty = values.slice(5).every((v) => v === '-')
   return (weatherEmpty ? values.slice(0, 5) : values).join(' ')
@@ -148,46 +148,46 @@ export function formatRow(values) {
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])
 if (isMain) main()
 
-/** Выгрузка для орудия: по --vehicle, иначе последняя похожая на id, иначе единственная. */
+/** The export for a weapon: by --vehicle, else the last one that looks like the id, else the only one. */
 export function pickExport(exports, id, vehicle) {
   const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
   const text = (e) => norm(`${e.name} ${e.vehicle} ${e.weapon}`)
   if (vehicle) return exports.filter((e) => text(e).includes(norm(vehicle))).at(-1) ?? null
   const key = norm(id.split('_')[0])
-  // Оборванные запуски без таблиц не считаются
+  // Interrupted runs without tables do not count
   const filled = exports.filter((e) => e.tables.length > 0)
   return filled.filter((e) => text(e).includes(key)).at(-1) ?? (filled.length === 1 ? filled[0] : null)
 }
 
 function main() {
-  if (!id) fail('укажите орудие: node scripts/import-ace-tables.mjs <id> [--file|--rpt] [--write]')
+  if (!id) fail('pass a weapon: node scripts/import-ace-tables.mjs <id> [--file|--rpt] [--write]')
   const exports = parseExports(readSource())
-  if (exports.length === 0) fail('в источнике нет выгрузки «MACTABLE|BEGIN…»: запустите tools/arma/export_tables.sqf в игре')
+  if (exports.length === 0) fail('the source has no "MACTABLE|BEGIN…" export: run tools/arma/export_tables.sqf in the game')
   const data = pickExport(exports, id, option('--vehicle'))
   if (!data) {
-    console.log('в источнике несколько выгрузок:')
+    console.log('the source has several exports:')
     for (const e of exports) console.log(`  ${e.name} (${e.vehicle}, ${e.weapon})`)
-    fail(`не понял, какая из них «${id}»: укажите --vehicle <часть названия>`)
+    fail(`cannot tell which of them is "${id}": pass --vehicle <part of the name>`)
   }
   if (data.mixed) {
-    fail('в выгрузке перемешаны два запуска скрипта одновременно: строки могли перепутаться. Выгрузите орудие ещё раз, одним запуском.')
+    fail('two simultaneous runs of the script are mixed in the export: lines may be swapped. Export the weapon again, in a single run.')
   }
-  if (!data.complete) console.warn('⚠ выгрузка оборвана (нет MACTABLE|END): берутся только полученные таблицы')
-  console.log(`орудие в игре: ${data.name} (${data.vehicle}), ${data.weapon}; возвышение ${data.elev.join('…')}°`)
+  if (!data.complete) console.warn('⚠ the export is cut off (no MACTABLE|END): only the received tables are used')
+  console.log(`weapon in the game: ${data.name} (${data.vehicle}), ${data.weapon}; elevation ${data.elev.join('…')}°`)
 
-  // Набор магазинов
+  // Magazine set
   if (data.groups.length > 1 && option('--group') === undefined) {
-    console.log('у орудия несколько наборов магазинов с разной скоростью:')
-    for (const g of data.groups) console.log(`  --group ${g.index}: ${g.speed} м/с — ${g.magazines.join(', ')}`)
-    fail('выберите набор: --group N')
+    console.log('the weapon has several magazine sets with different speeds:')
+    for (const g of data.groups) console.log(`  --group ${g.index}: ${g.speed} m/s, ${g.magazines.join(', ')}`)
+    fail('choose a set: --group N')
   }
   const group = Number(option('--group') ?? data.groups[0]?.index ?? 0)
   const tables = data.tables.filter((t) => t.group === group)
-  if (tables.length === 0) fail(`нет таблиц для набора ${group}`)
+  if (tables.length === 0) fail(`no tables for set ${group}`)
 
   const root = option('--root') ?? WEB
   const base = join(root, 'data-sources', id, option('--profile') ?? '')
-  // Траектории орудия: --modes или availableModes из его JSON
+  // The weapon's trajectories: --modes or availableModes from its JSON
   const jsonPath = join(root, 'src', 'data', 'artillery', `${id}.json`)
   const weaponJson = existsSync(jsonPath) ? JSON.parse(readFileSync(jsonPath, 'utf8')) : null
   const modesOption = option('--modes')
@@ -196,43 +196,43 @@ function main() {
     : (weaponJson?.availableModes ?? ['HIGH', 'LOW'])
   const skippedModes = [...new Set(tables.map((t) => t.mode))].filter((m) => !modes.includes(m))
   if (skippedModes.length > 0) {
-    console.log(`траектории ${skippedModes.join(', ')} у орудия нет (availableModes), они не пишутся; --modes, чтобы взять`)
+    console.log(`the weapon has no ${skippedModes.join(', ')} trajectories (availableModes), they are not written; pass --modes to take them`)
   }
-  // Местная дата: выгрузка после полуночи не получает вчерашнее число по UTC
+  // The local date: an export after midnight does not get yesterday's UTC date
   const now = new Date()
   const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map((n) => String(n).padStart(2, '0')).join('-')
   const noAirHasDrag = tables.some((t) => t.physics === 'noair' && t.af !== 0)
   if (noAirHasDrag) {
-    console.warn('⚠ у этого боеприпаса сопротивление воздуха включено в самом конфиге: таблицы без него в игре не бывает')
+    console.warn('⚠ this ammunition has air resistance in its own config: the game has no table without it')
   }
 
   if (!tables.some((t) => t.physics === 'air')) {
-    console.log('таблиц с сопротивлением в выгрузке нет: ACE их для этого орудия не считает или они совпадают с обычными')
+    console.log('the export has no tables with air resistance: ACE does not calculate them for this weapon or they match the plain ones')
   }
 
   const planned = []
   let notComputed = 0
   for (const t of tables) {
     if (!modes.includes(t.mode)) continue
-    // ACE не считает траекторию, если для неё нет подходящих углов (миномёт и LOW)
+    // ACE does not calculate a trajectory that has no suitable angles (a mortar and LOW)
     if (t.received === 0) {
       notComputed += 1
       continue
     }
-    // Таблица «без улучшенной баллистики» с сопротивлением (из конфига) — всё равно основная
+    // A table "without advanced ballistics" that has air resistance (from the config) is still the main one
     const dir = t.physics === 'air' ? join(base, 'advanced') : base
     const file = join(dir, `${t.mode}-${t.charge}.txt`)
-    // Дальности без решения (вне досягаемости траектории) ACE пропускает и в окне;
-    // тревожно только если ответы расширения пришли не все
+    // ACE skips ranges without a solution (out of the trajectory's reach) in the window too;
+    // it is alarming only when not all extension answers arrived
     if (t.received !== null && t.received < t.expected) {
-      console.warn(`⚠ ${t.physics} ${t.mode}-${t.charge}: пришло ${t.received} ответов из ${t.expected}, таблица может быть неполной`)
+      console.warn(`⚠ ${t.physics} ${t.mode}-${t.charge}: ${t.received} answers of ${t.expected} arrived, the table may be incomplete`)
     }
     if (t.rows.length === 0) continue
     planned.push({ ...t, dir, file })
   }
-  if (notComputed > 0) console.log(`таблиц, которые ACE не считает (нет подходящих углов): ${notComputed}`)
+  if (notComputed > 0) console.log(`tables ACE does not calculate (no suitable angles): ${notComputed}`)
 
-  // Сравнение с текущими файлами
+  // Comparison with the current files
   const rowsOf = (file) =>
     existsSync(file)
       ? readFileSync(file, 'utf8')
@@ -246,7 +246,7 @@ function main() {
     const next = p.rows.map(formatRow)
     const label = `${p.physics === 'air' ? 'advanced/' : ''}${p.mode}-${p.charge}`
     if (!now) {
-      console.log(`${label}: новый файл, ${next.length} строк (${next[0].split(' ')[0]}–${next.at(-1).split(' ')[0]} м)`)
+      console.log(`${label}: new file, ${next.length} rows (${next[0].split(' ')[0]}–${next.at(-1).split(' ')[0]} m)`)
       changedFiles += 1
       continue
     }
@@ -256,18 +256,18 @@ function main() {
     const added = [...b.keys()].filter((k) => !a.has(k))
     const removed = [...a.keys()].filter((k) => !b.has(k))
     if (changed.length + added.length + removed.length === 0) {
-      console.log(`${label}: совпадает (${next.length} строк)`)
+      console.log(`${label}: matches (${next.length} rows)`)
       continue
     }
     changedFiles += 1
-    console.log(`${label}: изменено ${changed.length}, новых ${added.length}, пропало ${removed.length}`)
-    for (const k of changed.slice(0, 3)) console.log(`    было  ${a.get(k)}\n    стало ${b.get(k)}`)
+    console.log(`${label}: changed ${changed.length}, new ${added.length}, gone ${removed.length}`)
+    for (const k of changed.slice(0, 3)) console.log(`    was ${a.get(k)}\n    now ${b.get(k)}`)
   }
-  // Старые таблицы с погодными поправками в папке без сопротивления: в игре
-  // такой таблицы без сопротивления нет (у расчёта ACE потолок дальности
-  // 29 900 м, и навесная на дальних зарядах целиком за ним), а с погодой она
-  // уже есть в выгрузке для advanced/. Такие файлы мешают: орудие считается
-  // неполным и скрывается из списка
+  // Old tables with weather corrections in the folder without air resistance: the game
+  // has no such table without air resistance (the ACE calculation stops at
+  // 29,900 m, and the high trajectory of the far charges lies entirely beyond it), and with
+  // weather it is already in the export for advanced/. Such files do harm: the weapon
+  // counts as incomplete and is hidden from the list
   const stale = []
   for (const dir of [base, join(base, 'advanced')]) {
     if (!existsSync(dir)) continue
@@ -284,34 +284,34 @@ function main() {
       if (dir === base && withWeather && inAdvanced) stale.push(join(dir, f))
       else keep.push(f)
     }
-    if (keep.length) console.log(`в ${dir} есть файлы, которых нет в выгрузке (оставлены как есть): ${keep.join(', ')}`)
+    if (keep.length) console.log(`${dir} has files that are not in the export (left as they are): ${keep.join(', ')}`)
   }
   if (stale.length) {
     const names = stale.map((f) => f.split(/[\\/]/).pop()).join(', ')
-    console.log(`таблицы с сопротивлением в папке без него (в игре без сопротивления их нет, с ним они в advanced/), удаляются: ${names}`)
+    console.log(`tables with air resistance in the folder without it (the game has none without it, with it they are in advanced/), removed: ${names}`)
     changedFiles += stale.length
   }
 
   if (!flag('--write')) {
-    console.log(`\nфайлов к записи: ${changedFiles}. Это только сравнение: добавьте --write, чтобы записать.`)
+    console.log(`\nfiles to write: ${changedFiles}. This is only a comparison: add --write to write them.`)
     return
   }
 
   for (const p of planned) {
     mkdirSync(p.dir, { recursive: true })
-    // Название орудия как в приложении (из его JSON), иначе как в игре
+    // The weapon name as in the app (from its JSON), otherwise as in the game
     const title = weaponJson?.name ?? data.name
     const header = [
       `# ${title}, ${p.mode}, Charge ${p.charge}`,
-      `# Выгружено из игры ${today} скриптом tools/arma/export_tables.sqf (расчёт ACE): ${data.weapon}, ${p.mv} м/с, сопротивление воздуха ${p.af}.`,
+      `# Exported from the game ${today} by tools/arma/export_tables.sqf (ACE calculation): ${data.weapon}, ${p.mv} m/s, air friction ${p.af}.`,
       p.af === 0
-        ? '# Без сопротивления воздуха: погодные столбцы пустые.'
-        : '# С сопротивлением воздуха (улучшенная баллистика ACE).',
+        ? '# Without air resistance: the weather columns are empty.'
+        : '# With air resistance (ACE advanced ballistics).',
     ]
     writeFileSync(p.file, [...header, ...p.rows.map(formatRow)].join('\n') + '\n')
   }
   for (const f of stale) unlinkSync(f)
-  console.log(`записано файлов: ${planned.length}${stale.length ? `, удалено: ${stale.length}` : ''}`)
+  console.log(`files written: ${planned.length}${stale.length ? `, removed: ${stale.length}` : ''}`)
   if (flag('--no-import')) return
   execFileSync('node', [join(WEB, 'scripts', 'import-tables.mjs'), '--all'], { cwd: WEB, stdio: 'inherit' })
 }

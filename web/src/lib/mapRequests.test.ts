@@ -13,7 +13,7 @@ const DEVICE_A = 'aaaaaaaaaaaaaaaa'
 const DEVICE_B = 'bbbbbbbbbbbbbbbb'
 
 describe('parseWorkshopLink', () => {
-  it('понимает обычную ссылку на мод', () => {
+  it('understands a normal mod link', () => {
     expect(
       parseWorkshopLink('https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890')
     ).toEqual({
@@ -22,19 +22,19 @@ describe('parseWorkshopLink', () => {
     })
   })
 
-  it('понимает ссылку без https, с лишними параметрами и пробелами', () => {
+  it('understands a link without https, with extra parameters and spaces', () => {
     expect(
       parseWorkshopLink('  steamcommunity.com/sharedfiles/filedetails/?l=russian&id=987654321&searchtext=map  ')
         ?.id
     ).toBe('987654321')
   })
 
-  it('понимает steam:// и просто номер', () => {
+  it('understands steam:// and a bare number', () => {
     expect(parseWorkshopLink('steam://url/CommunityFilePage/1122334455')?.id).toBe('1122334455')
     expect(parseWorkshopLink('1122334455')?.id).toBe('1122334455')
   })
 
-  it('отвергает чужое', () => {
+  it('rejects anything else', () => {
     expect(parseWorkshopLink('')).toBeNull()
     expect(parseWorkshopLink('https://example.com/?id=123456789')).toBeNull()
     expect(parseWorkshopLink('https://steamcommunity.com/id/someone')).toBeNull()
@@ -42,8 +42,8 @@ describe('parseWorkshopLink', () => {
   })
 })
 
-describe('темы MQTT', () => {
-  it('собирает и разбирает темы заявки и голоса', () => {
+describe('MQTT topics', () => {
+  it('builds and parses request and vote topics', () => {
     expect(parseTopic(infoTopic('1234567890'))).toEqual({ kind: 'info', workshopId: '1234567890' })
     expect(parseTopic(voteTopic('1234567890', DEVICE_A))).toEqual({
       kind: 'vote',
@@ -52,7 +52,7 @@ describe('темы MQTT', () => {
     })
   })
 
-  it('чужие и подозрительные темы отбрасываются', () => {
+  it('foreign and suspicious topics are dropped', () => {
     expect(parseTopic('other/1234567890/info')).toBeNull()
     expect(parseTopic('artcalc-maps/v1/req/abc/info')).toBeNull()
     expect(parseTopic('artcalc-maps/v1/req/1234567890/v/NOT HEX')).toBeNull()
@@ -65,7 +65,7 @@ describe('Tally', () => {
   const info = (id: string, name: string) =>
     [infoTopic(id), JSON.stringify({ name })] as const
 
-  it('считает голоса по разным устройствам и сортирует по убыванию', () => {
+  it('counts votes by distinct devices and sorts in descending order', () => {
     const tally = new Tally()
     tally.apply(...info('111111111', 'Map A'))
     tally.apply(...info('222222222', 'Map B'))
@@ -78,14 +78,14 @@ describe('Tally', () => {
     ])
   })
 
-  it('одно устройство — один голос, сколько ни присылай', () => {
+  it('one device, one vote, however many it sends', () => {
     const tally = new Tally()
     tally.apply(...info('111111111', 'Map A'))
     for (let i = 0; i < 5; i += 1) tally.apply(voteTopic('111111111', DEVICE_A), '1')
     expect(tally.snapshot(DEVICE_B)[0].votes).toBe(1)
   })
 
-  it('пустое сообщение снимает голос; mine показывает голос этого устройства', () => {
+  it('an empty message removes a vote; mine shows the vote of this device', () => {
     const tally = new Tally()
     tally.apply(...info('111111111', 'Map A'))
     tally.apply(voteTopic('111111111', DEVICE_A), '1')
@@ -95,7 +95,7 @@ describe('Tally', () => {
     expect(tally.snapshot(DEVICE_A)[0]).toMatchObject({ votes: 0, mine: false })
   })
 
-  it('голоса без заявки не показываются, отзыв заявки её убирает', () => {
+  it('votes without a request are not shown, withdrawing a request removes it', () => {
     const tally = new Tally()
     tally.apply(voteTopic('333333333', DEVICE_A), '1')
     expect(tally.snapshot(DEVICE_A)).toEqual([])
@@ -105,7 +105,7 @@ describe('Tally', () => {
     expect(tally.snapshot(DEVICE_A)).toEqual([])
   })
 
-  it('название обрезается, мусор и пустое название не ломают список', () => {
+  it('the name is cut, junk and an empty name do not break the list', () => {
     const tally = new Tally()
     tally.apply(...info('111111111', 'x'.repeat(200)))
     tally.apply(infoTopic('222222222'), '{not json')
@@ -117,7 +117,7 @@ describe('Tally', () => {
   })
 })
 
-// Подменный клиент MQTT: запоминает публикации и даёт «прислать» сообщения брокера.
+// A fake MQTT client: remembers publications and lets the test "send" broker messages.
 const clients: FakeClient[] = []
 type Handler = (...args: unknown[]) => void
 
@@ -154,7 +154,7 @@ vi.mock('mqtt', () => ({
 }))
 
 describe('openRequests', () => {
-  it('подключается ко всем брокерам, собирает заявки и публикует голоса на все', async () => {
+  it('connects to all brokers, collects requests and publishes votes to all', async () => {
     vi.useFakeTimers()
     clients.length = 0
     const updates: unknown[] = []
@@ -172,7 +172,7 @@ describe('openRequests', () => {
     }
     expect(clients.every((c) => c.subscribed.includes('artcalc-maps/v1/req/#'))).toBe(true)
 
-    // Брокер присылает накопленное
+    // The broker sends what it has accumulated
     clients[0].emit(
       'message',
       infoTopic('111111111'),
@@ -184,7 +184,7 @@ describe('openRequests', () => {
     const last = updates[updates.length - 1] as { name: string; votes: number }[]
     expect(last[0]).toMatchObject({ name: 'Malden', votes: 1 })
 
-    // Голос уходит на оба брокера retained
+    // The vote goes to both brokers as retained
     session.vote('111111111', true)
     for (const c of clients) {
       expect(c.published).toContainEqual({
@@ -193,7 +193,7 @@ describe('openRequests', () => {
         retain: true,
       })
     }
-    // Снятие голоса — пустое retained-сообщение
+    // Removing a vote: an empty retained message
     session.vote('111111111', false)
     expect(clients[0].published.at(-1)).toEqual({
       topic: voteTopic('111111111', DEVICE_A),
@@ -201,7 +201,7 @@ describe('openRequests', () => {
       retain: true,
     })
 
-    // Новая заявка: описание и первый голос
+    // A new request: the description and the first vote
     session.suggest({ id: '222222222', url: 'x' }, '  Tembelan  ')
     const topics = clients[1].published.map((p) => p.topic)
     expect(topics).toContain(infoTopic('222222222'))
@@ -212,7 +212,7 @@ describe('openRequests', () => {
     vi.useRealTimers()
   })
 
-  it('слишком большие сообщения игнорируются', async () => {
+  it('messages that are too large are ignored', async () => {
     vi.useFakeTimers()
     clients.length = 0
     const updates: { name: string }[][] = []
@@ -226,20 +226,20 @@ describe('openRequests', () => {
   })
 })
 
-describe('орудия: свой раздел тем', () => {
-  it('заявки на орудия и на карты не смешиваются', async () => {
+describe('weapons: a topic section of their own', () => {
+  it('weapon and map requests do not mix', async () => {
     const { REQUEST_ROOTS } = await import('./mapRequests')
     expect(REQUEST_ROOTS.weapon).not.toBe(REQUEST_ROOTS.map)
     const weapons = new Tally(REQUEST_ROOTS.weapon)
     weapons.apply(infoTopic('111111111', REQUEST_ROOTS.weapon), JSON.stringify({ name: 'Sholef' }))
     weapons.apply(voteTopic('111111111', DEVICE_A, REQUEST_ROOTS.weapon), '1')
-    // тема карты в сводке орудий не учитывается
+    // a map topic does not count in the weapon summary
     weapons.apply(infoTopic('222222222'), JSON.stringify({ name: 'Malden' }))
     expect(weapons.snapshot(DEVICE_A).map((r) => [r.name, r.votes])).toEqual([['Sholef', 1]])
     expect(parseTopic(infoTopic('111111111', REQUEST_ROOTS.weapon))).toBeNull()
   })
 
-  it('сессия для орудий подписывается на свой раздел', async () => {
+  it('a weapon session subscribes to its own section', async () => {
     vi.useFakeTimers()
     clients.length = 0
     const session = await openRequests(['wss://a'], DEVICE_A, () => {}, () => {}, 'weapon')

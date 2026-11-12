@@ -2,9 +2,9 @@ import { t } from '../i18n'
 import { FieldIcon } from './FieldIcon'
 
 /**
- * Звёздочка «в избранное» на закрытом списке (орудие, карта): сразу видно,
- * в избранном ли выбранное, и его можно добавить или убрать, не раскрывая
- * список.
+ * The favourite star on a closed list (weapon, map): it shows at once whether
+ * the selected item is a favourite and adds or removes it without opening
+ * the list.
  */
 export function FavoriteToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   const label = on ? t('picker.unfavourite') : t('picker.favourite')

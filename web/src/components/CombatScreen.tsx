@@ -12,7 +12,7 @@ interface Props {
   charge: number
   mode: ArtilleryMode
   elevation: number
-  // Готовый азимут в единицах ввода; null — не введён
+  // The final azimuth in the input units; null: not entered
   azimuth: string | null
   azimuthUnit: string
   tof: number
@@ -22,8 +22,8 @@ interface Props {
 }
 
 /**
- * «Боевой экран»: только то, что нужно у орудия, крупно.
- * Экран телефона не гаснет, пока он открыт.
+ * The combat screen: only what is needed at the gun, in large type.
+ * The phone screen stays on while it is open.
  */
 export function CombatScreen({
   title,
@@ -41,7 +41,7 @@ export function CombatScreen({
 
   useWakeLock(true)
 
-  // Страница под экраном не прокручивается
+  // The page under the screen does not scroll
   useEffect(() => {
     const previous = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -53,7 +53,7 @@ export function CombatScreen({
   const cell = 'rounded-xl bg-app-surface p-5 sm:p-7'
   const caption = 'text-[15px] font-medium text-app-muted'
 
-  // Портал в <body>: экран не зависит от контекста наложения родителя.
+  // A portal to <body>: the screen does not depend on the parent's stacking context.
   return createPortal(
     <div
       role="dialog"

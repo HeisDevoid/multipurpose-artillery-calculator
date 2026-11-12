@@ -1,6 +1,8 @@
 import type { ru } from './messages'
 
 export const ja: Record<keyof typeof ru, string> = {
+  "settings.usage-stats": "匿名の利用統計",
+  "settings.usage-stats-description": "1日に1回、アプリが使われたことだけを送信します。あなたや端末の情報は送りません。",
   "footer.donate": "Donatello で応援",
   "footer.donate-hint": "サイトのドメイン代に",
   "settings.physics-why": "すべての諸元に影響します。",

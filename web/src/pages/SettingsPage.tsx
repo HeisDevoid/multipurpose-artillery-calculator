@@ -29,7 +29,7 @@ interface SettingsPageProps {
   onKeepAwakeChange: (value: boolean) => void
 }
 
-/** Раздел настроек (сворачивается): значок, заголовок, пояснение и строки через разделитель. */
+/** A settings section (collapsible): an icon, a title, a description and rows with dividers. */
 function Card({
   id,
   icon,
@@ -76,6 +76,7 @@ export function SettingsPage({
   const hideUnfit = useFeature('hideUnfit')
   const volley = useFeature('volley')
   const onlyGood = useFeature('onlyGood')
+  const usageStats = useFeature('usageStats')
   const flightStyle = useFlightStyle()
   const motionNumbers = useMotion('numbers')
   const motionSwitches = useMotion('switches')
@@ -98,14 +99,14 @@ export function SettingsPage({
 
   return (
     <section className="space-y-4">
-      {/* Быстрый переход к разделу: на телефоне страница длинная */}
+      {/* A quick jump to a section: on a phone the page is long */}
       <nav aria-label={t('settings.jump')} className="flex flex-wrap gap-1.5">
         {sections.map((section) => (
           <a
             key={section.id}
             href={`#${section.id}`}
             onClick={(event) => {
-              // Раздел раскрывается, прокрутка — без якоря в адресной строке
+              // The section opens, scrolling goes without an anchor in the address bar
               event.preventDefault()
               openSettingsCard(section.id)
               requestAnimationFrame(() =>
@@ -146,6 +147,15 @@ export function SettingsPage({
                 description={
                   t('settingsPage.explanatory-notes-and-the-demos')
                 }
+              />
+            </div>
+
+            <div>
+              <Switch
+                checked={usageStats}
+                onChange={(v) => setFeature('usageStats', v)}
+                label={t('settings.usage-stats')}
+                description={t('settings.usage-stats-description')}
               />
             </div>
 
@@ -247,7 +257,7 @@ export function SettingsPage({
         </div>
 
         <div className="order-first flex flex-col gap-4">
-          {/* Главное для точности: есть ли на сервере физика снаряда */}
+          {/* The main thing for accuracy: does the server have shell physics */}
           <Card
             id="settings-physics"
             icon="wind"
@@ -371,7 +381,7 @@ export function SettingsPage({
                 }
               />
               </FeaturePreview>
-              {/* Экспериментальные функции: только в сборке для разработки */}
+              {/* Experimental features: only in the development build */}
               {DEV_BUILD && (
               <>
               <FeaturePreview id="screenMarkers">

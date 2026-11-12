@@ -1,9 +1,9 @@
 name: Desktop app
 
-# Сборка программы для ПК (Tauri) на Windows. Готовый установщик —
-# в артефакте «artillery-calculator-windows» на странице запуска.
-# Тег версии (v0.10.0) дополнительно публикует установщик в GitHub Releases.
-# Локально для сборки нужны Rust и Visual Studio Build Tools (C++).
+# Builds the Windows app (Tauri). The finished installer is in the
+# "artillery-calculator-windows" artifact on the run page.
+# A version tag (v0.10.0) also publishes the installer to GitHub Releases.
+# A local build needs Rust and the Visual Studio Build Tools (C++).
 
 on:
   push:
@@ -59,14 +59,14 @@ jobs:
       - name: Run tests
         run: npm test
 
-      # Файлы автообновления (.sig) подписываются ключом из секрета
-      # TAURI_SIGNING_PRIVATE_KEY; без секрета собирается обычный установщик.
+      # The auto-update files (.sig) are signed with the key from the secret
+      # TAURI_SIGNING_PRIVATE_KEY; without the secret a plain installer is built.
       - name: Build desktop app
         shell: bash
         env:
           SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: |
-          # Переменные подписи — только при заданном ключе: пустые сборщик принял бы за ключ
+          # The signing variables are set only when the key exists: the bundler would take empty ones for a key
           if [ -n "$SIGNING_KEY" ]; then
             export TAURI_SIGNING_PRIVATE_KEY="$SIGNING_KEY"
             export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""
@@ -101,8 +101,8 @@ jobs:
           name: artillery-calculator-windows
           path: installer
 
-      # Имена без пробелов (GitHub заменил бы их точками) и latest.json для
-      # автообновления: версия, подпись и адрес установщика в этом релизе
+      # Names without spaces (GitHub would replace them with dots) and latest.json for
+      # the auto-update: the version, the signature and the installer address in this release
       - name: Prepare update manifest
         env:
           TAG: ${{ github.ref_name }}

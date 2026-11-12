@@ -1,6 +1,6 @@
 # M252 (81 mm), HIGH, Charge 1
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_mortar_81mm, 80 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_mortar_81mm, 80 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 150 1482 8.1 1.2 16.2
 200 1441 11.1 1.2 16.1
 250 1400 14.4 1.2 16.0

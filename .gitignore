@@ -29,5 +29,5 @@ Desktop.ini
 
 target/
 
-# Материалы для продвижения (гайд Steam, скриншоты): не для репозитория
+# Promotion materials (the Steam guide, screenshots): not for the repository
 /promo/

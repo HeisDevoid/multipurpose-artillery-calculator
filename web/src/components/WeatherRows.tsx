@@ -6,14 +6,14 @@ import { InlineNumber, Row, Toggle } from './FormControls'
 
 interface Props {
   inputs: WeatherInputs
-  // Любое изменение сбрасывает отметку «Сохранено»
+  // Any change clears the "Saved" mark
   onEdit: () => void
 }
 
 /**
- * Погодные поправки прямо в основной таблице вводных (под высотой орудия):
- * ветер (скорость и откуда или встречный и боковой), температура, давление.
- * Показываются, когда раздел включён в настройках.
+ * Weather corrections right in the main input table (under the gun height):
+ * wind (speed and direction, or head and cross components), temperature, pressure.
+ * Shown when the section is turned on in the settings.
  */
 export function WeatherRows({ inputs: w, onEdit }: Props) {
   const mps = t('unit.mps')
@@ -166,7 +166,7 @@ export function WeatherRows({ inputs: w, onEdit }: Props) {
         />
       </Row>
 
-      {/* Пояснения и сброс — под строками, мелко */}
+      {/* Notes and reset under the rows, in small type */}
       <div className="space-y-1 pt-1 pb-2">
         {w.windMode === 'vector' && w.windIncomplete && (
           <p className={`${note} text-warn`}>

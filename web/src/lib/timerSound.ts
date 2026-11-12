@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 
-/** Звуковые сигналы таймера (щелчок, сплэш, разрыв): включаются в настройках. */
+/** Timer sound signals (click, splash, impact): turned on in the settings. */
 const KEY = 'timerSound'
 const listeners = new Set<() => void>()
 let memory: boolean | undefined
@@ -22,7 +22,7 @@ export function setTimerSound(value: boolean) {
   try {
     localStorage.setItem(KEY, value ? 'on' : 'off')
   } catch {
-    // Хранилище недоступно — настройка живёт до перезагрузки.
+    // Storage is unavailable: the setting lives until a reload.
   }
   listeners.forEach((listener) => listener())
 }

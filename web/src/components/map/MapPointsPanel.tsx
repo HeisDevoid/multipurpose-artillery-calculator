@@ -10,9 +10,9 @@ import type { QuickTarget } from '../MapPicker'
 import { markerTitle } from './mapLabels'
 
 /**
- * Слева на карте: один список «Метки». В нём сохранённые цели (перекрестие:
- * нажать — загрузить расчёт) и метки (ромб цвета метки: нажать — цель в эту
- * точку). Метки при включённой связке видны всем в комнате.
+ * On the left of the map: one "Markers" list. It holds saved targets (a crosshair:
+ * press to load the solution) and markers (a diamond in the marker colour: press to aim
+ * at that point). With Link on, everyone in the room sees the markers.
  */
 export function MapPointsPanel({
   targets,
@@ -26,23 +26,23 @@ export function MapPointsPanel({
   shared,
 }: {
   targets: readonly QuickTarget[]
-  // Журнал целей: экспорт, импорт, переименование; без него целей в списке нет
+  // The target journal: export, import, renaming; without it there are no targets in the list
   actions?: JournalActions
   onPickTarget?: (id: string) => void
-  // Метки (если включены в настройках)
+  // Markers (if turned on in the settings)
   markers: MapMarker[] | null
   now: number
   onTargetMarker: (marker: MapMarker) => void
   onAddByGrid: (point: MapPoint) => void
   onNotice: (text: string) => void
-  // Связка включена: метки расходятся по ней
+  // Link is on: markers are shared over it
   shared: boolean
 }) {
   const importRef = useRef<HTMLInputElement>(null)
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
   const [grid, setGrid] = useState('')
-  // На узком экране список свёрнут
+  // On a narrow screen the list is collapsed
   const [open, setOpen] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768)
 
   const count = (actions ? targets.length : 0) + (markers?.length ?? 0)

@@ -3,11 +3,11 @@ import type { AdjustmentEntry } from '../components/AdjustFire'
 import type { MapTarget } from './journal'
 
 /**
- * Черновик вводных: всё, что введено в калькуляторе, переживает смену орудия,
- * снаряда, переход в настройки и перезагрузку страницы.
+ * The input draft: everything entered in the calculator survives a change of weapon,
+ * shell, a visit to the settings and a page reload.
  *
- * Общие поля (дистанция, азимут, высоты, цель на карте, корректировка) —
- * одни на все орудия; выбор снаряда, траектории и заряда — свой у каждого орудия.
+ * The common fields (distance, azimuth, heights, the target on the map, adjustment) are
+ * shared by all weapons; the choice of shell, trajectory and charge is per weapon.
  */
 export interface CalcDraft {
   distance: string
@@ -42,7 +42,7 @@ function write(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value))
   } catch {
-    // Хранилище недоступно — поля живут до перезагрузки.
+    // Storage is unavailable: the fields live until a reload.
   }
 }
 

@@ -1,7 +1,7 @@
 import { readStoredText, writeStored } from './input'
 import { isMarkerColor, type MarkerColor } from './markers'
 
-/** Рисунок на карте: штрих — ломаная в координатах мира одного цвета. */
+/** A drawing on the map: a stroke is a single-colour polyline in world coordinates. */
 export interface DrawStroke {
   id: string
   color: MarkerColor
@@ -39,7 +39,7 @@ export function writeStrokes(world: string, strokes: DrawStroke[]) {
   writeStored(key(world), JSON.stringify(strokes.slice(-MAX_STROKES)))
 }
 
-/** Выбросить точки ближе minStep (в метрах мира) к предыдущей; концы остаются. */
+/** Drop points closer than minStep (world metres) to the previous one; the ends stay. */
 export function simplify(
   points: { x: number; y: number }[],
   minStep: number
@@ -53,7 +53,7 @@ export function simplify(
     }
   }
   out.push(points[points.length - 1])
-  // Не больше MAX_POINTS: берём каждую n-ю
+  // No more than MAX_POINTS: every n-th one is taken
   if (out.length <= MAX_POINTS) return out
   const n = Math.ceil(out.length / MAX_POINTS)
   const thin = out.filter((_, i) => i % n === 0)
@@ -73,7 +73,7 @@ function distToSegment(
   return Math.hypot(p.x - (a.x + k * dx), p.y - (a.y + k * dy))
 }
 
-/** Расстояние от точки до штриха (в метрах мира). */
+/** The distance from a point to a stroke (in world metres). */
 export function distanceToStroke(
   stroke: DrawStroke,
   p: { x: number; y: number }

@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 /**
- * Импорт игровых таблиц ACE3 из текстовых файлов в JSON-справочник.
+ * Imports ACE3 game tables from text files into the JSON reference.
  *
- *   node scripts/import-tables.mjs <папка-источник> <json> [--profile default] [--check]
+ *   node scripts/import-tables.mjs <source-folder> <json> [--profile default] [--check]
  *   node scripts/import-tables.mjs --all [--check]
  *
- * Папка содержит файлы <РЕЖИМ>-<заряд>.txt.
- * Скрипт заменяет profiles.<profile>.modes / columns / units в JSON,
- * остальные поля справочника не трогает.
+ * The folder holds <MODE>-<charge>.txt files.
+ * The script replaces profiles.<profile>.modes / columns / units in the JSON
+ * and leaves the other fields of the reference alone.
  *
- * --all — все папки data-sources/<id> → src/data/artillery/<id>.json.
- * --check — ничего не записывать, а только сравнить: код выхода 1,
- * если JSON не совпадает с текстовыми источниками.
+ * --all: every data-sources/<id> folder → src/data/artillery/<id>.json.
+ * --check: write nothing and only compare: exit code 1
+ * when the JSON does not match the text sources.
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -49,15 +49,15 @@ function fail(message) {
 
 function parseValue(token, where, column) {
   if (token === '-') {
-    // Прочерк допустим везде, кроме дальности, возвышения и времени полёта.
+    // A dash is allowed anywhere except range, elevation and time of flight.
     if (column === 0 || column === 1 || column === 4) {
-      fail(`${where}: прочерк в обязательном столбце ${column + 1}`)
+      fail(`${where}: a dash in the required column ${column + 1}`)
     }
     return null
   }
   const value = Number(token)
-  if (!Number.isFinite(value)) fail(`${where}: не число «${token}»`)
-  // «-0.0» из игры → 0
+  if (!Number.isFinite(value)) fail(`${where}: not a number "${token}"`)
+  // "-0.0" from the game → 0
   return value === 0 ? 0 : value
 }
 
@@ -72,22 +72,22 @@ function parseTable(path) {
     const where = `${path}:${index + 1}`
     const tokens = line.split(/\s+/)
     if (tokens.length !== 5 && tokens.length !== 12) {
-      fail(`${where}: ожидалось 5 или 12 столбцов, найдено ${tokens.length}`)
+      fail(`${where}: expected 5 or 12 columns, found ${tokens.length}`)
     }
 
     const row = tokens.map((token, column) => parseValue(token, where, column))
     const previous = rows[rows.length - 1]
 
     if (previous) {
-      if (row[0] <= previous[0]) fail(`${where}: дальность не возрастает`)
+      if (row[0] <= previous[0]) fail(`${where}: the range does not increase`)
       if (row.length !== previous.length) {
-        fail(`${where}: разное число столбцов в одной таблице`)
+        fail(`${where}: a different number of columns in one table`)
       }
     }
     rows.push(row)
   })
 
-  if (rows.length === 0) fail(`${path}: пустая таблица`)
+  if (rows.length === 0) fail(`${path}: an empty table`)
   return rows
 }
 
@@ -104,7 +104,7 @@ function readSources(dir) {
         : a.match[1] < b.match[1] ? -1 : 1
     )
 
-  if (files.length === 0) fail(`${dir}: нет файлов <РЕЖИМ>-<заряд>.txt`)
+  if (files.length === 0) fail(`${dir}: no <MODE>-<charge>.txt files`)
 
   for (const { name, match } of files) {
     const [, mode, charge] = match
@@ -117,7 +117,7 @@ function readSources(dir) {
   return { modes, width }
 }
 
-/** JSON с отступом 2, но массивы примитивов — в одну строку. */
+/** JSON with an indent of 2, but arrays of primitives on one line. */
 function serialize(value, indent = '') {
   const inner = `${indent}  `
 
@@ -159,8 +159,8 @@ function importOne(sourceDir, jsonPath, profileKey, check) {
     modes,
   }
 
-  // Профиль с сопротивлением воздуха подключается к боеприпасам своего набора:
-  // «advanced» — к основному (default), «<набор>-advanced» — к набору <набор>
+  // A profile with air resistance is attached to the ammunition of its own set:
+  // "advanced" to the main one (default), "<set>-advanced" to the set <set>
   if (profileKey === 'advanced' || profileKey.endsWith('-advanced')) {
     const base = profileKey === 'advanced' ? 'default' : profileKey.slice(0, -'-advanced'.length)
     for (const ammo of data.ammunition ?? []) {
@@ -173,7 +173,7 @@ function importOne(sourceDir, jsonPath, profileKey, check) {
 
   if (check) {
     if (output !== normalized) {
-      fail(`${jsonPath} не совпадает с ${sourceDir}. Запустите без --check.`)
+      fail(`${jsonPath} does not match ${sourceDir}. Run without --check.`)
     }
     console.log(`ok  ${jsonPath}`)
     return
@@ -183,10 +183,10 @@ function importOne(sourceDir, jsonPath, profileKey, check) {
   const charges = Object.entries(modes)
     .map(([mode, tables]) => `${mode}: ${Object.keys(tables).join(', ')}`)
     .join('; ')
-  console.log(`записано ${jsonPath} (${charges})`)
+  console.log(`written ${jsonPath} (${charges})`)
 }
 
-// Таблица с погодными поправками снята с сопротивлением воздуха (см. lib/profileSelect.ts)
+// A table with weather corrections was taken with air resistance (see lib/profileSelect.ts)
 function hasDrag(profile) {
   return Object.values(profile?.modes ?? {}).some((tables) =>
     Object.values(tables ?? {}).some((rows) =>
@@ -201,8 +201,8 @@ const modesOf = (profile) =>
     .map(([mode]) => mode)
 
 /**
- * Каких таблиц у орудия нет: 'no-air' — без сопротивления воздуха,
- * 'air' — с ним (хотя бы для одного снаряда и траектории).
+ * Which tables a weapon lacks: 'no-air' is without air resistance,
+ * 'air' is with it (for at least one shell and trajectory).
  */
 function missingTables(data) {
   const missing = new Set()
@@ -232,17 +232,17 @@ const positional = args.filter(
 )
 
 if (all) {
-  // Каждая папка data-sources/<id> ↔ src/data/artillery/<id>.json
+  // Every data-sources/<id> folder ↔ src/data/artillery/<id>.json
   const root = 'data-sources'
   for (const entry of readdirSync(root, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue
     const json = join('src', 'data', 'artillery', `${entry.name}.json`)
     importOne(join(root, entry.name), json, 'default', check)
-    // data-sources/<id>/advanced — таблицы при улучшенной баллистике
+    // data-sources/<id>/advanced: tables for advanced ballistics
     const advanced = join(root, entry.name, 'advanced')
     if (existsSync(advanced)) importOne(advanced, json, 'advanced', check)
-    // Другие подпапки — наборы снарядов с другой скоростью (профиль = имя папки),
-    // у каждого может быть своя advanced/
+    // Other subfolders are shell sets with another speed (profile = folder name),
+    // each may have an advanced/ of its own
     for (const sub of readdirSync(join(root, entry.name), { withFileTypes: true })) {
       if (!sub.isDirectory() || sub.name === 'advanced') continue
       importOne(join(root, entry.name, sub.name), json, sub.name, check)
@@ -251,9 +251,9 @@ if (all) {
     }
   }
 
-  // Статусы проверки и полнота таблиц всех орудий — отдельным маленьким
-  // файлом: список орудий показывает их сразу, а сами таблицы грузятся,
-  // только когда орудие выбрано
+  // Verification statuses and table completeness of all weapons go to a separate
+  // small file: the weapon list shows them at once, and the tables themselves load
+  // only when a weapon is selected
   const tablesDir = join('src', 'data', 'artillery')
   const status = Object.fromEntries(
     readdirSync(tablesDir)
@@ -268,14 +268,14 @@ if (all) {
   const statusOutput = `${JSON.stringify(status, null, 2)}\n`
   const currentStatus = existsSync(statusPath) ? readFileSync(statusPath, 'utf8').replace(/\r\n/g, '\n') : ''
   if (currentStatus !== statusOutput) {
-    if (check) fail(`${statusPath} устарел. Запустите npm run tables:import.`)
+    if (check) fail(`${statusPath} is out of date. Run npm run tables:import.`)
     writeFileSync(statusPath, statusOutput)
-    console.log(`записано ${statusPath}`)
+    console.log(`written ${statusPath}`)
   }
 } else {
   if (positional.length !== 2 || !profileKey) {
     fail(
-      'использование: import-tables.mjs <папка> <json> [--profile <ключ>] [--check] | --all [--check]'
+      'usage: import-tables.mjs <folder> <json> [--profile <key>] [--check] | --all [--check]'
     )
   }
   importOne(positional[0], positional[1], profileKey, check)

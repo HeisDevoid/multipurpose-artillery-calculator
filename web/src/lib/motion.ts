@@ -1,16 +1,16 @@
 import { useSyncExternalStore } from 'react'
 
 /**
- * Анимации интерфейса по видам, каждый включается отдельно в настройках:
- *   numbers  — «прокрутка» чисел расчёта и их короткая вспышка;
- *   switches — скользящая «таблетка» у переключателей;
- *   appear   — появление окон, плашек и карточек;
- *   smooth   — плавные переходы: наведение, смена выбора, раскрытие;
- *   fire     — отдача при нажатии «Огонь» и вспышка у орудия;
- *   impact   — подсветка и «прыжок» таймера, когда снаряд прилетел.
- * Переезд обучения и круг при смене темы встроены и всегда включены.
- * По умолчанию всё включено, если в системе не выбрано «уменьшить движение».
- * Выбор отмечается на <html> (data-m-<вид>), по нему CSS гасит анимации.
+ * Interface animations by kind, each turned on separately in the settings:
+ *   numbers:  the "rolling" solution numbers and their short flash;
+ *   switches: the sliding "pill" of the toggles;
+ *   appear:   windows, banners and cards appearing;
+ *   smooth:   smooth transitions: hover, a choice change, expanding;
+ *   fire:     the recoil on pressing Fire and the muzzle flash;
+ *   impact:   the timer highlight and "jump" when the shell lands.
+ * The tutorial glide and the theme change circle are built in and always on.
+ * By default everything is on unless "reduce motion" is chosen in the system.
+ * The choice is marked on <html> (data-m-<kind>), and CSS turns the animations off by it.
  */
 export type MotionKind =
   | 'numbers'
@@ -48,7 +48,7 @@ function read(kind: MotionKind): boolean {
     if (value === 'on') return true
     if (value === 'off') return false
   } catch {
-    // Хранилище недоступно — берём системную настройку
+    // Storage is unavailable: the system setting is used
   }
   return !systemReduced()
 }
@@ -57,7 +57,7 @@ export function getMotion(kind: MotionKind): boolean {
   return memory[kind] ?? read(kind)
 }
 
-/** Отметить выбор на <html>: CSS по нему отключает анимации. */
+/** Mark the choice on <html>: CSS turns the animations off by it. */
 export function applyMotion() {
   if (typeof document === 'undefined') return
   for (const kind of MOTION_KINDS) {
@@ -73,7 +73,7 @@ export function setMotion(kind: MotionKind, value: boolean) {
   try {
     localStorage.setItem(storageKey(kind), value ? 'on' : 'off')
   } catch {
-    // Настройка живёт до перезагрузки.
+    // The setting lives until a reload.
   }
   applyMotion()
   listeners.forEach((listener) => listener())

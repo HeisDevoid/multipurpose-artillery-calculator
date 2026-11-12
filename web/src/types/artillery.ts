@@ -6,11 +6,11 @@ export type DataStatus =
   | 'in-progress'
   | 'verified'
 
-// null означает прочерк «-» в игровой таблице (значения нет).
-// Одна строка игровой таблицы:
-// [дальность м, возвышение мил, d-возвышение на 100 м
-//  разницы высот мил, d-время полёта на 100 м разницы высот с,
-//  время полёта с]
+// null means a dash "-" in the game table (no value).
+// One row of the game table:
+// [range m, elevation mils, d-elevation per 100 m
+//  of height difference mils, d-time of flight per 100 m of height difference s,
+//  time of flight s]
 export type BaseBallisticRow = readonly [
   range: number,
   elevation: number,
@@ -19,12 +19,12 @@ export type BaseBallisticRow = readonly [
   tof: number,
 ]
 
-// Строка с погодными столбцами (ACE3 advanced corrections):
-// поправка азимута на 1 м/с бокового ветра (мил) и поправки
-// дальности (м) на 1 м/с встречного / попутного ветра, на 1 °C
-// понижения / повышения температуры (от 15 °C) и на 1 % понижения /
-// повышения плотности воздуха. Поправки дальности прибавляются
-// к дальности, по которой берётся строка таблицы.
+// A row with weather columns (ACE3 advanced corrections):
+// the azimuth correction per 1 m/s of crosswind (mils) and the range
+// corrections (m) per 1 m/s of head / tail wind, per 1 °C
+// of temperature decrease / increase (from 15 °C) and per 1% of air density
+// decrease / increase. The range corrections are added
+// to the range the table row is taken for.
 export type WeatherBallisticRow = readonly [
   ...BaseBallisticRow,
   azimuthPerCrosswind: number | null,
@@ -38,14 +38,14 @@ export type WeatherBallisticRow = readonly [
 
 export type BallisticRow = BaseBallisticRow | WeatherBallisticRow
 
-// Заряд (строкой в JSON) -> строки таблицы
+// Charge (a string in the JSON) -> table rows
 export type ChargeTables = Record<string, BallisticRow[]>
 
 export interface BallisticProfile {
   columns: string[]
   units: Record<string, string>
   notes?: string
-  // Режим (HIGH / LOW) -> таблицы по зарядам
+  // Mode (HIGH / LOW) -> tables by charge
   modes: Partial<Record<ArtilleryMode, ChargeTables>>
 }
 
@@ -56,12 +56,12 @@ export interface Ammunition {
   description: string
   verified: boolean
 
-  // Номера зарядов, доступных для боеприпаса
+  // The charge numbers available for the ammunition
   charges?: number[]
-  // Ключ профиля из ArtilleryReference.profiles
+  // The profile key from ArtilleryReference.profiles
   profile?: string
-  // Профиль для игры с включённой улучшенной баллистикой (сопротивление воздуха):
-  // в игре таблица при этом совсем другая. Нет ключа — таблиц ещё нет.
+  // The profile for a game with advanced ballistics on (air resistance):
+  // the game table is completely different then. No key: no tables yet.
   advancedProfile?: string
 }
 
@@ -76,17 +76,17 @@ export interface ArtilleryReference {
   source: {
     name: string
     status: DataStatus
-    // export — таблицы выгружены из игры скриптом (расчёт ACE), иначе перепечатаны со скриншотов
+    // export: the tables were exported from the game by a script (the ACE calculation), otherwise retyped from screenshots
     method?: 'export' | 'screenshots'
   }
 
   screenshots: string[]
 
-  // Временно необязательное поле:
-  // M252 ещё не переведён на новую схему.
+  // A temporarily optional field:
+  // M252 is not moved to the new scheme yet.
   ammunition?: Ammunition[]
 
-  // Баллистические профили (игровые таблицы).
-  // Несколько боеприпасов могут ссылаться на один профиль.
+  // Ballistic profiles (game tables).
+  // Several kinds of ammunition may refer to one profile.
   profiles?: Record<string, BallisticProfile>
 }

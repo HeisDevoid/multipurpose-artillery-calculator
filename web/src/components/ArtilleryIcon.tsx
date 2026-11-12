@@ -6,7 +6,7 @@ import { DataStatusBadge } from './DataStatusBadge'
 import { categoryLabels, categoryMarks } from '../data/categories'
 
 
-// Линейные значки в сетке 24×24: контур 1.5, скруглённые стыки.
+// Line icons on a 24×24 grid: a 1.5 stroke, rounded joins.
 function Glyph({ category }: { category: ArtilleryCategory }) {
   switch (category) {
     case 'mortar':
@@ -54,11 +54,11 @@ function Glyph({ category }: { category: ArtilleryCategory }) {
 
 interface Props {
   category: ArtilleryCategory
-  // xs — на кнопке выбора, sm — в списке, md — в карточках
+  // xs: on the selection button, sm: in the list, md: in cards
   size?: 'xs' | 'sm' | 'md'
-  // Проверка таблиц: значок в правом нижнем углу (на кнопке выбора орудия)
+  // Table verification: a badge in the bottom right corner (on the weapon button)
   status?: DataStatus
-  // Неполные таблицы: значок предупреждения в том же углу
+  // Incomplete tables: a warning badge in the same corner
   missing?: readonly MissingTables[]
 }
 

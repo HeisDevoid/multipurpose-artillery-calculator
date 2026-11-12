@@ -7,13 +7,13 @@ import type { ShellKind } from '../lib/shellKind'
 import type { ArtilleryCategory } from '../types/gameModel'
 
 export interface FlightShot {
-  // Момент выстрела, мс (Date.now)
+  // The moment of the shot, ms (Date.now)
   firedAt: number
-  // Время полёта, с
+  // Time of flight, s
   tof: number
 }
 
-/** Где на холсте орудие и цель (px) и высота дуги. */
+/** Where the gun and the target are on the canvas (px) and the arc height. */
 export interface FlightEnds {
   ax: number
   ay: number
@@ -24,36 +24,36 @@ export interface FlightEnds {
 }
 
 interface Props {
-  // Снаряды в полёте: у залпа их несколько, летят одновременно
+  // Shells in flight: a volley has several, flying at the same time
   shots: readonly FlightShot[]
   category: ArtilleryCategory
   kind: ShellKind
   className?: string
-  // Холст поверх карты: координаты берутся у карты. Без этого — линия
-  // таймера: орудие слева, цель справа, дорожка с прогрессом.
+  // The canvas over the map: the coordinates come from the map. Without it this is the
+  // timer line: the gun on the left, the target on the right, a track with the progress.
   ends?: () => FlightEnds | null
-  // Размер холста, px (для карты); у линии таймера — по ширине блока
+  // Canvas size, px (for the map); the timer line follows the block width
   width?: number
   height?: number
-  // Покой: линия без снарядов (боевой экран показывает её всегда)
+  // Idle: the line without shells (the combat screen always shows it)
   idle?: boolean
-  // Красная дорожка: идут последние секунды до разрыва
+  // The red track: the last seconds before impact
   alert?: boolean
 }
 
 const TRACK_HEIGHT = 44
 
-// Цвета рядом с картой: орудие синее, цель красная, дорожка серая, ход — акцент
+// Colours next to the map: the gun is blue, the target red, the track grey, the progress is the accent
 const GUN = 'rgba(67,147,228,0.95)'
 const TARGET = 'rgba(228,116,116,0.95)'
 const TRACK = 'rgba(160,166,173,0.22)'
 const ACCENT = 'rgba(67,147,228,0.95)'
 
 /**
- * Линия таймера и анимация полёта в одном: по дорожке от орудия к цели
- * едет снаряд (у залпа — несколько), дорожка закрашивается по мере
- * полёта, у цели — разрыв. Вид зависит от орудия и снаряда (flightFx);
- * при выключенной анимации остаётся только дорожка с прогрессом.
+ * The timer line and the flight animation in one: a shell travels along the track
+ * from the gun to the target (a volley has several), the track fills in as the
+ * flight goes on, and there is a burst at the target. The look depends on the weapon and the shell (flightFx);
+ * with the animation off only the track with the progress stays.
  */
 export function FlightCanvas({
   shots,
@@ -68,7 +68,7 @@ export function FlightCanvas({
 }: Props) {
   const ref = useRef<HTMLCanvasElement>(null)
   const style = useFlightStyle()
-  // Свежие значения для цикла кадров без его перезапуска
+  // Fresh values for the frame loop without restarting it
   const latest = useRef({ category, kind, ends, width, height, style, alert, idle })
   useEffect(() => {
     latest.current = { category, kind, ends, width, height, style, alert, idle }
@@ -106,7 +106,7 @@ export function FlightCanvas({
       if (ends) {
         geometry = ends()
       } else {
-        // Линия таймера: дорожка у нижнего края, дуга снаряда над ней
+        // The timer line: the track at the bottom edge, the shell arc above it
         const ground = cssH - 8
         geometry = {
           ax: 8,
@@ -124,7 +124,7 @@ export function FlightCanvas({
         ctx.lineTo(geometry.bx, ground)
         ctx.stroke()
 
-        // Прогресс — по самому дальнему снаряду
+        // The progress follows the farthest shell
         const lead = shots.reduce(
           (best, s) => Math.max(best, Math.min(1, (now - s.firedAt) / 1000 / s.tof)),
           0
@@ -137,7 +137,7 @@ export function FlightCanvas({
           ctx.lineTo(geometry.ax + (geometry.bx - geometry.ax) * lead, ground)
           ctx.stroke()
         }
-        // Орудие — точка, цель — кольцо, как на карте
+        // The gun is a dot, the target is a ring, as on the map
         ctx.fillStyle = GUN
         ctx.beginPath()
         ctx.arc(geometry.ax, ground, 3.5, 0, Math.PI * 2)
@@ -153,7 +153,7 @@ export function FlightCanvas({
       for (const shot of shots) {
         const elapsed = (now - shot.firedAt) / 1000
         if (elapsed < shot.tof + IMPACT_FX_SECONDS) alive = true
-        // Анимация выключена: на линии таймера остаётся только прогресс
+        // The animation is off: only the progress stays on the timer line
         if (geometry && !(style === 'off' && !ends)) {
           drawFlight(ctx, {
             category,
@@ -187,7 +187,7 @@ export function FlightCanvas({
     }
   }, [shots])
 
-  // На карте при выключенной анимации холст не нужен; линия таймера нужна всегда
+  // On the map no canvas is needed with the animation off; the timer line is always needed
   if (style === 'off' && ends) return null
 
   return (

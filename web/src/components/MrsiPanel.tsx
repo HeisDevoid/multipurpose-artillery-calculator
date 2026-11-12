@@ -9,26 +9,26 @@ import { InlineNumber, ProgressBar } from './FormControls'
 
 interface Props {
   options: readonly MrsiOption[]
-  // Показывать режим у выстрела (у модели есть HIGH и LOW)
+  // Show the mode at a shot (the model has HIGH and LOW)
   showMode: boolean
-  // Когда начат удар (часы этого устройства); null — не начат. Хранит
-  // калькулятор: удар начинают и клавиша «огонь», и выстрел по связке
+  // When the strike started (this device's clock); null: not started. The calculator
+  // keeps it: the strike is started both by the fire key and by a shot over Link
   startedAt: number | null
-  // Кнопка «Начать»: калькулятор запускает удар и сообщает связке
+  // The Start button: the calculator starts the strike and tells Link
   onStart: () => void
-  // Кнопка «Стоп» и конец удара
+  // The Stop button and the end of the strike
   onStop: () => void
-  // Одновременный удар выбран (панель раскрыта, выстрелов два и больше):
-  // план для оверлея и связки; null — не выбран
+  // Simultaneous impact is selected (the panel is open, two or more shots):
+  // the plan for the overlay and Link; null: not selected
   onPlanChange?: (plan: MrsiShot[] | null) => void
 }
 
 const DEFAULT_GAP = 4
 
 /**
- * План одновременного удара: что делать сейчас, крупно следующий выстрел
- * (заряд, возвышение), полоса до общего разрыва и все выстрелы списком
- * (выстрелянные зачёркнуты). Общий для калькулятора, стрелка по связке и оверлея.
+ * The simultaneous impact plan: what to do now, the next shot in large type
+ * (charge, elevation), a bar until the common impact and a list of all shots
+ * (fired ones struck through). Shared by the calculator, the gunner over Link and the overlay.
  */
 export function MrsiPlanView({
   plan,
@@ -41,7 +41,7 @@ export function MrsiPlanView({
   startedAt: number | null
   now: number
   showMode: boolean
-  // Оверлей: мельче и без отступов
+  // Overlay: smaller and without padding
   compact?: boolean
 }) {
   const unitS = t('unit.s')
@@ -51,7 +51,7 @@ export function MrsiPlanView({
   const nextIndex = elapsed === null ? 0 : plan.findIndex((shot) => shot.fireAt > elapsed)
   const next = nextIndex >= 0 ? plan[nextIndex] : null
 
-  // Крупная строка: что делать сейчас
+  // The large line: what to do now
   let status: string
   if (elapsed === null) status = `${t('mrsiPanel.impact-after')} ${impactAt.toFixed(1)} ${unitS} ${t('mrsiPanel.from-the-first-round')}`
   else if (next) status = `${t('mrsiPanel.round')} ${nextIndex + 1} ${t('mrsiPanel.in')} ${Math.max(0, next.fireAt - elapsed).toFixed(1)} ${unitS}`
@@ -60,7 +60,7 @@ export function MrsiPlanView({
 
   return (
     <>
-      {/* Следующий выстрел крупно */}
+      {/* The next shot in large type */}
       <div className={compact ? 'rounded-lg bg-white/8 p-2.5' : 'mt-3 rounded-lg bg-app-raised p-3'}>
         <p className="text-[13px] text-app-muted tabular-nums" aria-live="polite">{status}</p>
         {next && (
@@ -86,7 +86,7 @@ export function MrsiPlanView({
         )}
       </div>
 
-      {/* План: когда, заряд, возвышение; выстрелянные зачёркнуты */}
+      {/* The plan: when, charge, elevation; fired shots are struck through */}
       <ol className={`${compact ? 'mt-1.5 text-[13px]' : 'mt-2 text-[14px]'} overflow-hidden rounded-lg tabular-nums`}>
         {plan.map((shot, index) => {
           const done = elapsed !== null && elapsed >= shot.fireAt
@@ -119,12 +119,12 @@ export function MrsiPlanView({
 }
 
 /**
- * Одновременный удар (MRSI): одно орудие стреляет на разных зарядах
- * с задержками, и все снаряды падают на цель одновременно.
+ * Simultaneous impact (MRSI): one gun fires on different charges
+ * with delays, and all shells land on the target at the same time.
  *
- * Сверху перезарядка и время до общего разрыва, крупно — следующий выстрел
- * (заряд, возвышение, обратный отсчёт), ниже план всех выстрелов. Пока
- * панель раскрыта, план уходит в оверлей и стрелкам по связке.
+ * On top are the reload time and the time until the common impact, the next shot in large type
+ * (charge, elevation, countdown), below is the plan of all shots. While
+ * the panel is open, the plan goes to the overlay and to the gunners over Link.
  */
 export function MrsiPanel({ options, showMode, startedAt, onStart, onStop, onPlanChange }: Props) {
   const unitS = t('unit.s')
@@ -132,7 +132,7 @@ export function MrsiPanel({ options, showMode, startedAt, onStart, onStop, onPla
   const [gap, setGap] = useState(
     () => readStoredText('mrsiGap') || String(DEFAULT_GAP)
   )
-  // Раскрыта ли панель: свёрнутая — удар не выбран
+  // Whether the panel is open: a collapsed panel means the strike is not selected
   const [open, setOpen] = useState(() => readStoredText('mrsiOpen') !== 'off')
 
   useEffect(() => writeStored('mrsiGap', gap), [gap])
@@ -142,7 +142,7 @@ export function MrsiPanel({ options, showMode, startedAt, onStart, onStop, onPla
   const plan = planMrsi(options, minGap)
   const now = useMrsiClock(plan, startedAt, onStop)
 
-  // План для оверлея и связки: только реальные изменения
+  // The plan for the overlay and Link: only real changes
   const planJson = JSON.stringify(open && plan.length >= 2 ? plan : null)
   const onPlanRef = useRef(onPlanChange)
   useEffect(() => {
@@ -154,7 +154,7 @@ export function MrsiPanel({ options, showMode, startedAt, onStart, onStop, onPla
   useEffect(() => () => onPlanRef.current?.(null), [])
 
   return (
-    // Сворачивается, как «Огонь по времени» и «Корректировка огня»
+    // Collapses like "Time on target" and "Adjust fire"
     <details
       className="disclosure panel p-4 sm:p-5"
       open={open}
@@ -170,7 +170,7 @@ export function MrsiPanel({ options, showMode, startedAt, onStart, onStop, onPla
         </span>
       </summary>
 
-      {/* Перезарядка: от неё зависит, какие заряды успеют войти в залп */}
+      {/* Reload time: it decides which charges make it into the salvo */}
       <label className="mt-3 flex items-center justify-between gap-3 text-[14px] text-app-text-2">
         <span className="flex items-center gap-2">
           <FieldIcon name="reload" className="h-[18px] w-[18px] text-app-muted" />
@@ -213,7 +213,7 @@ export function MrsiPanel({ options, showMode, startedAt, onStart, onStop, onPla
   )
 }
 
-/** Опция включена, но у орудия одновременного удара нет: почему. */
+/** The option is on, but the weapon has no simultaneous impact: why. */
 export function MrsiUnavailable() {
   return (
     <p className="panel flex items-start gap-2 px-4 py-3 text-[13px] text-app-muted">

@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Смоук-тесты собранного сайта (dist/): главная, расчёт, карта, язык, экран
- * ошибки. Перед запуском нужен npm run build; сервер — vite preview.
+ * Smoke tests of the built site (dist/): main page, calculation, map, language, error
+ * screen. Run npm run build first; the server is vite preview.
  *
  *   npm run test:e2e
  */
@@ -15,7 +15,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:4174',
     trace: 'retain-on-failure',
-    // Без service worker: тесты проверяют свежую сборку, а не кэш
+    // No service worker: the tests check the fresh build, not the cache
     serviceWorkers: 'block',
   },
   projects: [

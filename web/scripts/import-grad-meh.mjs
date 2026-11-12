@@ -1,23 +1,23 @@
 #!/usr/bin/env node
 /**
- * Встроенные карты из выгрузки мода grad_meh (Gruppe Adler Map Exporter).
+ * Built-in maps from an export of the grad_meh mod (Gruppe Adler Map Exporter).
  *
- *   node scripts/import-grad-meh.mjs "<Arma 3>/grad_meh/stratis" [ещё папки…]
+ *   node scripts/import-grad-meh.mjs "<Arma 3>/grad_meh/stratis" [more folders…]
  *
- * Из папки карты берутся:
- *   sat/<столбец>/<строка>.png — спутниковый снимок (сетка тайлов, север сверху);
- *   dem.asc.gz                 — высоты (ESRI ASCII Grid);
- *   meta.json                  — название, размер карты.
- * В web/public/maps/<карта>/ пишутся:
- *   tiles/<z>/<x>_<y>.webp — пирамида тайлов 512 px (z = 0 — вся карта одним тайлом);
- *   heights.bin            — высоты, Int16 в дециметрах, строки с юга на север;
- *   map.json               — описание карты для приложения.
- * Если есть geojson/ — ещё vector.json (здания, дороги, леса, горизонтали, названия).
- * И общий список web/public/maps/index.json.
+ * Taken from the map folder:
+ *   sat/<column>/<row>.png     - the satellite image (a grid of tiles, north up);
+ *   dem.asc.gz                 - heights (ESRI ASCII Grid);
+ *   meta.json                  - the name and size of the map.
+ * Written to web/public/maps/<map>/:
+ *   tiles/<z>/<x>_<y>.webp - a pyramid of 512 px tiles (z = 0 is the whole map in one tile);
+ *   heights.bin            - heights, Int16 in decimetres, rows from south to north;
+ *   map.json               - the map description for the app.
+ * With geojson/ also vector.json (buildings, roads, forests, contour lines, names).
+ * And the common list web/public/maps/index.json.
  *
- * Флаг --no-sat: карта без спутника (выгрузка из tools/arma/gradtopo_export.sqf через
- * scripts/import-rpt.mjs): только высоты и vector.json, в приложении — режим «Топо».
- * Флаг --vector-only: пересобрать только vector.json у уже импортированных карт.
+ * The --no-sat flag: a map without a satellite image (an export from tools/arma/gradtopo_export.sqf via
+ * scripts/import-rpt.mjs): only heights and vector.json, the app shows it in the Topo mode.
+ * The --vector-only flag: rebuild only vector.json of maps that are already imported.
  */
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs'
 import { basename, join } from 'node:path'
@@ -28,9 +28,9 @@ import { buildVector } from './build-vector.mjs'
 import { makePreview } from './make-map-previews.mjs'
 
 const TILE = 512
-// Детализация верхнего уровня — не мельче этого, м на пиксель
+// The top level is no finer than this, m per pixel
 const TARGET_METERS_PER_PIXEL = 2
-// Шаг сетки высот — около этого, м (кратно шагу исходной сетки)
+// The height grid step is about this, m (a multiple of the source grid step)
 const TARGET_HEIGHT_STEP = 20
 const QUALITY = 70
 
@@ -43,7 +43,7 @@ function hex(rgba) {
     .join('')}`
 }
 
-// ---- спутниковый снимок → пирамида тайлов ----
+// ---- satellite image → tile pyramid ----
 
 async function buildTiles(source, outDir, worldSize, background) {
   const columns = readdirSync(join(source, 'sat'))
@@ -52,8 +52,8 @@ async function buildTiles(source, outDir, worldSize, background) {
     .sort((a, b) => a - b)
   const n = columns.length
   const sourceMeters = worldSize / n
-  // Сколько выходных тайлов на один исходный по стороне
-  // Огромные карты (Беккетов, Алтис) грубее: иначе тайлы весят десятки МБ
+  // How many output tiles per source tile along a side
+  // Huge maps (Beketov, Altis) are coarser: otherwise the tiles weigh tens of MB
   const mpp = Math.max(TARGET_METERS_PER_PIXEL, worldSize / 6144)
   const perSource = Math.ceil(sourceMeters / (TILE * mpp))
   const maxCols = n * perSource
@@ -63,7 +63,7 @@ async function buildTiles(source, outDir, worldSize, background) {
   rmSync(outDir, { recursive: true, force: true })
   mkdirSync(join(outDir, String(top)), { recursive: true })
 
-  // Верхний уровень: каждый исходный тайл уменьшаем один раз и режем
+  // The top level: every source tile is scaled down once and cut
   for (const a of columns) {
     for (let b = 0; b < n; b += 1) {
       const file = join(source, 'sat', String(a), `${b}.png`)
@@ -74,7 +74,7 @@ async function buildTiles(source, outDir, worldSize, background) {
         .toBuffer({ resolveWithObject: true })
       for (let tx = 0; tx < perSource; tx += 1) {
         for (let ty = 0; ty < perSource; ty += 1) {
-          // Только размеры: флаг premultiplied из info портит цвета
+          // Sizes only: the premultiplied flag from info spoils the colours
           await sharp(data, {
             raw: { width: info.width, height: info.height, channels: info.channels },
           })
@@ -87,7 +87,7 @@ async function buildTiles(source, outDir, worldSize, background) {
     }
   }
 
-  // Уровни ниже: четыре соседних тайла → один
+  // Lower levels: four neighbouring tiles → one
   let cols = maxCols
   for (let z = top - 1; z >= 0; z -= 1) {
     const childCols = cols
@@ -126,13 +126,13 @@ async function buildTiles(source, outDir, worldSize, background) {
   return {
     size: TILE,
     levels,
-    // Метров на тайл верхнего уровня
+    // Metres per top level tile
     metersPerTile: worldSize / maxCols,
     ext: 'webp',
   }
 }
 
-// ---- высоты: ESRI ASCII Grid → Int16, дециметры ----
+// ---- heights: ESRI ASCII Grid → Int16, decimetres ----
 
 function buildHeights(source, outFile) {
   const text = gunzipSync(readFileSync(join(source, 'dem.asc.gz'))).toString('latin1')
@@ -150,7 +150,7 @@ function buildHeights(source, outFile) {
   const size = Math.floor((Math.min(ncols, nrows) - 1) / k) + 1
   const heights = new Int16Array(size * size)
 
-  // Строка 0 файла — север; в приложении строка 0 — юг
+  // File row 0 is the north; in the app row 0 is the south
   for (let j = 0; j < size; j += 1) {
     const values = lines[row0 + (nrows - 1 - j * k)].trim().split(/\s+/)
     for (let i = 0; i < size; i += 1) {
@@ -162,11 +162,11 @@ function buildHeights(source, outFile) {
   return { file: 'heights.bin', step, size, scale: 0.1 }
 }
 
-// ---- одна карта ----
+// ---- one map ----
 
 const noSat = process.argv.includes('--no-sat')
 
-/** Превью карты без спутника: бумажный фон. */
+/** A preview of a map without a satellite image: a paper background. */
 async function makePaperPreview(file) {
   await sharp({ create: { width: 192, height: 192, channels: 3, background: '#f4f2ea' } })
     .webp({ quality: 70 })
@@ -174,7 +174,7 @@ async function makePaperPreview(file) {
 }
 
 async function importVectorOnly(source) {
-  // У ванильных карт (Altis, Stratis, Tanoa) в выгрузке нет meta.json — имя папки
+  // Vanilla maps (Altis, Stratis, Tanoa) have no meta.json in the export: the folder name is used
   const metaFile = join(source, 'meta.json')
   const world = existsSync(metaFile)
     ? String(JSON.parse(readFileSync(metaFile, 'utf8')).worldName).toLowerCase()
@@ -182,18 +182,18 @@ async function importVectorOnly(source) {
   const outDir = new URL(`./${world}/`, OUT_ROOT)
   const mapFile = new URL('map.json', outDir)
   if (!existsSync(mapFile)) {
-    console.log(`${world}: карта ещё не импортирована, пропуск`)
+    console.log(`${world}: the map is not imported yet, skipped`)
     return
   }
   const vector = buildVector(source, new URL('vector.json', outDir), fileURLToPath(outDir))
   if (!vector) {
-    console.log(`${world}: нет geojson/, пропуск`)
+    console.log(`${world}: no geojson/, skipped`)
     return
   }
   const map = JSON.parse(readFileSync(mapFile, 'utf8'))
   map.vector = vector.file
   writeFileSync(mapFile, JSON.stringify(map, null, 2) + '\n')
-  console.log(`${world}: vector.json ${Math.round(vector.bytes / 1024)} КБ`, JSON.stringify(vector.counts))
+  console.log(`${world}: vector.json ${Math.round(vector.bytes / 1024)} KB`, JSON.stringify(vector.counts))
 }
 
 async function importMap(source) {
@@ -211,10 +211,10 @@ async function importMap(source) {
     ? null
     : await buildTiles(source, fileURLToPath(new URL('tiles', outDir)), worldSize, background)
   if (tiles) console.log(`  tiles: ${tiles.levels} levels, ${tiles.metersPerTile.toFixed(1)} m per top tile`)
-  else console.log('  без спутника (только топо)')
+  else console.log('  no satellite image (topo only)')
 
   const vector = buildVector(source, new URL('vector.json', outDir))
-  if (vector) console.log(`  vector: ${Math.round(vector.bytes / 1024)} КБ`, JSON.stringify(vector.counts))
+  if (vector) console.log(`  vector: ${Math.round(vector.bytes / 1024)} KB`, JSON.stringify(vector.counts))
 
   const map = {
     format: 'arma-map',
@@ -229,17 +229,17 @@ async function importMap(source) {
     ...(vector ? { vector: vector.file } : {}),
   }
   writeFileSync(new URL('map.json', outDir), JSON.stringify(map, null, 2) + '\n')
-  // Превью для списков карт
+  // The preview for map lists
   if (noSat) await makePaperPreview(new URL('preview.webp', outDir))
   else await makePreview(world)
-  // Официальные карты — от Bohemia Interactive, остальные — от сообщества
+  // Official maps are by Bohemia Interactive, the rest are by the community
   const kind = /bohemia/i.test(map.author) ? 'official' : 'community'
-  // Снята из игры без grad_meh (tools/arma): в приложении — значок «упрощённое качество»
+  // Taken from the game without grad_meh (tools/arma): the app shows a "simplified quality" badge
   const quality = meta.source === 'gradtopo' ? 'low' : undefined
   return { world, displayName: map.displayName, author: map.author, kind, ...(quality ? { quality } : {}), worldSize }
 }
 
-// ---- список карт ----
+// ---- the map list ----
 
 const vectorOnly = process.argv.includes('--vector-only')
 const sources = process.argv.slice(2).filter((a) => !a.startsWith('--'))
@@ -260,14 +260,16 @@ const index = existsSync(indexFile)
 
 for (const source of sources) {
   const entry = await importMap(source)
-  // Названия на других языках задаются в index.json руками — не затираем
+  // Names in other languages are set in index.json by hand: do not overwrite them
   const previous = index.maps.find((m) => m.world === entry.world)
   if (previous?.names) entry.names = previous.names
-  // Вид карты (DLC, мод) размечается в index.json руками: по автору не отличить
-  // DLC от базовой игры, а карты модов бывают с автором Bohemia (Черноруссия из CUP)
+  // The map kind (DLC, mod) is marked in index.json by hand: the author does not tell
+  // a DLC from the base game, and mod maps may have Bohemia as the author (Chernarus from CUP)
   if (previous?.kind) entry.kind = previous.kind
-  // Автор тоже правится руками: важно, из какого мода карта (Черноруссия: CUP)
+  // The author is edited by hand too: it matters which mod the map is from (Chernarus: CUP)
   if (previous?.author) entry.author = previous.author
+  // Shipping the map inside the Windows app is a manual choice too
+  if (previous?.bundled) entry.bundled = previous.bundled
   index.maps = [...index.maps.filter((m) => m.world !== entry.world), entry].sort(
     (a, b) => a.displayName.localeCompare(b.displayName)
   )

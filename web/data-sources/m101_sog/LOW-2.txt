@@ -1,8 +1,8 @@
 # M101 (S.O.G. Prairie Fire), LOW, Charge 2
-# Снято 26.10.2026. Кадры: 204930 (1100–5400 м), 204942 (5300–9600 м), 204953 (9500–13800 м), 205005 (11100–15400 м).
-# Перекрытия между кадрами сверены.
-# В режиме LOW «D ELEV / TIME OF FLIGHT PER 100 M DR» отрицательные; часть дальностей игра пропускает.
-# Без сопротивления воздуха: погодные столбцы в игре пустые.
+# Taken 26.10.2026. Frames: 204930 (1100–5400 m), 204942 (5300–9600 m), 204953 (9500–13800 m), 205005 (11100–15400 m).
+# The overlaps between frames are checked.
+# In the LOW mode the "D ELEV / TIME OF FLIGHT PER 100 M DR" values are negative; the game skips some ranges.
+# Without air resistance: the weather columns are empty in the game.
 1100 36 - - 2.8
 1200 40 - - 3.1
 1300 43 - - 3.3

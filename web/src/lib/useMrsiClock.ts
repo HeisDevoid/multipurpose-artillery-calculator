@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from 'react'
 import type { MrsiShot } from './mrsi'
 import { playSound } from './sound'
 
-// Сигналы перед выстрелом, с
+// Signals before a shot, s
 const COUNTDOWN = [3, 2, 1]
 
 /**
- * Часы одновременного удара: сигналы перед каждым выстрелом и «огонь»
- * (sound), через 3 с после общего разрыва — onDone. Возвращает текущее время.
+ * The simultaneous impact clock: signals before every shot and "fire"
+ * (sound), onDone 3 s after the common impact. Returns the current time.
  */
 export function useMrsiClock(
   plan: readonly MrsiShot[],
@@ -17,11 +17,11 @@ export function useMrsiClock(
   sound = true
 ): number {
   const [now, setNow] = useState(() => Date.now())
-  // Какие сигналы уже прозвучали: «индекс выстрела:секунда»
+  // Which signals have already sounded: "shot index:second"
   const signaled = useRef(new Set<string>())
   const impactAt = plan.length > 0 ? plan[0].tof : 0
 
-  // План и колбэк для таймера без перезапуска интервала на каждый рендер
+  // The plan and the callback for the timer without restarting the interval on every render
   const planRef = useRef(plan)
   const doneRef = useRef(onDone)
   useEffect(() => {

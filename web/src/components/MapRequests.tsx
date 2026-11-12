@@ -15,16 +15,16 @@ import { SYNC_SERVERS } from '../lib/sync'
 import { FieldIcon } from './FieldIcon'
 
 /**
- * «Предложить карту»: вставьте ссылку на мод карты и проголосуйте;
- * ниже — все запрошенные карты с голосами, за которые может проголосовать
- * любой. Данные живут на публичных MQTT-брокерах (lib/mapRequests).
+ * "Suggest a map": paste a link to the map mod and vote;
+ * below are all requested maps with their votes, anyone can vote
+ * for them. The data lives on public MQTT brokers (lib/mapRequests).
  */
 export function MapRequests({
   onClose,
   kind = 'map',
 }: {
   onClose: () => void
-  // Что предлагают: карту (по умолчанию) или орудие
+  // What is suggested: a map (the default) or a weapon
   kind?: RequestKind
 }) {
   const weapon = kind === 'weapon'

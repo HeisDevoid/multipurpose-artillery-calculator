@@ -1,6 +1,6 @@
 # 2S9 Sochor (155 mm), LOW, Charge 4
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): mortar_155mm_AMOS, 810 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): mortar_155mm_AMOS, 810 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 4700 36 - - 5.8
 4800 37 - - 5.9
 4900 37 - - 6.1

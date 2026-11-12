@@ -1,6 +1,6 @@
 # KamAZ MRL, HIGH, Charge 7
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rockets_230mm_GAT, 289.85 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rockets_230mm_GAT, 289.85 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 4600 1166 4.2 0.5 48.4 2.2 15 -14 0.6 -0.6 -13 12
 4700 1153 4.5 0.5 48.2 2.2 14 -14 0.6 -0.6 -13 12
 4800 1139 4.8 0.6 47.9 2.1 14 -14 0.6 -0.6 -14 13

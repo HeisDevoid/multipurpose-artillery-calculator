@@ -1,17 +1,17 @@
 import type { MarkerColor } from './markers'
 
 /**
- * Поиск меток на скриншоте карты Arma.
+ * Finding markers on a screenshot of the Arma map.
  *
- * Бумажная карта игры бледная: лес, поля и вода — низкая
- * насыщенность. Метки игроков нарисованы чистыми цветами
- * (ColorRed, ColorBlue…), поэтому ищем насыщенные пятна размером
- * со значок. Длинные дороги отсекаются по размеру, буквы подписей
- * справа от значка — по соседству с более крупным пятном того же цвета.
+ * The paper map of the game is pale: forest, fields and water have low
+ * saturation. Player markers are drawn in pure colours
+ * (ColorRed, ColorBlue…), so saturated spots the size of an icon
+ * are searched for. Long roads are cut off by size, the label letters
+ * to the right of an icon by the nearby larger spot of the same colour.
  */
 
 export interface Blob {
-  // Центр пятна, пиксели скриншота
+  // The spot centre, screenshot pixels
   x: number
   y: number
   color: MarkerColor
@@ -24,7 +24,7 @@ export interface DetectOptions {
   minSize: number
   maxSize: number
   minArea: number
-  // Доля закрашенных пикселей в рамке пятна
+  // The share of filled pixels in the spot frame
   minFill: number
 }
 
@@ -35,15 +35,15 @@ export const DEFAULT_DETECT: DetectOptions = {
   minFill: 0.2,
 }
 
-/** Цвет метки по пикселю; null — фон карты. */
+/** The marker colour by a pixel; null: the map background. */
 export function classifyPixel(r: number, g: number, b: number): MarkerColor | null {
   const max = Math.max(r, g, b)
   const min = Math.min(r, g, b)
   const value = max / 255
   const saturation = max === 0 ? 0 : (max - min) / max
 
-  // Чёрные метки не ищем: чёрным на карте нарисованы сетка,
-  // подписи и горизонтали — их не отличить от значков.
+  // Black markers are not searched for: the grid, labels and contour lines
+  // are drawn in black on the map, and they cannot be told from icons.
   if (saturation < 0.6 || value < 0.35) return null
 
   let hue: number
@@ -62,7 +62,7 @@ export function classifyPixel(r: number, g: number, b: number): MarkerColor | nu
   return null
 }
 
-/** Насыщенные пятна размером со значок метки. */
+/** Saturated spots the size of a marker icon. */
 export function findBlobs(
   data: Uint8ClampedArray,
   width: number,
@@ -112,7 +112,7 @@ export function findBlobs(
         tooBig = true
       }
 
-      // 8 соседей: тонкие диагональные линии значков не рвутся
+      // 8 neighbours: thin diagonal lines of the icons do not break
       for (let dy = -1; dy <= 1; dy += 1) {
         const ny = y + dy
         if (ny < 0 || ny >= height) continue
@@ -154,7 +154,7 @@ export function findBlobs(
   return dropLabels(mergeNearby(blobs))
 }
 
-/** Части одного значка (крест, рамка) — в одно пятно. */
+/** Parts of one icon (a cross, a frame) become one spot. */
 function mergeNearby(blobs: Blob[]): Blob[] {
   const result: Blob[] = []
   for (const blob of [...blobs].sort((a, b) => b.area - a.area)) {
@@ -176,7 +176,7 @@ function mergeNearby(blobs: Blob[]): Blob[] {
   return result
 }
 
-/** Буквы подписи справа от значка того же цвета — не метки. */
+/** Label letters to the right of an icon of the same colour are not markers. */
 function dropLabels(blobs: Blob[]): Blob[] {
   const sorted = [...blobs].sort((a, b) => b.area - a.area)
   const kept: Blob[] = []
@@ -194,28 +194,28 @@ function dropLabels(blobs: Blob[]): Blob[] {
   return kept
 }
 
-// ---- калибровка: пиксели скриншота → метры карты ----
+// ---- calibration: screenshot pixels → map metres ----
 
 export interface CalibrationPoint {
-  // Пиксель на скриншоте
+  // A pixel on the screenshot
   px: number
   py: number
-  // Метры карты (из координаты сетки)
+  // Map metres (from the grid coordinate)
   x: number
   y: number
 }
 
 export interface Calibration {
-  // Метров на пиксель
+  // Metres per pixel
   scale: number
-  // Пиксель (0, 0) в метрах
+  // Pixel (0, 0) in metres
   originX: number
   originY: number
 }
 
 /**
- * Две точки с известными координатами. Карта Arma не повёрнута:
- * север вверху, масштаб по осям одинаковый.
+ * Two points with known coordinates. The Arma map is not rotated:
+ * north is up, the scale is the same on both axes.
  */
 export function calibrate(
   a: CalibrationPoint,
@@ -236,7 +236,7 @@ export function pixelToMap(c: Calibration, px: number, py: number) {
   return { x: c.originX + px * c.scale, y: c.originY - py * c.scale }
 }
 
-/** Видимая на скриншоте область карты, м. */
+/** The map area visible on the screenshot, m. */
 export function visibleArea(c: Calibration, width: number, height: number) {
   return {
     minX: c.originX,

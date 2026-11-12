@@ -2,37 +2,37 @@ import type { ArtilleryCategory } from '../types/gameModel'
 import type { ShellKind } from './shellKind'
 
 /**
- * Анимация полёта снаряда на canvas: траектория, след и разрыв зависят
- * от класса орудия и вида снаряда. Рисуется и сбоку (полоска у таймера),
- * и «сверху» (на карте): точка падения — на земле, снаряд приподнят над
- * своей тенью на высоту дуги.
+ * The shell flight animation on a canvas: the trajectory, the trail and the burst depend
+ * on the weapon class and the shell kind. It is drawn from the side (the strip at the timer)
+ * and "from above" (on the map): the impact point is on the ground, the shell is raised above
+ * its shadow by the arc height.
  */
 
-// Сколько показывать последствия разрыва после падения, с
+// How long to show the burst aftermath after the shell lands, s
 export const IMPACT_FX_SECONDS = 4
 
 export interface FlightParams {
   category: ArtilleryCategory
   kind: ShellKind
-  // Орудие и цель на земле, px холста
+  // The gun and the target on the ground, canvas px
   ax: number
   ay: number
   bx: number
   by: number
-  // Секунд с выстрела и время полёта
+  // Seconds since the shot and the time of flight
   elapsed: number
   tof: number
-  // Высота верхней точки дуги, px
+  // The height of the arc top, px
   arc: number
-  // Масштаб эффектов (1 — полоска у таймера)
+  // The effect scale (1 is the strip at the timer)
   scale?: number
-  // Вспышка у орудия в момент выстрела
+  // The muzzle flash at the moment of the shot
   muzzle?: boolean
-  // minimal — тонкие линии и кольца (по умолчанию), detailed — огненный шар, искры, парашют
+  // minimal: thin lines and rings (the default), detailed: a fireball, sparks, a parachute
   style?: 'minimal' | 'detailed'
 }
 
-// Псевдослучайное число из целого: чтобы искры и клубы не дрожали между кадрами
+// A pseudo-random number from an integer: so that sparks and puffs do not jitter between frames
 function rnd(n: number): number {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453
   return x - Math.floor(x)
@@ -40,7 +40,7 @@ function rnd(n: number): number {
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
 
-/** Доля высоты дуги по классу: миномёт — навесом, РСЗО — настильнее. */
+/** The arc height share by class: a mortar fires high, an MLRS flatter. */
 function lift(category: ArtilleryCategory, t: number): number {
   const parabola = 4 * t * (1 - t)
   switch (category) {
@@ -61,10 +61,10 @@ function pathPoint(p: FlightParams, t: number) {
 
 
 const INK = '240,244,248'
-// Цвет цели на карте: разрыв минимального вида рисуется им
+// The target colour on the map: the minimal burst is drawn in it
 const TARGET = '228,116,116'
 
-// Короткий след за снарягом: точки по пройденному пути с затуханием
+// A short trail behind the shell: points along the path travelled, fading
 function drawTrail(ctx: CanvasRenderingContext2D, p: FlightParams, t: number, s: number) {
   const length = p.category === 'mlrs' ? 0.3 : p.category === 'mortar' ? 0.22 : 0.12
   const steps = 16
@@ -74,7 +74,7 @@ function drawTrail(ctx: CanvasRenderingContext2D, p: FlightParams, t: number, s:
     const a = pathPoint(p, u0)
     const b = pathPoint(p, u1)
     const k = (i + 1) / steps
-    // Миномёт — пунктир, остальные — сплошной тонкий след
+    // A mortar has a dashed trail, the rest a thin solid one
     if (p.category === 'mortar' && i % 2 === 1) continue
     ctx.strokeStyle = `rgba(${INK},${0.55 * k})`
     ctx.lineWidth = (p.category === 'mlrs' ? 0.6 + k * 1.6 : 1.2) * s
@@ -88,7 +88,7 @@ function drawTrail(ctx: CanvasRenderingContext2D, p: FlightParams, t: number, s:
 
 function drawProjectile(ctx: CanvasRenderingContext2D, p: FlightParams, t: number, s: number) {
   const now = pathPoint(p, t)
-  // Тень на земле показывает высоту
+  // The shadow on the ground shows the height
   if (p.arc > 0) {
     ctx.fillStyle = 'rgba(0,0,0,0.25)'
     ctx.beginPath()
@@ -112,14 +112,14 @@ function ring(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, al
 
 function drawHe(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: number) {
   const radius = (p.category === 'mortar' ? 12 : p.category === 'mlrs' ? 18 : 15) * s
-  // Ракеты — залп из трёх разрывов
+  // Rockets: a salvo of three bursts
   const blasts = p.category === 'mlrs' ? 3 : 1
   for (let i = 0; i < blasts; i += 1) {
     const local = e - i * 0.2
     if (local < 0) continue
     const cx = p.bx + (blasts > 1 ? (rnd(i + 1) - 0.5) * radius * 1.6 : 0)
     const cy = p.by + (blasts > 1 ? (rnd(i + 7) - 0.5) * radius * 0.6 : 0)
-    // Вспышка в центре и два расходящихся кольца
+    // A flash in the centre and two spreading rings
     const flash = clamp01(1 - local / 0.2)
     if (flash > 0) {
       ctx.fillStyle = `rgba(${TARGET},${flash})`
@@ -135,7 +135,7 @@ function drawHe(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: nu
 }
 
 function drawIllum(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: number) {
-  // Яркая точка раскрывается над целью и плавно опускается, мягкое свечение
+  // A bright dot opens over the target and slowly descends, a soft glow
   const cx = p.bx
   const cy = p.by - 30 * s + e * 3 * s
   const fade = clamp01(1 - (e - 2.6) / 1.4)
@@ -155,7 +155,7 @@ function drawIllum(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s:
 }
 
 function drawSmoke(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: number) {
-  // Три мягких облачка медленно расходятся и бледнеют
+  // Three soft puffs slowly spread and fade
   const grow = clamp01(e / 2.4)
   const alpha = 0.4 * clamp01(e / 0.3) * (1 - clamp01((e - 2.8) / 1.2))
   for (let i = 0; i < 3; i += 1) {
@@ -174,7 +174,7 @@ function drawSmoke(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s:
   }
 }
 
-// ---- подробный вариант: огненный шар, искры, парашют ----
+// ---- the detailed variant: a fireball, sparks, a parachute ----
 
 function drawTrailD(ctx: CanvasRenderingContext2D, p: FlightParams, t: number, s: number) {
   const length = p.category === 'mortar' ? 0.12 : p.category === 'mlrs' ? 0.38 : 0.16
@@ -187,14 +187,14 @@ function drawTrailD(ctx: CanvasRenderingContext2D, p: FlightParams, t: number, s
     const k = (i + 1) / steps
     ctx.lineCap = 'round'
     if (p.category === 'mlrs') {
-      // Дымный шлейф расширяется к хвосту
+      // The smoke trail widens towards the tail
       ctx.strokeStyle = `rgba(235,235,235,${0.55 * k})`
       ctx.lineWidth = (1.5 + (1 - k) * 4) * s
     } else if (p.category === 'mortar') {
       ctx.strokeStyle = `rgba(255,255,255,${0.35 * k})`
       ctx.lineWidth = 1.2 * s
     } else {
-      // Трассер артиллерийского снаряда
+      // The artillery shell tracer
       ctx.strokeStyle = `rgba(255,196,64,${0.9 * k})`
       ctx.lineWidth = 2.2 * s
     }
@@ -210,7 +210,7 @@ function drawProjectileD(ctx: CanvasRenderingContext2D, p: FlightParams, t: numb
   const next = pathPoint(p, Math.min(1, t + 0.01))
   const angle = Math.atan2(next.y - now.y, next.x - now.x)
 
-  // Тень на земле: показывает, что снаряд над землёй
+  // The shadow on the ground: shows that the shell is above the ground
   if (p.arc > 0) {
     ctx.fillStyle = 'rgba(0,0,0,0.35)'
     ctx.beginPath()
@@ -222,7 +222,7 @@ function drawProjectileD(ctx: CanvasRenderingContext2D, p: FlightParams, t: numb
   ctx.translate(now.x, now.y)
   ctx.rotate(angle)
   if (p.category === 'mlrs') {
-    // Ракета с пламенем сзади
+    // A rocket with a flame behind
     const flame = ctx.createRadialGradient(-5 * s, 0, 0, -5 * s, 0, 7 * s)
     flame.addColorStop(0, 'rgba(255,230,140,0.95)')
     flame.addColorStop(1, 'rgba(255,120,20,0)')
@@ -238,7 +238,7 @@ function drawProjectileD(ctx: CanvasRenderingContext2D, p: FlightParams, t: numb
     ctx.lineTo(4 * s, 1.6 * s)
     ctx.fill()
   } else if (p.category === 'mortar') {
-    // Мина: корпус с оперением
+    // A mortar bomb: a body with fins
     ctx.fillStyle = '#d9d9d9'
     ctx.beginPath()
     ctx.ellipse(0, 0, 3.6 * s, 2.2 * s, 0, 0, Math.PI * 2)
@@ -252,7 +252,7 @@ function drawProjectileD(ctx: CanvasRenderingContext2D, p: FlightParams, t: numb
     ctx.lineTo(-6.5 * s, 2 * s)
     ctx.stroke()
   } else {
-    // Снаряд: яркая головка трассера
+    // A shell: the bright head of the tracer
     ctx.fillStyle = '#fff3c4'
     ctx.beginPath()
     ctx.ellipse(0, 0, 4 * s, 1.8 * s, 0, 0, Math.PI * 2)
@@ -263,7 +263,7 @@ function drawProjectileD(ctx: CanvasRenderingContext2D, p: FlightParams, t: numb
 
 function drawHeD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: number) {
   const radius = (p.category === 'mortar' ? 13 : p.category === 'mlrs' ? 20 : 17) * s
-  // Ракеты — залп из нескольких разрывов
+  // Rockets: a salvo of several bursts
   const blasts = p.category === 'mlrs' ? 3 : 1
   for (let i = 0; i < blasts; i += 1) {
     const local = e - i * 0.18
@@ -273,7 +273,7 @@ function drawHeD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: n
     const cx = p.bx + ox
     const cy = p.by + oy
 
-    // Вспышка
+    // Flash
     const flash = clamp01(1 - local / 0.25)
     if (flash > 0) {
       ctx.fillStyle = `rgba(255,255,220,${flash})`
@@ -281,7 +281,7 @@ function drawHeD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: n
       ctx.arc(cx, cy, radius * (0.4 + local * 2), 0, Math.PI * 2)
       ctx.fill()
     }
-    // Огненный шар
+    // Fireball
     const fire = clamp01(1 - local / 0.9)
     if (fire > 0) {
       const r = radius * (0.5 + clamp01(local / 0.35) * 0.7)
@@ -294,7 +294,7 @@ function drawHeD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: n
       ctx.arc(cx, cy, r, 0, Math.PI * 2)
       ctx.fill()
     }
-    // Искры
+    // Sparks
     const spark = clamp01(1 - local / 0.8)
     if (spark > 0) {
       ctx.strokeStyle = `rgba(255,200,90,${spark})`
@@ -309,7 +309,7 @@ function drawHeD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: n
         ctx.stroke()
       }
     }
-    // Остаточный дым
+    // Lingering smoke
     const smoke = clamp01(1 - local / IMPACT_FX_SECONDS) * 0.35 * clamp01(local / 0.3)
     if (smoke > 0) {
       ctx.fillStyle = `rgba(90,90,90,${smoke})`
@@ -321,7 +321,7 @@ function drawHeD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: n
 }
 
 function drawIllumD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: number) {
-  // Раскрытие на высоте над точкой падения, потом медленный спуск на парашюте
+  // It opens high above the impact point, then slowly descends on a parachute
   const cx = p.bx
   const height = 34 * s
   const cy = p.by - height + e * 3 * s
@@ -342,7 +342,7 @@ function drawIllumD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s
   ctx.beginPath()
   ctx.arc(cx, cy, 46 * s * pulse, 0, Math.PI * 2)
   ctx.fill()
-  // Парашют: купол и стропы
+  // The parachute: the canopy and the lines
   ctx.strokeStyle = `rgba(255,255,255,${0.8 * fade})`
   ctx.lineWidth = 1.2 * s
   ctx.beginPath()
@@ -359,7 +359,7 @@ function drawIllumD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s
 }
 
 function drawSmokeD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s: number) {
-  // Вспышка пиропатрона и растущие клубы дыма, которые остаются
+  // The flash of the squib and growing puffs of smoke that stay
   const flash = clamp01(1 - e / 0.2)
   if (flash > 0) {
     ctx.fillStyle = `rgba(255,255,255,${flash * 0.9})`
@@ -385,9 +385,9 @@ function drawSmokeD(ctx: CanvasRenderingContext2D, p: FlightParams, e: number, s
   }
 }
 
-/** Один кадр анимации полёта и разрыва. */
+/** One frame of the flight and burst animation. */
 
-/** Вспышка у орудия: кольцо (минимальный вид) или тёплое пятно (подробный). */
+/** The muzzle flash: a ring (the minimal style) or a warm spot (the detailed one). */
 function drawMuzzle(ctx: CanvasRenderingContext2D, p: FlightParams, s: number) {
   const k = clamp01(p.elapsed / 0.35)
   if (k >= 1) return
@@ -404,7 +404,7 @@ function drawMuzzle(ctx: CanvasRenderingContext2D, p: FlightParams, s: number) {
   ring(ctx, p.ax, p.ay, (3 + k * 12) * s, (1 - k) * 0.9, 1.6 * s, INK)
 }
 
-/** Один кадр анимации полёта и разрыва. */
+/** One frame of the flight and burst animation. */
 export function drawFlight(ctx: CanvasRenderingContext2D, p: FlightParams) {
   const s = p.scale ?? 1
   if (p.elapsed < 0 || p.tof <= 0) return

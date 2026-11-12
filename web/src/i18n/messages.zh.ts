@@ -1,6 +1,8 @@
 import type { ru } from './messages'
 
 export const zh: Record<keyof typeof ru, string> = {
+  "settings.usage-stats": "匿名统计",
+  "settings.usage-stats-description": "应用每天上报一次自己被使用过，不发送任何关于你或设备的信息。",
   "footer.donate": "在 Donatello 上支持",
   "footer.donate-hint": "为网站域名出一份力",
   "settings.physics-why": "影响所有诸元。",

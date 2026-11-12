@@ -9,7 +9,7 @@ import {
   toGridReference,
 } from './heightmap'
 
-// 3 × 3 точки, шаг 100 м: высота растёт на восток (x) и на север (y)
+// 3 × 3 points, a 100 m step: the height grows to the east (x) and to the north (y)
 const SAMPLE = JSON.stringify({
   format: 'arma-heightmap',
   version: 1,

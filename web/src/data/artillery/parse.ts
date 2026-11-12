@@ -1,6 +1,6 @@
 /**
- * Проверка JSON-справочника орудия: форма таблиц, боеприпасы, профили.
- * Отдельно от каталога: приложение грузит таблицы орудий по одной.
+ * Validation of a weapon JSON reference: the table shape, ammunition, profiles.
+ * Separate from the catalogue: the app loads weapon tables one by one.
  */
 import type { ArtilleryReference } from '../../types/artillery'
 
@@ -34,8 +34,8 @@ function isAmmunition(value: unknown): boolean {
   )
 }
 
-// Обязательные значения: дальность, возвышение, время полёта.
-// В остальных столбцах допускается прочерк (null).
+// Required values: range, elevation, time of flight.
+// The other columns may hold a dash (null).
 const REQUIRED_COLUMNS = new Set([0, 1, 4])
 
 function isBallisticRow(value: unknown): boolean {
@@ -55,10 +55,10 @@ function isChargeTable(rows: unknown): boolean {
   if (!rows.every(isBallisticRow)) return false
 
   for (let i = 1; i < rows.length; i += 1) {
-    // Дальность должна строго возрастать, иначе интерполяция
-    // даст неверный результат.
+    // The range must strictly increase, otherwise interpolation
+    // gives a wrong result.
     if (rows[i][0] <= rows[i - 1][0]) return false
-    // Все строки одной таблицы — одинаковой ширины.
+    // All rows of one table have the same width.
     if (rows[i].length !== rows[0].length) return false
   }
 
@@ -117,9 +117,9 @@ export function parseReference(
     (isObject(data.profiles) &&
       Object.values(data.profiles).every(isProfile))
 
-  // Каждая ссылка боеприпаса на профиль должна указывать
-  // на существующий профиль, а заявленные заряды — быть
-  // в таблицах этого профиля.
+  // Every ammunition link to a profile must point
+  // to an existing profile, and the declared charges must be
+  // in the tables of that profile.
   const profileRefsOk =
     !Array.isArray(data.ammunition) ||
     data.ammunition.every(

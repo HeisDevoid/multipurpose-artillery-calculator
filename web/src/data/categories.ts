@@ -8,9 +8,9 @@ export const categoryLabels: Record<ArtilleryCategory, MessageKey> = {
   mlrs: 'categories.rocket-artillery',
 }
 
-// Класс орудия — цветная точка в левом верхнем углу значка:
-// миномёт — зелёная, артиллерия (буксируемая и САУ) — жёлтая,
-// реактивная (особая) — фиолетовая.
+// The weapon class is a coloured dot in the top left corner of the icon:
+// a mortar is green, artillery (towed and self-propelled) is yellow,
+// rocket artillery (special) is purple.
 export const categoryMarks: Record<ArtilleryCategory, string> = {
   mortar: 'bg-ok',
   towed: 'bg-warn',

@@ -1,22 +1,22 @@
 /**
- * Заявки на новые карты и голоса за них — без сервера и без GitHub.
+ * Requests for new maps and votes for them, without a server and without GitHub.
  *
- * Данные лежат на тех же публичных MQTT-брокерах, что и «Связка», как
- * удерживаемые (retained) сообщения:
- *   artcalc-maps/v1/req/<номер мода>/info        — {"name": "…"}
- *   artcalc-maps/v1/req/<номер мода>/v/<device>  — "1" (голос этого устройства)
- * Читающему брокер отдаёт всё, что накопилось, поэтому список видно сразу,
- * а голоса считаются по числу разных устройств. Пишем и читаем на всех
- * брокерах сразу: если один недоступен или забыл данные, остальные помнят.
+ * The data lives on the same public MQTT brokers as Link, as
+ * retained messages:
+ *   artcalc-maps/v1/req/<mod number>/info        - {"name": "…"}
+ *   artcalc-maps/v1/req/<mod number>/v/<device>  - "1" (the vote of this device)
+ * A reader gets everything the broker has accumulated, so the list is visible at once,
+ * and the votes are counted by distinct devices. Writing and reading go to all
+ * brokers at once: if one is unavailable or has forgotten the data, the others remember.
  *
- * Честно о границах: это публичные брокеры без учётных записей — голос
- * одного устройства один, но накрутить его, зная устройство-идентификатор
- * в коде, может любой; хозяин приложения видит список и решает сам.
+ * Honestly about the limits: these are public brokers without accounts; one device has
+ * one vote, but anyone who knows the device id format from the code
+ * can inflate it; the app owner sees the list and decides.
  */
 
 export const TOPIC_ROOT = 'artcalc-maps/v1/req'
 
-/** Что предлагают: карту или орудие — у каждого свой раздел тем на брокере. */
+/** What is suggested: a map or a weapon, each has a topic section of its own on the broker. */
 export type RequestKind = 'map' | 'weapon'
 export const REQUEST_ROOTS: Record<RequestKind, string> = {
   map: TOPIC_ROOT,
@@ -36,11 +36,11 @@ function linkFor(id: string): WorkshopLink {
   }
 }
 
-/** Ссылка на мод в Steam Workshop → номер мода и «чистая» ссылка; иначе null. */
+/** A Steam Workshop mod link → the mod number and a "clean" link; otherwise null. */
 export function parseWorkshopLink(input: string): WorkshopLink | null {
   const text = input.trim()
   if (!text) return null
-  // Только номер мода тоже годится
+  // A bare mod number works too
   const bare = text.match(/^\d{6,12}$/)
   if (bare) return linkFor(bare[0])
   const match = text.match(
@@ -68,7 +68,7 @@ export type ParsedTopic =
   | { kind: 'info'; workshopId: string }
   | { kind: 'vote'; workshopId: string; device: string }
 
-/** Разбор темы сообщения; null — не наша или с подозрительным содержимым. */
+/** Parsing a message topic; null: not ours or with suspicious content. */
 export function parseTopic(topic: string, root = TOPIC_ROOT): ParsedTopic | null {
   if (!topic.startsWith(`${root}/`)) return null
   const rest = topic.slice(root.length + 1).split('/')
@@ -86,11 +86,11 @@ export interface MapRequest {
   workshopId: string
   name: string
   votes: number
-  // Голосовало ли это устройство
+  // Whether this device has voted
   mine: boolean
 }
 
-/** Сводка по сообщениям брокеров: заявки и голоса (одно устройство — один голос). */
+/** A summary of the broker messages: requests and votes (one device, one vote). */
 export class Tally {
   private root: string
 
@@ -101,7 +101,7 @@ export class Tally {
   private info = new Map<string, string>()
   private votes = new Map<string, Set<string>>()
 
-  /** Сообщение брокера; пустое тело у retained-темы — отзыв (голоса или заявки). */
+  /** A broker message; an empty body on a retained topic is a withdrawal (of a vote or a request). */
   apply(topic: string, payload: string) {
     const parsed = parseTopic(topic, this.root)
     if (!parsed) return
@@ -113,10 +113,10 @@ export class Tally {
       try {
         const data = JSON.parse(payload) as { name?: unknown }
         const name = typeof data.name === 'string' ? data.name.trim().slice(0, MAX_NAME) : ''
-        // Без названия заявка всё равно показывается — по номеру мода
+        // A request without a name is still shown, by the mod number
         this.info.set(parsed.workshopId, name || `Workshop ${parsed.workshopId}`)
       } catch {
-        // Мусор в теме — пропускаем
+        // Junk in the topic: skip it
       }
       return
     }
@@ -126,7 +126,7 @@ export class Tally {
     this.votes.set(parsed.workshopId, set)
   }
 
-  /** Список заявок по убыванию голосов (при равенстве — по названию). */
+  /** The request list by descending votes (on a tie, by name). */
   snapshot(device: string): MapRequest[] {
     return [...this.info.entries()]
       .map(([workshopId, name]) => {
@@ -145,16 +145,16 @@ export class Tally {
 export type RequestsStatus = 'connecting' | 'ready' | 'offline'
 
 export interface RequestsSession {
-  /** Проголосовать за заявку (или снять голос). */
+  /** Vote for a request (or remove the vote). */
   vote: (workshopId: string, on: boolean) => void
-  /** Новая заявка с первым голосом. */
+  /** A new request with the first vote. */
   suggest: (link: WorkshopLink, name: string) => void
   close: () => void
 }
 
 /**
- * Открыть сессию: подключиться ко всем брокерам, собирать заявки и голоса.
- * onUpdate вызывается при каждом изменении, onStatus — при смене состояния.
+ * Open a session: connect to all brokers, collect requests and votes.
+ * onUpdate is called on every change, onStatus when the state changes.
  */
 export async function openRequests(
   servers: readonly string[],
@@ -165,7 +165,7 @@ export async function openRequests(
 ): Promise<RequestsSession> {
   const root = REQUEST_ROOTS[kind]
   const mqtt = await import('mqtt')
-  // Сборка mqtt — CommonJS: в разработке Vite отдаёт её только как default
+  // The mqtt build is CommonJS: in development Vite serves it only as default
   const connect = mqtt.connect ?? mqtt.default.connect
 
   const tally = new Tally(root)
@@ -194,7 +194,7 @@ export async function openRequests(
     client.on('connect', () => {
       online += 1
       client.subscribe(`${root}/#`, { qos: 1 })
-      // Брокер присылает накопленное пачкой — показываем, когда пачка улеглась
+      // The broker sends what it has accumulated in a batch: show it when the batch has settled
       clearTimeout(settle)
       settle = setTimeout(() => {
         if (!closed) onStatus('ready')
@@ -214,7 +214,7 @@ export async function openRequests(
   }
 
   function publishAll(topic: string, payload: string) {
-    // Свои изменения сразу видны и локально, не дожидаясь брокера
+    // Own changes are visible locally at once, without waiting for the broker
     tally.apply(topic, payload)
     emit()
     for (const client of clients) {

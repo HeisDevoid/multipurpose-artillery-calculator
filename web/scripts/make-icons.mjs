@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 /**
- * Иконки приложения (PWA, favicon, программа для ПК): белый силуэт
- * гаубицы на тёмном фоне — как в калькуляторе MTC.
+ * App icons (PWA, favicon, Windows app): a white howitzer
+ * silhouette on a dark background.
  *
  *   node scripts/make-icons.mjs
  *
- * Результат — в public/ (icon-192.png, icon-512.png, icon-maskable-512.png,
- * favicon.svg) и в src-tauri/icons/ (PNG и icon.ico).
+ * The result goes to public/ (icon-192.png, icon-512.png, icon-maskable-512.png,
+ * favicon.svg) and to src-tauri/icons/ (PNG and icon.ico).
  */
 import { writeFileSync } from 'node:fs'
 import sharp from 'sharp'
 
-const BACKGROUND = '#0a0a0a' // фон тёмной темы
+const BACKGROUND = '#0a0a0a' // the dark theme background
 const INK = '#f5f5f5'
 
-// Силуэт в сетке 24×24: ствол под углом, казённик со щитом, колесо, станина
+// The silhouette on a 24×24 grid: an angled barrel, a breech with a shield, a wheel, a trail
 const GLYPH = `
   <g fill="${INK}" stroke="${INK}" stroke-linejoin="round" stroke-linecap="round">
     <line x1="11.5" y1="12.5" x2="21.2" y2="5.6" stroke-width="2.4"/>
@@ -26,7 +26,7 @@ const GLYPH = `
   </g>
   <circle cx="10.6" cy="17.2" r="1" fill="${BACKGROUND}"/>`
 
-// Центр силуэта в сетке (для вписывания с запасом)
+// The centre of the silhouette on the grid (for fitting with a margin)
 const CENTER = [11.9, 12.4]
 
 function svg(scale, radius) {
@@ -41,7 +41,7 @@ const png = (size, scale, radius) =>
     .png()
     .toBuffer()
 
-// ICO из PNG-кадров (формат Vista+: PNG прямо внутри)
+// ICO from PNG frames (the Vista+ format: PNG right inside)
 function ico(frames) {
   const head = Buffer.alloc(6)
   head.writeUInt16LE(1, 2)
@@ -67,7 +67,7 @@ const tauri = new URL('../src-tauri/icons/', import.meta.url)
 writeFileSync(new URL('favicon.svg', pub), svg(0.8, 3) + '\n')
 writeFileSync(new URL('icon-192.png', pub), await png(192, 0.8, 3))
 writeFileSync(new URL('icon-512.png', pub), await png(512, 0.8, 3))
-// Maskable: фон на всю площадь, значок в безопасной зоне (центр 80 %)
+// Maskable: the background fills the area, the icon is in the safe zone (the central 80%)
 writeFileSync(new URL('icon-maskable-512.png', pub), await png(512, 0.62, 0))
 
 writeFileSync(new URL('32x32.png', tauri), await png(32, 0.8, 3))

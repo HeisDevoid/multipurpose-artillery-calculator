@@ -1,6 +1,6 @@
 # M142 HIMARS (227 mm), HIGH, Charge 8
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_mlrs, 252.2 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_mlrs, 252.2 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 3800 1155 - - 42.9 2.0 11 -10 0.5 -0.5 -8.9 8.3
 3900 1138 6.3 0.6 42.6 1.9 11 -10 0.5 -0.5 -9.1 8.6
 4000 1121 6.9 0.6 42.2 1.8 11 -10 0.6 -0.6 -9.2 8.8

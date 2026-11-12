@@ -4,7 +4,7 @@ import type {
   BallisticRow,
 } from '../types/artillery'
 
-/** Погодные столбцы таблицы для одной дальности. */
+/** The weather columns of the table for one range. */
 export interface WeatherCoefficients {
   azimuthPerCrosswind: number | null
   rangePerHeadwind: number | null
@@ -16,30 +16,30 @@ export interface WeatherCoefficients {
 }
 
 /**
- * Значения, интерполированные по игровой таблице для заданной дальности.
- * null — в таблице игры на этом участке прочерк «-».
+ * Values interpolated from the game table for a given range.
+ * null: the game table has a dash "-" in this interval.
  */
 export interface TableValues {
   elevation: number
   dElevPer100m: number | null
   dTofPer100m: number | null
   tof: number
-  // null — в таблице нет погодных столбцов
+  // null: the table has no weather columns
   weather: WeatherCoefficients | null
 }
 
 /**
- * Погодные условия относительно линии огня.
- * Нули / null означают стандартные условия (поправки нет).
+ * Weather conditions relative to the line of fire.
+ * Zeros / null mean standard conditions (no correction).
  */
 export interface Weather {
-  // м/с: > 0 — встречный, < 0 — попутный
+  // m/s: > 0 headwind, < 0 tailwind
   headwind: number
-  // м/с: > 0 — дует справа (сносит влево), < 0 — дует слева
+  // m/s: > 0 blows from the right (drifts left), < 0 blows from the left
   crosswind: number
-  // °C; null — стандартные 15 °C
+  // °C; null: the standard 15 °C
   temperature: number | null
-  // % от стандартной плотности; null — 100 %
+  // % of the standard density; null: 100%
   density: number | null
 }
 
@@ -55,36 +55,36 @@ export const NO_WEATHER: Weather = {
 }
 
 export interface WeatherCorrection {
-  // Поправки дальности, м (прибавляются к дальности по таблице)
+  // Range corrections, m (added to the table range)
   wind: number
   temperature: number
   density: number
   total: number
-  // Поправка азимута, мил: > 0 — довернуть вправо, < 0 — влево
+  // Azimuth correction, mils: > 0 turn right, < 0 left
   azimuth: number
-  // Поправка нужна, но в таблице нет данных (прочерк или нет столбцов)
+  // A correction is needed but the table has no data (a dash or no columns)
   missing: boolean
 }
 
 export interface FiringSolution {
-  // Возвышение с учётом разницы высот, мил
+  // Elevation with the height difference, mils
   elevation: number
-  // Время полёта с учётом разницы высот, с
+  // Time of flight with the height difference, s
   tof: number
 
-  // Дальность, по которой взята строка таблицы
-  // (дистанция + ручная поправка + погодная поправка)
+  // The range the table row was taken for
+  // (distance + manual adjustment + weather correction)
   lookupRange: number
 
-  // Значения для ровной местности (прямо из таблицы)
+  // Values for flat ground (straight from the table)
   baseElevation: number
   baseTof: number
 
-  // Поправки, уже включённые в elevation и tof
+  // Corrections already included in elevation and tof
   elevationCorrection: number
   tofCorrection: number
 
-  // Нужна поправка на высоту, но в таблице на этой дальности прочерк
+  // A height correction is needed, but the table has a dash at this range
   heightCorrectionMissing: boolean
 
   weather: WeatherCorrection
@@ -94,23 +94,23 @@ export interface ChargeResult {
   charge: number
   minRange: number
   maxRange: number
-  // null — дальность вне таблицы этого заряда
+  // null: the range is outside the table of this charge
   solution: FiringSolution | null
-  // Ошибка дальности на 1 мил ошибки возвышения, м (меньше — точнее)
+  // Range error per 1 mil of elevation error, m (smaller is more precise)
   metersPerMil: number | null
-  // Решение в последнем промежутке таблицы (у максимальной дальности
-  // заряда): поправки здесь менее надёжны
+  // The solution is in the last interval of the table (at the charge's
+  // maximum range): corrections are less reliable here
   nearEdge: boolean
-  // Между соседними строками таблицы пропуск (шире обычного шага):
-  // интерполяция менее точна
+  // There is a gap between neighbouring table rows (wider than the normal step):
+  // interpolation is less precise
   wideGap: boolean
 }
 
-/** Как выбирать заряд по умолчанию. */
+/** How to choose the default charge. */
 export type ChargePreference = 'best' | 'lowest' | 'fastest' | 'precise'
 
-// Поправка на высоту больше этого значения (мил) считается линейной
-// оценкой с пониженной точностью.
+// A height correction larger than this (mils) counts as a linear
+// estimate with lower precision.
 const LARGE_CORRECTION_MIL = 50
 
 export const MILS_PER_TURN = 6400
@@ -124,25 +124,25 @@ export function milToDeg(mil: number): number {
 }
 
 /**
- * Боковая поправка в милах: сдвинуть разрыв на meters
- * (> 0 — вправо, < 0 — влево) на дистанции distance.
+ * The lateral correction in mils: shift the burst by meters
+ * (> 0 right, < 0 left) at the distance distance.
  */
 export function lateralCorrectionMil(meters: number, distance: number): number {
   if (distance <= 0) return 0
   return (Math.atan2(meters, distance) * MILS_PER_TURN) / (2 * Math.PI)
 }
 
-/** Приведение угла к диапазону [0, full). */
+/** Brings an angle into the range [0, full). */
 export function normalizeAngle(value: number, full: number): number {
   const result = value % full
   return result < 0 ? result + full : result
 }
 
 /**
- * Разложение ветра на встречную и боковую составляющие.
+ * Splits the wind into head and cross components.
  *
- * windFromDeg — откуда дует ветер (метеорологическое направление), °.
- * azimuthDeg — азимут на цель, °.
+ * windFromDeg: where the wind blows from (the meteorological direction), °.
+ * azimuthDeg: the azimuth to the target, °.
  */
 export function windComponents(
   speed: number,
@@ -150,7 +150,7 @@ export function windComponents(
   azimuthDeg: number
 ): { headwind: number; crosswind: number } {
   const relative = ((windFromDeg - azimuthDeg) * Math.PI) / 180
-  // Убираем шум вроде 3e-16 у ветра, дующего ровно поперёк.
+  // Remove noise like 3e-16 for wind blowing exactly across.
   const clean = (value: number) => Math.round(value * 1e6) / 1e6 || 0
   return {
     headwind: clean(speed * Math.cos(relative)),
@@ -159,8 +159,8 @@ export function windComponents(
 }
 
 /**
- * Плотность воздуха в % от стандартной (15 °C, 1013.25 гПа),
- * по уравнению состояния идеального газа без учёта влажности.
+ * Air density in % of the standard (15 °C, 1013.25 hPa),
+ * from the ideal gas law without humidity.
  */
 export function airDensityPercent(
   temperatureC: number,
@@ -190,10 +190,10 @@ export function profileHasWeather(profile: BallisticProfile): boolean {
 }
 
 /**
- * Линейная интерполяция между двумя соседними строками таблицы.
- * Возвращает null, если дальность вне диапазона таблицы:
- * экстраполяция не выполняется, чтобы не выдумывать данные.
- * Если одно из соседних значений — прочерк, результат тоже null.
+ * Linear interpolation between two neighbouring table rows.
+ * Returns null if the range is outside the table:
+ * there is no extrapolation, so that no data is made up.
+ * If one of the neighbouring values is a dash, the result is null too.
  */
 export function interpolateRow(
   rows: readonly BallisticRow[],
@@ -249,10 +249,10 @@ export function interpolateRow(
 }
 
 /**
- * Поправка по одному фактору: отклонение от стандарта умножается на
- * столбец «понижение» или «повышение» — в зависимости от знака.
- * Столбцы игры уже содержат знак поправки, поэтому берётся модуль
- * отклонения.
+ * A correction for one factor: the deviation from the standard is multiplied by
+ * the "decrease" or "increase" column, depending on the sign.
+ * The game columns already hold the sign of the correction, so the absolute
+ * deviation is taken.
  */
 function factorCorrection(
   deviation: number,
@@ -266,13 +266,13 @@ function factorCorrection(
 }
 
 /**
- * Погодные поправки по столбцам таблицы.
+ * Weather corrections from the table columns.
  *
- * Правило таблиц ACE3: значения столбцов «RANGE CORRECTION FOR» —
- * это метры, которые нужно прибавить к дальности перед выбором
- * возвышения (встречный ветер → положительная поправка, попутный →
- * отрицательная). Поправка азимута дана на 1 м/с бокового ветра;
- * снаряд сносит по ветру, поэтому доворот — навстречу ветру.
+ * The ACE3 table rule: the values of the "RANGE CORRECTION FOR" columns
+ * are metres to add to the range before choosing the
+ * elevation (headwind → a positive correction, tailwind →
+ * a negative one). The azimuth correction is given per 1 m/s of crosswind;
+ * the shell drifts with the wind, so the deflection is against the wind.
  */
 export function weatherCorrection(
   coefficients: WeatherCoefficients | null,
@@ -302,8 +302,8 @@ export function weatherCorrection(
     }
   }
 
-  // Встречный ветер — «понижение» (столбец HEAD), попутный —
-  // «повышение» (столбец TAIL, отрицательные значения).
+  // Headwind is a "decrease" (the HEAD column), tailwind is an
+  // "increase" (the TAIL column, negative values).
   const wind = factorCorrection(
     -weather.headwind,
     coefficients.rangePerHeadwind,
@@ -324,7 +324,7 @@ export function weatherCorrection(
   let azimuthMissing = false
   if (weather.crosswind !== 0) {
     if (coefficients.azimuthPerCrosswind === null) azimuthMissing = true
-    // Ветер справа (crosswind > 0) сносит влево → доворот вправо.
+    // Wind from the right (crosswind > 0) drifts left → turn right.
     else azimuth = weather.crosswind * coefficients.azimuthPerCrosswind
   }
 
@@ -343,18 +343,18 @@ export function weatherCorrection(
 }
 
 /**
- * Расчёт установок для одной дальности и одного заряда.
+ * The settings for one range and one charge.
  *
- * range — дистанция до цели с ручной поправкой, м.
- * heightDiff = высота цели − высота своей позиции, м.
+ * range: the distance to the target with the manual adjustment, m.
+ * heightDiff = target height − own position height, m.
  *
- * 1. По строке для range берутся погодные коэффициенты, и к дальности
- *    прибавляется погодная поправка.
- * 2. По получившейся дальности берётся возвышение и время полёта.
- * 3. Столбцы «D ELEV / TIME OF FLIGHT PER 100 M DR» — изменение
- *    возвышения и времени полёта на каждые 100 м разницы высот.
- *    Правило из вики ACE3: если вы выше цели — прибавить, если ниже —
- *    вычесть. Для цели выше позиции (heightDiff > 0):
+ * 1. The weather coefficients are taken from the row for range, and the weather
+ *    correction is added to the range.
+ * 2. The elevation and time of flight are taken for the resulting range.
+ * 3. The "D ELEV / TIME OF FLIGHT PER 100 M DR" columns are the change of
+ *    elevation and time of flight for every 100 m of height difference.
+ *    The rule from the ACE3 wiki: if you are above the target, add; if below,
+ *    subtract. For a target above the position (heightDiff > 0):
  *
  *      elevation = table − (ΔH / 100) · dElev
  *      tof       = table − (ΔH / 100) · dTof
@@ -399,9 +399,9 @@ export function solve(
 }
 
 /**
- * Чувствительность к ошибке возвышения: сколько метров дальности
- * даёт 1 мил по наклону таблицы в этой точке. На строке берётся
- * следующий промежуток (у последней строки — предыдущий).
+ * Sensitivity to an elevation error: how many metres of range
+ * 1 mil gives along the table slope at this point. On a row the
+ * next interval is taken (the previous one at the last row).
  */
 export function metersPerMil(
   rows: readonly BallisticRow[],
@@ -421,7 +421,7 @@ export function metersPerMil(
   return deltaElevation === 0 ? null : (b[0] - a[0]) / deltaElevation
 }
 
-/** Дальность попала в последний промежуток таблицы. */
+/** The range fell into the last interval of the table. */
 export function isNearTableEdge(
   rows: readonly BallisticRow[],
   range: number
@@ -431,9 +431,9 @@ export function isNearTableEdge(
 }
 
 /**
- * Дальность лежит между строками, разнесёнными шире обычного шага
- * таблицы (игра пропускает часть дальностей, особенно в режиме LOW).
- * На самой строке интерполяции нет — пропуск не важен.
+ * The range lies between rows spaced wider than the normal table
+ * step (the game skips some ranges, especially in the LOW mode).
+ * On a row itself there is no interpolation, so a gap does not matter.
  */
 export function isWideGap(
   rows: readonly BallisticRow[],
@@ -453,9 +453,9 @@ export function isWideGap(
 }
 
 /**
- * Сбалансированная оценка вариантов (меньше — лучше): время полёта и ошибка
- * дальности на 1 мил, каждое в долях от лучшего среди вариантов. Так
- * «лучший» — не самый быстрый и не самый точный, а золотая середина.
+ * A balanced score of the variants (smaller is better): time of flight and the range
+ * error per 1 mil, each as a fraction of the best among the variants. This way
+ * "best" is neither the fastest nor the most precise but a balance.
  */
 export function balancedScores(
   items: readonly { tof: number; metersPerMil: number | null }[]
@@ -477,13 +477,13 @@ export function balancedScores(
 }
 
 /**
- * Заряд по умолчанию среди подходящих:
- *   best    — золотая середина по времени полёта и точности;
- *   lowest  — наименьший номер;
- *   fastest — кратчайшее время полёта;
- *   precise — наименьшая ошибка дальности на 1 мил.
- * При равенстве — меньший заряд. Заряды у края таблицы не выбираются,
- * если есть другие: «точность» там мнимая, поправки ненадёжны.
+ * The default charge among the suitable ones:
+ *   best:    a balance of time of flight and precision;
+ *   lowest:  the lowest number;
+ *   fastest: the shortest time of flight;
+ *   precise: the smallest range error per 1 mil.
+ * On a tie the lower charge wins. Charges at the table edge are not chosen
+ * if there are others: "precision" there is illusory, the corrections are unreliable.
  */
 export function pickCharge(
   results: readonly ChargeResult[],
@@ -520,8 +520,8 @@ export function isLargeCorrection(solution: FiringSolution): boolean {
 }
 
 /**
- * Расчёт по всем зарядам профиля для выбранного режима.
- * Заряды возвращаются по возрастанию номера.
+ * The calculation for all charges of a profile in the selected mode.
+ * Charges are returned in ascending order.
  */
 export function solveAllCharges(
   profile: BallisticProfile,
@@ -560,7 +560,7 @@ export function solveAllCharges(
     })
 }
 
-/** Общий диапазон дальностей по всем зарядам. */
+/** The common range span of all charges. */
 export function overallRange(results: readonly ChargeResult[]) {
   if (results.length === 0) return null
   return {
@@ -570,11 +570,11 @@ export function overallRange(results: readonly ChargeResult[]) {
 }
 
 /**
- * Лучший способ выстрела среди всех траекторий: для каждой траектории берётся
- * лучший заряд по приоритету, потом они сравниваются между собой.
- * lowest — меньший номер заряда (при равенстве — первая траектория),
- * fastest — меньшее время полёта, precise — меньшая ошибка на 1 мил.
- * Заряды у края таблицы проигрывают любым другим.
+ * The best way to fire among all trajectories: for every trajectory the
+ * best charge by priority is taken, then they are compared with each other.
+ * lowest: the lower charge number (on a tie the first trajectory),
+ * fastest: the shorter time of flight, precise: the smaller error per 1 mil.
+ * Charges at the table edge lose to any others.
  */
 export function pickBest<G extends { results: readonly ChargeResult[] }>(
   groups: readonly G[],

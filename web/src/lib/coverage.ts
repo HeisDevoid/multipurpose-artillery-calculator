@@ -8,20 +8,20 @@ import {
 } from './terrainClearance'
 
 /**
- * Зоны на карте по рельефу.
+ * Zones on the map from the terrain.
  *
- *   from: куда можно попасть из точки, где стоит орудие;
- *   to:   откуда можно попасть в точку, где стоит цель.
+ *   from: where a gun standing at the point can hit;
+ *   to:   where the target standing at the point can be hit from.
  *
- * Вокруг центра строятся лучи; на каждом проверяются дальности от минимальной
- * до максимальной: есть ли решение в таблице и не упрётся ли снаряд в рельеф
- * по пути (та же проверка, что для выстрела по цели). Вода в зону не входит:
- * в «from» по ней не стреляют, в «to» на ней не стоят.
+ * Rays are built around the centre; on each the ranges from the minimum
+ * to the maximum are checked: is there a solution in the table, and does the shell hit terrain
+ * on the way (the same check as for a shot at a target). Water is not part of the zone:
+ * in "from" it is not fired at, in "to" nobody stands on it.
  */
 
 export type CoverageStatus = 'ok' | 'tight' | 'blocked'
 
-// Цвета зон (RGB) для карты и легенды: на карте с прозрачностью
+// Zone colours (RGB) for the map and the legend: with transparency on the map
 export const COVERAGE_RGB = {
   ok: '70,200,120',
   tight: '255,176,32',
@@ -29,14 +29,14 @@ export const COVERAGE_RGB = {
 } as const satisfies Record<CoverageStatus, string>
 
 export interface CoverageSegment {
-  // Дальности от центра, м
+  // Ranges from the centre, m
   from: number
   to: number
   status: CoverageStatus
 }
 
 export interface CoverageRay {
-  // Направление от центра: радианы, 0 — север, по часовой
+  // The direction from the centre: radians, 0 is north, clockwise
   angle: number
   segments: CoverageSegment[]
 }
@@ -44,12 +44,12 @@ export interface CoverageRay {
 export interface Coverage {
   center: MapPoint
   mode: 'from' | 'to'
-  // Угловая ширина луча, радианы
+  // The angular width of a ray, radians
   width: number
   rays: CoverageRay[]
 }
 
-/** Возвышение в точку на этой дальности и разнице высот (цель минус орудие). */
+/** The elevation to a point at this range and height difference (target minus gun). */
 export type SolveAt = (distance: number, heightDiff: number) => { elevation: number } | null
 
 export interface CoverageInput {
@@ -59,17 +59,17 @@ export interface CoverageInput {
   minRange: number
   maxRange: number
   solve: SolveAt
-  // Лучей по кругу
+  // Rays around the circle
   rays?: number
-  // Дальностей на луче
+  // Ranges per ray
   steps?: number
 }
 
-// Высота не больше этой — вода, м
+// A height no greater than this is water, m
 const SEA_LEVEL = 0.5
 
-// Лучей по кругу (1°) и дальностей на луче: контур огибает рельеф,
-// а не режет его крупными клиньями
+// Rays around the circle (1°) and ranges per ray: the outline follows the terrain
+// instead of cutting it with large wedges
 const DEFAULT_RAYS = 360
 const DEFAULT_STEPS = 120
 
@@ -88,12 +88,12 @@ export function computeCoverage(input: CoverageInput): Coverage {
   }
 }
 
-/** Сколько лучей у зоны (для расчёта по частям). */
+/** How many rays a zone has (for calculating in parts). */
 export const coverageRayCount = (input: CoverageInput) => input.rays ?? DEFAULT_RAYS
 
 /**
- * Лучи с номерами от start до end (не включая): зону можно считать по
- * частям между кадрами, чтобы интерфейс не замирал.
+ * Rays with numbers from start to end (exclusive): a zone can be calculated in
+ * parts between frames, so that the interface does not freeze.
  */
 export function computeCoverageRays(
   { map, center, mode, minRange, maxRange, solve, rays = DEFAULT_RAYS, steps = DEFAULT_STEPS }: CoverageInput,
@@ -104,7 +104,7 @@ export function computeCoverageRays(
   const result: CoverageRay[] = []
   if (!(maxRange > minRange) || maxRange <= 0) return result
 
-  // Шаг высот по лучу и шаг проверяемых дальностей (кратный ему)
+  // The height step along a ray and the step of the checked ranges (a multiple of it)
   const sampleStep = Math.max(10, map.step / 2)
   const wantedStep = Math.max(sampleStep, (maxRange - minRange) / steps)
   const stride = Math.max(1, Math.round(wantedStep / sampleStep))
@@ -115,7 +115,7 @@ export function computeCoverageRays(
     const dx = Math.sin(angle)
     const dy = Math.cos(angle)
 
-    // Высоты рельефа от центра наружу, пока луч внутри карты
+    // Terrain heights from the centre outwards while the ray is inside the map
     const samples: number[] = []
     for (let d = 0; d <= maxRange + cell; d += sampleStep) {
       const h = heightAt(map, { x: center.x + dx * d, y: center.y + dy * d })
@@ -131,14 +131,14 @@ export function computeCoverageRays(
       const distance = k * sampleStep
       if (distance > maxRange + cell / 2) break
 
-      // «from»: орудие в центре, цель на конце луча; «to»: наоборот
+      // "from": the gun is in the centre and the target at the ray end; "to": the other way round
       const first = mode === 'from' ? 0 : k
       const last = mode === 'from' ? k : 0
       const own = heights[first]
       const aim = heights[last]
 
       let status: CoverageStatus | null = null
-      // Вода не в зоне: стрелять по ней незачем («from»), стоять в ней нельзя («to»)
+      // Water is not in the zone: there is no point firing at it ("from"), you cannot stand in it ("to")
       const land = mode === 'from' ? aim > SEA_LEVEL : own > SEA_LEVEL
       const solved = land ? solve(distance, aim - own) : null
       if (solved !== null) {
@@ -166,15 +166,15 @@ export function computeCoverageRays(
   return result
 }
 
-/** Точка на уровне моря (вода): в зоны не входит. */
+/** A point at sea level (water): not part of the zones. */
 export function isWater(map: Heightmap, point: MapPoint): boolean {
   const h = heightAt(map, point)
   return h !== null && h <= SEA_LEVEL
 }
 
 /**
- * Достаёт ли орудие до одной точки (цель в воде, которой нет в зоне):
- * статус как у зоны, 'out' — нет решения в таблицах, null — не посчитать.
+ * Whether the gun reaches a single point (a target in water, which is not in the zone):
+ * the status as for a zone, 'out' means no solution in the tables, null means it cannot be calculated.
  */
 export function pointStatus(
   map: Heightmap,
@@ -191,7 +191,7 @@ export function pointStatus(
   return isBlocked(check) ? 'blocked' : isTight(check) ? 'tight' : 'ok'
 }
 
-/** Худший статус на круге дальностей: для подписи «достаёт ли вообще». */
+/** The worst status on the range circle: for the "does it reach at all" label. */
 export function overallStatus(coverage: Coverage): CoverageStatus | null {
   let status: CoverageStatus | null = null
   for (const ray of coverage.rays) {
@@ -204,14 +204,14 @@ export function overallStatus(coverage: Coverage): CoverageStatus | null {
 
 export interface Suggestion {
   point: MapPoint
-  // Расстояние до точки, м, от той, с которой сравнивали
+  // The distance to the point, m, from the one it was compared with
   distance: number
 }
 
 /**
- * Ближайшее хорошее место (зелёный отрезок) к точке `near` и по возможности
- * подальше от цели: стоять близко к цели опаснее. Только режим «to».
- * null — хорошего места нет.
+ * The nearest good spot (a green segment) to the point `near`, and if possible
+ * farther from the target: standing close to the target is more dangerous. The "to" mode only.
+ * null: there is no good spot.
  */
 export function nearestGoodSpot(coverage: Coverage, near: MapPoint): Suggestion | null {
   if (coverage.mode !== 'to') return null
@@ -219,7 +219,7 @@ export function nearestGoodSpot(coverage: Coverage, near: MapPoint): Suggestion 
   for (const ray of coverage.rays) {
     for (const segment of ray.segments) {
       if (segment.status !== 'ok') continue
-      // Середина отрезка и его дальний край; берётся ближайшее к `near`
+      // The middle of a segment and its far edge; the one closest to `near` is taken
       for (const d of [(segment.from + segment.to) / 2]) {
         const point = {
           x: coverage.center.x + Math.sin(ray.angle) * d,

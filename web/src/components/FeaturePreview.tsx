@@ -23,7 +23,7 @@ const ACCENT = 'var(--color-accent)'
 const INK = 'var(--color-muted)'
 const LOOP = '6s'
 
-// Сетка карты
+// The map grid
 function MapBase({ children }: { children?: ReactNode }) {
   return (
     <>
@@ -39,7 +39,7 @@ function MapBase({ children }: { children?: ReactNode }) {
   )
 }
 
-// Появление элемента на доле цикла [from, to] и исчезновение в конце
+// An element appears on the [from, to] part of the cycle and disappears at the end
 function Appear({
   from,
   children,
@@ -195,7 +195,7 @@ function Demo({ id }: { id: PreviewId }) {
         </>
       )
     case 'mrsi': {
-      // Вылет: высокая дуга первой, низкая последней; разрыв у всех в 0.8 цикла
+      // Launch: the high arc first, the low one last; all of them burst at 0.8 of the cycle
       const arcs = [
         { d: 'M28 116 Q120 -36 212 116', from: 0 },
         { d: 'M28 116 Q120 14 212 116', from: 0.2 },
@@ -306,9 +306,9 @@ const CAPTIONS: Record<PreviewId, MessageKey> = {
 }
 
 /**
- * Строка настройки с примером: под ней кнопка «Показать пример», по нажатию
- * открывается короткая анимация и подпись. Без наведения и долгого нажатия:
- * на телефоне так удобнее, и анимация не рисуется, пока её не открыли.
+ * A settings row with an example: under it is the "Show an example" button, which
+ * opens a short animation and a caption. No hover and no long press:
+ * this is handier on a phone, and the animation is not drawn until it is opened.
  */
 export function FeaturePreview({
   id,

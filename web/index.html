@@ -15,7 +15,7 @@
     <link rel="apple-touch-icon" href="./icon-192.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
 
-    <!-- Языковые версии: у каждой своя ссылка (?lang=), английская — основной адрес -->
+    <!-- Language versions: each has a link of its own (?lang=), English is the main address -->
     <link rel="alternate" hreflang="en" href="https://heisdevoid.github.io/multipurpose-artillery-calculator/" />
     <link rel="alternate" hreflang="ru" href="https://heisdevoid.github.io/multipurpose-artillery-calculator/?lang=ru" />
     <link rel="alternate" hreflang="uk" href="https://heisdevoid.github.io/multipurpose-artillery-calculator/?lang=uk" />
@@ -25,7 +25,7 @@
     <link rel="alternate" hreflang="zh-Hans" href="https://heisdevoid.github.io/multipurpose-artillery-calculator/?lang=zh" />
     <link rel="alternate" hreflang="x-default" href="https://heisdevoid.github.io/multipurpose-artillery-calculator/" />
 
-    <!-- Превью ссылки в мессенджерах и соцсетях -->
+    <!-- Link preview in messengers and social networks -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Multipurpose Artillery Calculator" />
     <meta property="og:title" content="Arma 3 Artillery Calculator (ACE3)" />
@@ -47,13 +47,13 @@
     <meta property="og:locale:alternate" content="zh_CN" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <!-- Описание приложения для поиска -->
+    <!-- A description of the app for search -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Multipurpose Artillery Calculator",
-        "alternateName": ["Arma 3 Artillery Calculator", "ACE3 artillery calculator", "Калькулятор артиллерии Arma 3"],
+        "alternateName": ["Arma 3 Artillery Calculator", "ACE3 artillery calculator"],
         "url": "https://heisdevoid.github.io/multipurpose-artillery-calculator/",
         "description": "Free firing calculator for Arma 3 with ACE3: elevation, charge, azimuth and time of flight from the in-game tables, terrain maps, reach zones, gunner link. Mortars, howitzers and rocket artillery.",
         "applicationCategory": "GameApplication",
@@ -70,8 +70,8 @@
     </script>
 
     <script>
-      // До загрузки приложения: тема (без вспышки светлым) и окно-оверлей
-      // программы для ПК (в нём заставка не нужна)
+      // Before the app loads: the theme (no flash of light) and the overlay window
+      // of the Windows app (it needs no splash)
       try {
         if (localStorage.getItem('theme') !== 'light') document.documentElement.classList.add('dark')
       } catch {
@@ -80,7 +80,7 @@
       if (location.hash === '#overlay') document.documentElement.classList.add('overlay')
     </script>
     <style>
-      /* Заставка до загрузки приложения: её же видят поиск и браузеры без JavaScript */
+      /* The splash before the app loads: search engines and browsers without JavaScript see it too */
       .splash {
         box-sizing: border-box;
         min-height: 100vh;
@@ -130,16 +130,12 @@
           in-game tables, terrain maps with reach zones and contour lines, a link between the fire direction
           center and the gunner.
         </p>
-        <p lang="ru">
-          Калькулятор стрельбы для Arma 3 и ACE3: возвышение, заряд, азимут и время полёта по таблицам из
-          игры, карты с рельефом и зонами досягаемости, связка вычислителя с наводчиком.
-        </p>
         <p class="splash-list">
           21 weapons: Mk6, M252, M119A2, M109A6, M777, Sholef, Sochor, Seara, KamAZ MRL, 2S1, D-30, BM-21,
-          2B14 Podnos, M142 HIMARS, S.O.G. Prairie Fire mortars and guns · 30 maps: Altis, Stratis, Malden,
-          Tanoa, Livonia, Cam Lao Nam, Chernarus and community maps
+          2B14 Podnos, M142 HIMARS, S.O.G. Prairie Fire mortars and guns · 91 maps: Altis, Stratis, Malden,
+          Tanoa, Livonia, Chernarus, Takistan, Sahrani, Everon and community maps
         </p>
-        <noscript><p>Enable JavaScript to use the calculator. Включите JavaScript, чтобы пользоваться калькулятором.</p></noscript>
+        <noscript><p>Enable JavaScript to use the calculator.</p></noscript>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>

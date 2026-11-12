@@ -1,6 +1,6 @@
 import { FieldIcon } from '../FieldIcon'
 
-/** Значок карты слева от названия в списке карт. */
+/** The map icon to the left of the name in the map list. */
 export function MapGlyph({ big = false }: { big?: boolean }) {
   return (
     <span

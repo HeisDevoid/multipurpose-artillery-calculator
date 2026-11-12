@@ -11,12 +11,12 @@ const COLOR_NAMES: Record<PresetColor, MessageKey> = {
   black: 'mapPicker.black',
 }
 
-/** Название цвета для подписи; у своего цвета — «Цвет». */
+/** The colour name for a label; a custom colour is called "Colour". */
 export function colorName(color: MarkerColor): string {
   return color.startsWith('#') ? t('mapPicker.colour') : t(COLOR_NAMES[color as PresetColor])
 }
 
-/** Подпись метки: её текст или «Метка (цвет)». */
+/** A marker label: its text or "Marker (colour)". */
 export function markerTitle(marker: MapMarker): string {
   return marker.label || `${t('mapPicker.marker')} (${colorName(marker.color)})`
 }

@@ -1,6 +1,6 @@
 import type { ArtilleryMode } from '../types/artillery'
 
-/** Вариант выстрела по цели: режим, заряд и решение для него. */
+/** A way to fire at the target: the mode, the charge and the solution for it. */
 export interface MrsiOption {
   mode: ArtilleryMode
   charge: number
@@ -9,32 +9,32 @@ export interface MrsiOption {
 }
 
 export interface MrsiShot extends MrsiOption {
-  // Когда стрелять, с от первого выстрела
+  // When to fire, s from the first shot
   fireAt: number
 }
 
 /**
- * Одновременный удар, выбранный в калькуляторе: план для оверлея и связки.
- * startedAt — когда начат первый выстрел (часы этого устройства), null —
- * ещё не начат. По связке уходит только план: старт у каждого свой, по
- * сигналу «выстрел».
+ * The simultaneous impact chosen in the calculator: the plan for the overlay and Link.
+ * startedAt is when the first shot started (this device's clock), null means
+ * not started yet. Only the plan goes over Link: everyone starts on their own, on
+ * the "shot" signal.
  */
 export interface MrsiRun {
   shots: MrsiShot[]
   startedAt: number | null
 }
 
-/** Как стрельба на текущем заряде проходит над рельефом: впритык или упирается. */
+/** How fire on the current charge passes over terrain: tight or blocked. */
 export type TerrainStatus = 'tight' | 'blocked' | null
 
 /**
- * План одновременного удара (MRSI) одним орудием: сначала выстрел с
- * самым долгим полётом, остальные — с задержкой так, чтобы все
- * снаряды упали одновременно.
+ * The plan of a simultaneous impact (MRSI) with one gun: first the shot with
+ * the longest flight, the others with a delay so that all
+ * shells land at the same time.
  *
- * minGap — минимальный интервал между выстрелами (перезарядка), с.
- * Варианты, которые не успеть зарядить, отбрасываются: из близких по
- * времени остаётся тот, что раньше в списке (с более долгим полётом).
+ * minGap is the minimum interval between shots (reload), s.
+ * Variants that cannot be loaded in time are dropped: of those close in
+ * time the one earlier in the list (with a longer flight) stays.
  */
 export function planMrsi(
   options: readonly MrsiOption[],

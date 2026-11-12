@@ -9,38 +9,38 @@ import type { ArtilleryCategory } from '../types/gameModel'
 import { FieldIcon } from './FieldIcon'
 import { FlightCanvas, type FlightShot } from './FlightCanvas'
 
-/** Управление таймером снаружи (горячие клавиши). */
+/** Controlling the timer from outside (hotkeys). */
 export interface FireTimerHandle {
   fire: () => void
-  // Выстрел с другого устройства (связка): отсчёт без повторной отправки
+  // A shot from another device (Link): a countdown without sending it again
   remoteFire: () => void
   stop: () => void
 }
 
 interface Props {
-  // Время полёта текущего решения, с
+  // Time of flight of the current solution, s
   tof: number
   ref?: Ref<FireTimerHandle>
-  // Выстрел здесь (кнопка или клавиша) — например, сообщить связке
+  // A shot here (a button or a key), for example to tell Link
   onFire?: () => void
-  // Класс орудия и тип снаряда — от них зависит анимация полёта
+  // The weapon class and the shell type decide the flight animation
   category?: ArtilleryCategory
   shellType?: string
-  // Снаряды в полёте изменились (старт, залп, разрыв, стоп)
+  // The shells in flight changed (start, volley, burst, stop)
   onShotChange?: (shots: FlightShot[]) => void
-  // bar — кнопка «Огонь» вверху страницы: линия полёта появляется только в полёте;
-  // full — боевой экран: линия видна всегда
+  // bar: the Fire button at the top of the page: the flight line appears only in flight;
+  // full: the combat screen: the line is always visible
   variant?: 'bar' | 'full'
-  // Нет решения — стрелять нечем
+  // No solution: nothing to fire
   disabled?: boolean
-  // Кнопка боевого экрана рядом с «Огонь»
+  // The combat screen button next to Fire
   onCombat?: () => void
 }
 
-// За сколько секунд до разрыва предупреждать («сплэш»),
-// как принято при докладе наблюдателю.
+// How many seconds before impact to warn ("splash"),
+// as is the custom when reporting to an observer.
 const SPLASH_WARNING_S = 5
-// Сколько показывать «Разрыв» после падения
+// How long to show "Impact" after the shell lands
 const IMPACT_HOLD_MS = 4000
 
 interface Shot extends FlightShot {
@@ -48,10 +48,10 @@ interface Shot extends FlightShot {
 }
 
 /**
- * Таймер «Огонь → разрыв»: отсчёт по времени полёта, сигнал за 5 с до
- * разрыва и в момент разрыва. Линия таймера — она же анимация полёта.
- * Если включён «залп», в полёте появляется кнопка «+ снаряд»: ещё один
- * снаряд летит рядом с предыдущими, видно, когда упадёт каждый.
+ * The "fire → impact" timer: a countdown by time of flight, a signal 5 s before
+ * impact and at impact. The timer line is also the flight animation.
+ * With "volley" on, a "+ shell" button appears in flight: one more
+ * shell flies next to the previous ones, and it shows when each lands.
  */
 export function FireTimer({
   tof,
@@ -69,7 +69,7 @@ export function FireTimer({
   const sound = useTimerSound()
   const volley = useFeature('volley')
   const nextId = useRef(1)
-  // Короткие отметки для анимаций: отдача кнопки и «волна» при попадании
+  // Short marks for the animations: the button recoil and the "wave" at impact
   const [kicking, setKicking] = useState(false)
   const [pulsing, setPulsing] = useState(false)
   const kickTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -81,7 +81,7 @@ export function FireTimer({
     },
     []
   )
-  // Какие сигналы у какого снаряда уже прозвучали
+  // Which signals have already sounded for which shell
   const signaled = useRef(new Map<number, { splash: boolean; impact: boolean }>())
 
   const shotChangeRef = useRef(onShotChange)
@@ -92,7 +92,7 @@ export function FireTimer({
     shotChangeRef.current?.(shots)
   }, [shots])
 
-  // Тикаем, пока снаряд в полёте и немного после разрыва.
+  // Tick while a shell is in flight and a little after impact.
   const active = shots.length > 0
   useEffect(() => {
     if (!active) return
@@ -142,7 +142,7 @@ export function FireTimer({
     onFire?.()
   }
 
-  // append — добавить к летящим (залп), иначе начать заново
+  // append: add to the ones in flight (a volley), otherwise start over
   function start(append: boolean) {
     const firedAt = Date.now()
     const shot: Shot = { id: nextId.current++, firedAt, tof }
@@ -152,12 +152,12 @@ export function FireTimer({
     setKicking(true)
     clearTimeout(kickTimer.current)
     kickTimer.current = setTimeout(() => setKicking(false), 450)
-    // Короткий щелчок подтверждает нажатие и разблокирует звук
-    // в браузере (AudioContext запускается только после жеста).
+    // A short click confirms the press and unlocks sound
+    // in the browser (AudioContext starts only after a gesture).
     if (sound) playSound('fire')
   }
 
-  // Ближайший разрыв (или последний, если все уже упали)
+  // The nearest impact (or the last one, if all have landed)
   const lefts = shots.map((s) => s.tof - (now - s.firedAt) / 1000)
   const pending = lefts.filter((l) => l > 0)
   const left = shots.length === 0 ? null : pending.length > 0 ? Math.min(...pending) : Math.max(...lefts)
@@ -268,7 +268,7 @@ export function FireTimer({
               </span>
             </span>
           </div>
-          {/* Линия таймера: по ней летит снаряд, она же показывает прогресс */}
+          {/* The timer line: the shell flies along it, and it shows the progress */}
           <FlightCanvas
             shots={shots}
             category={category}

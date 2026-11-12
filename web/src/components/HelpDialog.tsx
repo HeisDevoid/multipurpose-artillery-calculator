@@ -8,11 +8,11 @@ import { SectionHeading } from './FormControls'
 const ISSUES_URL =
   'https://github.com/HeisDevoid/multipurpose-artillery-calculator/issues/new/choose'
 
-// Вопрос и ответ: help.q<n> / help.a<n>
-// Первым — главное: есть ли на сервере физика снаряда
+// A question and an answer: help.q<n> / help.a<n>
+// The main thing first: does the server have shell physics
 const ITEMS = [9, 1, 2, 3, 4, 5, 6, 7, 8] as const
 
-/** Справка: короткие ответы на частые вопросы, ссылка «сообщить о проблеме». */
+/** Help: short answers to frequent questions, a "report a problem" link. */
 export function HelpDialog() {
   const open = usePanel('help')
 

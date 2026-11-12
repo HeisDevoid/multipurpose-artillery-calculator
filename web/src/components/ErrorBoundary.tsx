@@ -8,9 +8,9 @@ const ISSUES_URL =
   'https://github.com/HeisDevoid/multipurpose-artillery-calculator/issues/new'
 
 interface Props {
-  // Где стоит граница: попадает в отчёт
+  // Where the boundary stands: it goes into the report
   area: string
-  // page — вся страница вместо приложения; inline — карточка на месте блока
+  // page: the whole page instead of the app; inline: a card in place of the block
   variant?: 'page' | 'inline'
   children: ReactNode
 }
@@ -20,14 +20,14 @@ interface State {
 }
 
 /**
- * Ошибка внутри блока не роняет всё приложение: вместо белого экрана —
- * понятное сообщение, перезагрузка и отчёт об ошибке.
+ * An error inside a block does not bring the whole app down: instead of a white screen
+ * there is a clear message, a reload button and an error report.
  */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { entry: null }
 
   static getDerivedStateFromError(error: unknown): Partial<State> {
-    // Сразу показать запасной экран; полная запись — в componentDidCatch
+    // Show the fallback screen at once; the full record is made in componentDidCatch
     return {
       entry: {
         time: new Date().toISOString(),
@@ -125,8 +125,8 @@ function ErrorCard({
 }
 
 /**
- * Проверка экрана ошибки: ?crashtest=<область> роняет этот блок. Нужна
- * смоук-тестам сборки; без параметра ничего не делает.
+ * The error screen check: ?crashtest=<area> crashes this block. The build
+ * smoke tests need it; without the parameter it does nothing.
  */
 export function CrashProbe({ area }: { area: string }) {
   if (new URLSearchParams(location.search).get('crashtest') === area) {

@@ -33,16 +33,16 @@ describe('observerToGun', () => {
     })
   })
 
-  // Орудие стреляет на север (0), наблюдатель смотрит на восток (1600).
+  // The gun fires north (0), the observer looks east (1600).
   it('observer looking east, gun firing north', () => {
-    // «Перелёт 50» у наблюдателя: разрыв восточнее цели →
-    // орудию: дальность не меняется, довернуть влево (на запад).
+    // "Over 50" for the observer: the burst is east of the target →
+    // for the gun: the range stays, turn left (west).
     expect(observerToGun({ range: -50, lateral: 0 }, 1600, 0)).toEqual({
       range: 0,
       lateral: -50,
     })
-    // «Левее 20» у наблюдателя: разрыв севернее цели →
-    // орудию: ближе на 20.
+    // "Left 20" for the observer: the burst is north of the target →
+    // for the gun: 20 closer.
     expect(observerToGun({ range: 0, lateral: 20 }, 1600, 0)).toEqual({
       range: -20,
       lateral: 0,

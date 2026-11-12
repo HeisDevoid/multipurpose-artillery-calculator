@@ -45,8 +45,8 @@ export function DashboardPage({
   const [loadRequest, setLoadRequest] = useState<LoadRequest | null>(
     null
   )
-  // Цель, с которой сейчас работает калькулятор (загружена или
-  // только что сохранена) — её можно обновить.
+  // The target the calculator works with now (loaded or
+  // just saved): it can be updated.
   const [activeId, setActiveId] = useState<string | null>(null)
 
   const activeEntry =
@@ -54,14 +54,14 @@ export function DashboardPage({
       (e) => e.id === activeId && e.modelId === selectedModel
     ) ?? null
 
-  // Ручная смена модели сбрасывает ранее загруженную запись.
+  // A manual model change clears the entry loaded earlier.
   function handleModelChange(id: ModelId) {
     setLoadRequest(null)
     setActiveId(null)
     onModelChange(id)
   }
 
-  // Загрузка записи журнала: переключаем модель и восстанавливаем вводные.
+  // Loading a journal entry: switch the model and restore the inputs.
   function handleLoad(entry: JournalEntry) {
     if (!isAvailableModel(entry.modelId)) return
 
@@ -74,7 +74,7 @@ export function DashboardPage({
     }))
   }
 
-  // Переключение сохранённых целей: N / P в окне, Ctrl+Alt+N / P в игре
+  // Switching saved targets: N / P in the window, Ctrl+Alt+N / P in the game
   function cycleTarget(direction: 1 | -1) {
     const list = recentEntries(journal.entries).filter((e) =>
       isAvailableModel(e.modelId)
@@ -129,7 +129,7 @@ export function DashboardPage({
     />
   )
 
-  // Таблицы грузятся по требованию; пока новое орудие грузится, на экране прежнее
+  // The tables load on demand; while a new weapon loads, the previous one stays on the screen
   const tables = useTables(selectedModel)
   if (!tables) return <section />
 

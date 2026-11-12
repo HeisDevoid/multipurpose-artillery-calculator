@@ -6,12 +6,12 @@ import type { ArtilleryReference, DataStatus } from '../../types/artillery'
 import { parseReference } from './parse'
 
 /**
- * Таблицы стрельбы в приложении: у каждого орудия свой файл сборки, он
- * грузится, когда орудие выбрано (выбранное — до первой отрисовки),
- * остальные — в фоне, чтобы сайт работал и без интернета.
+ * Range tables in the app: every weapon has a build file of its own, it is
+ * loaded when the weapon is selected (the selected one before the first render),
+ * the rest in the background, so that the site works offline too.
  */
 
-// Какой JSON-справочник у какого орудия
+// Which JSON reference belongs to which weapon
 export const TABLE_OF = {
   mk6: 'mk6',
   m252: 'm252_rhsusaf',
@@ -41,12 +41,12 @@ const files = import.meta.glob<{ default: unknown }>('./*.json')
 const loaded = new Map<ModelId, ArtilleryReference>()
 const loading = new Map<ModelId, Promise<ArtilleryReference>>()
 
-/** Таблицы орудия, если уже загружены. */
+/** The weapon tables, if already loaded. */
 export function tablesOf(id: ModelId): ArtilleryReference | undefined {
   return loaded.get(id)
 }
 
-/** Загрузить таблицы орудия (повторный вызов ждёт ту же загрузку). */
+/** Load the weapon tables (a repeated call waits for the same load). */
 export function loadTables(id: ModelId): Promise<ArtilleryReference> {
   const ready = loaded.get(id)
   if (ready) return Promise.resolve(ready)
@@ -65,53 +65,53 @@ export function loadTables(id: ModelId): Promise<ArtilleryReference> {
   return promise
 }
 
-/** Все таблицы — в фоне, по одной: потом орудие меняется мгновенно и без сети. */
+/** All tables in the background, one by one: then the weapon changes instantly and offline. */
 export async function preloadAllTables() {
   for (const id of Object.keys(TABLE_OF) as ModelId[]) {
     await loadTables(id).catch(() => undefined)
   }
 }
 
-/** Каких таблиц нет: без сопротивления воздуха ('no-air') или с ним ('air'). */
+/** Which tables are missing: without air resistance ('no-air') or with it ('air'). */
 export type MissingTables = 'air' | 'no-air'
 
 const statusIndex = tableStatus as Record<string, { status: DataStatus; missing: MissingTables[] }>
 
-/** Проверены ли таблицы в игре: без загрузки самих таблиц. */
+/** Whether the tables are verified in the game, without loading the tables themselves. */
 export function statusOf(id: ModelId): DataStatus {
   return statusIndex[TABLE_OF[id]]?.status ?? 'pending'
 }
 
-/** Неполные таблицы: каких наборов нет (пусто — есть оба). */
+/** Incomplete tables: which sets are missing (empty: both are there). */
 export function missingTablesOf(id: ModelId): MissingTables[] {
   return statusIndex[TABLE_OF[id]]?.missing ?? []
 }
 
 /**
- * Орудие в выборе: только с обоими наборами таблиц, с сопротивлением воздуха
- * и без. С одним набором на части серверов установки были бы неверны.
+ * A weapon in the list has both table sets, with air resistance
+ * and without. With one set the settings would be wrong on some servers.
  */
 export function isAvailableModel(value: string): value is ModelId {
   return isModelId(value) && missingTablesOf(value).length === 0
 }
 
-/** Орудия в выборе, в порядке справочника. */
+/** The weapons in the list, in the reference order. */
 export const availableModelIds = (Object.keys(models) as ModelId[]).filter(isAvailableModel)
 
-/** Орудие при открытии: выбранное раньше (как в App), иначе Mk6. */
+/** The weapon at start: the one chosen earlier (as in App), else Mk6. */
 export function initialModelId(): ModelId {
   try {
     const stored = localStorage.getItem('selectedModel')
     if (stored && isAvailableModel(stored)) return stored
   } catch {
-    // Хранилище недоступно.
+    // Storage is unavailable.
   }
   return 'mk6'
 }
 
 /**
- * Таблицы выбранного орудия. Пока новое орудие грузится, остаются таблицы
- * прежнего (вместе с его id), чтобы экран не мигал.
+ * The tables of the selected weapon. While a new weapon loads, the tables
+ * of the previous one stay (with its id), so that the screen does not flicker.
  */
 export function useTables(id: ModelId): { id: ModelId; reference: ArtilleryReference } | null {
   const [last, setLast] = useState<{ id: ModelId; reference: ArtilleryReference } | null>(() => {

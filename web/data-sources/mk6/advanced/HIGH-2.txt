@@ -1,6 +1,6 @@
 # Mk6 (82 mm), HIGH, Charge 2
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): mortar_82mm, 200 м/с, сопротивление воздуха -0.0001.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): mortar_82mm, 200 m/s, air friction -0.0001.
+# With air resistance (ACE advanced ballistics).
 250 1559 0.5 0.6 37.3 23.7 6.1 -5.9 0.0 -0.0 -0.6 0.5
 300 1551 0.7 0.6 37.3 19.9 6.1 -5.9 0.0 -0.0 -0.7 0.7
 350 1543 0.8 0.6 37.3 17.1 6.2 -5.9 0.0 -0.1 -0.8 0.7

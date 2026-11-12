@@ -1,4 +1,4 @@
-// Без консольного окна в релизной сборке Windows
+// No console window in the Windows release build
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::{Emitter, Manager};
@@ -6,8 +6,8 @@ use tauri_plugin_global_shortcut::{
     Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState,
 };
 
-/// Глобальные горячие клавиши: работают, когда в фокусе игра.
-/// Нажатие пересылается в окна событием `hotkey` с названием действия.
+/// Global hotkeys: they work while the game has focus.
+/// A press is forwarded to the windows as a `hotkey` event with the action name.
 fn shortcuts() -> [(Shortcut, &'static str); 7] {
     let modifiers = Some(Modifiers::CONTROL | Modifiers::ALT);
     [
@@ -23,8 +23,8 @@ fn shortcuts() -> [(Shortcut, &'static str); 7] {
 
 fn main() {
     tauri::Builder::default()
-        // Одна копия программы: повторный запуск показывает уже открытое окно
-        // (вторая копия не получила бы горячие клавиши) и проверяет обновления
+        // A single copy of the app: a second launch shows the window that is already open
+        // (a second copy would not get the hotkeys) and checks for updates
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.unminimize();
@@ -33,7 +33,7 @@ fn main() {
             }
             let _ = app.emit("second-instance", ());
         }))
-        // Обновление программы из GitHub Releases и перезапуск после него
+        // The app update from GitHub Releases and the restart after it
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(
@@ -52,8 +52,8 @@ fn main() {
         )
         .setup(|app| {
             for (shortcut, _) in shortcuts() {
-                // Сочетание может быть занято другой программой —
-                // приложение всё равно запускается.
+                // The shortcut may be taken by another program:
+                // the app starts anyway.
                 if let Err(error) = app.global_shortcut().register(shortcut) {
                     eprintln!("global shortcut not registered: {error}");
                 }

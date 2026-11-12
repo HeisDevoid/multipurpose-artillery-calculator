@@ -1,18 +1,18 @@
 import { MILS_PER_TURN } from './ballistics'
 
 /**
- * Сетка высот карты, выгруженная из игры скриптом
+ * The map height grid exported from the game by the script
  * src/data/export-heightmap.sqf.
  *
- * Координаты как в игре: x — на восток, y — на север, от юго-западного
- * угла карты, в метрах. Точка (i, j) сетки — это x = i·step, y = j·step;
- * heights[j * size + i] — высота над уровнем моря (ASL), м.
+ * Coordinates as in the game: x is east, y is north, from the south-west
+ * corner of the map, in metres. The grid point (i, j) is x = i·step, y = j·step;
+ * heights[j * size + i] is the height above sea level (ASL), m.
  */
 export interface Heightmap {
   world: string
   worldSize: number
   step: number
-  // Точек по каждой стороне
+  // Points per side
   size: number
   heights: Float32Array
 }
@@ -24,7 +24,7 @@ export interface MapPoint {
 
 const FORMAT = 'arma-heightmap'
 
-/** Разбор файла из игры; null — это не сетка высот. */
+/** Parsing a file from the game; null: this is not a height grid. */
 export function parseHeightmap(text: string): Heightmap | null {
   let data: unknown
   try {
@@ -73,7 +73,7 @@ export function parseHeightmap(text: string): Heightmap | null {
   }
 }
 
-/** Протяжённость сетки, м (может быть чуть меньше worldSize). */
+/** The grid extent, m (may be slightly less than worldSize). */
 export function mapExtent(map: Heightmap): number {
   return (map.size - 1) * map.step
 }
@@ -85,7 +85,7 @@ export function isInside(map: Heightmap, point: MapPoint): boolean {
   )
 }
 
-/** Высота в точке: билинейная интерполяция между узлами сетки. */
+/** The height at a point: bilinear interpolation between grid nodes. */
 export function heightAt(map: Heightmap, point: MapPoint): number | null {
   if (!isInside(map, point)) return null
 
@@ -104,7 +104,7 @@ export function heightAt(map: Heightmap, point: MapPoint): number | null {
   return south * (1 - ty) + north * ty
 }
 
-/** Дистанция (м) и азимут (мил, 0 — север, по часовой) от a к b. */
+/** The distance (m) and the azimuth (mils, 0 is north, clockwise) from a to b. */
 export function bearing(a: MapPoint, b: MapPoint) {
   const dx = b.x - a.x
   const dy = b.y - a.y
@@ -118,7 +118,7 @@ export function bearing(a: MapPoint, b: MapPoint) {
   }
 }
 
-/** Координата сетки игры: 10 цифр (до метра), «03412 12856». */
+/** A game grid coordinate: 10 digits (to a metre), "03412 12856". */
 export function toGridReference(point: MapPoint, digits: 6 | 8 | 10 = 10) {
   const half = digits / 2
   const unit = 10 ** (5 - half)

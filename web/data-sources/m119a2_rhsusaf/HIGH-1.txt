@@ -1,6 +1,6 @@
 # M119A2 (105 mm), HIGH, Charge 1
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): RHS_weap_M119, 243 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): RHS_weap_M119, 243 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 2100 1419 1.6 0.4 48.8
 2200 1410 1.7 0.4 48.7
 2300 1400 1.8 0.4 48.6

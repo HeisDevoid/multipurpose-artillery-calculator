@@ -26,7 +26,7 @@ const LABELS: Record<SoundEvent, MessageKey> = {
   syncUpdate: 'soundSettings.link-new-settings',
 }
 
-/** Свои звуковые файлы на события и общая громкость. */
+/** Own sound files for events and the common volume. */
 export function SoundSettings() {
   const [volume, setVolumeState] = useState(getVolume)
   const [names, setNames] = useState(readNames)

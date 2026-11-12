@@ -9,10 +9,10 @@ const kindNames: Record<ShellKind, MessageKey> = {
   smoke: 'shellIcon.smoke',
 }
 
-// Корпус снаряда по центру сетки 24×24; значок вида — в правом верхнем углу.
-// Миномётная мина — каплевидный корпус, хвостовая трубка и стабилизатор;
-// артиллерийский снаряд — ogive, ведущие пояски и скошенное донце;
-// реактивный — корпус с иллюминатором, крылья и струя двигателя.
+// The shell body in the centre of the 24×24 grid; the kind badge is in the top right corner.
+// A mortar bomb is a teardrop body, a tail tube and fins;
+// an artillery shell is an ogive, driving bands and a boat tail;
+// a rocket is a body with a window, wings and an engine jet.
 function Body({ category }: { category: ArtilleryCategory }) {
   switch (category) {
     case 'mortar':
@@ -47,7 +47,7 @@ function Body({ category }: { category: ArtilleryCategory }) {
 function Badge({ kind }: { kind: ShellKind }) {
   switch (kind) {
     case 'illum':
-      // Вспышка: солнышко
+      // Illumination: a little sun
       return (
         <g transform="translate(2.6 -0.4)">
           <circle cx="18" cy="6" r="1.5" />
@@ -55,12 +55,12 @@ function Badge({ kind }: { kind: ShellKind }) {
         </g>
       )
     case 'smoke':
-      // Облачко дыма
+      // A puff of smoke
       return (
         <path d="M16.6 9a1.7 1.7 0 0 1 .2-3.4 2.4 2.4 0 0 1 4.5.4 1.6 1.6 0 0 1-.2 3z" />
       )
     default:
-      // Фугас: разрыв — звёздочка
+      // High explosive: a burst, a star
       return <path d="m19 2.6.8 2.2 2.2.8-2.2.8L19 8.6l-.8-2.2-2.2-.8 2.2-.8z" />
   }
 }
@@ -71,7 +71,7 @@ interface Props {
   size?: 'xs' | 'sm'
 }
 
-/** Значок снаряда: форма по классу орудия, вид (HE / осветительный / дымовой) — в углу. */
+/** The shell icon: the shape follows the weapon class, the kind (HE / illumination / smoke) is in the corner. */
 export function ShellIcon({ category, type, size = 'xs' }: Props) {
   const kind = shellKind(type)
 

@@ -1,39 +1,39 @@
 import { MILS_PER_TURN } from './ballistics'
 
 /**
- * Поправка, которую нужно внести, м:
- * range > 0 — стрелять дальше, lateral > 0 — правее.
+ * The correction to apply, m:
+ * range > 0 means fire farther, lateral > 0 means to the right.
  */
 export interface Adjustment {
   range: number
   lateral: number
 }
 
-/** Доклад наблюдателя: где лёг разрыв относительно цели, м. */
+/** An observer report: where the burst landed relative to the target, m. */
 export interface SpotReport {
-  // > 0 — перелёт, < 0 — недолёт
+  // > 0 over, < 0 short
   over: number
-  // > 0 — правее цели, < 0 — левее
+  // > 0 right of the target, < 0 left of it
   right: number
 }
 
-/** Поправка противоположна промаху: перелёт → ближе, левее → правее. */
+/** The correction is opposite to the miss: over → closer, left → right. */
 export function reportToAdjustment(report: SpotReport): Adjustment {
   return { range: -report.over || 0, lateral: -report.right || 0 }
 }
 
 /**
- * Перевод поправки из системы наблюдателя (линия наблюдатель — цель)
- * в систему орудия (линия орудие — цель).
+ * Converts a correction from the observer frame (the observer to target line)
+ * to the gun frame (the gun to target line).
  *
- * Поправка — вектор на местности. Раскладываем его по осям
- * наблюдателя и проецируем на оси орудия; δ — угол между линиями:
+ * A correction is a vector on the ground. It is split along the observer
+ * axes and projected onto the gun axes; δ is the angle between the lines:
  *
  *   range   = a·cos δ − b·sin δ
  *   lateral = a·sin δ + b·cos δ
  *
- * где a, b — поправка по дальности и направлению у наблюдателя,
- * δ = азимут наблюдателя − азимут орудия.
+ * where a, b are the range and direction corrections for the observer,
+ * δ = observer azimuth − gun azimuth.
  */
 export function observerToGun(
   adjustment: Adjustment,
@@ -46,7 +46,7 @@ export function observerToGun(
   const sin = Math.sin(delta)
   const { range: a, lateral: b } = adjustment
 
-  // Округление до сантиметра убирает шум вроде 3e-15 м.
+  // Rounding to a centimetre removes noise like 3e-15 m.
   const clean = (value: number) => Math.round(value * 100) / 100 || 0
 
   return {

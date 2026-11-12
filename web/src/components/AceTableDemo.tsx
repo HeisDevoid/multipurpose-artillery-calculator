@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 
 /**
- * Анимация для вопроса «есть ли на сервере сопротивление воздуха»: как в
- * игре открыть таблицу стрельбы ACE (Ctrl+Win → пункт с названием орудия →
- * таблица). Два варианта рядом: пункт без звёздочки и со звёздочкой, и что
- * тогда в таблице. Надписи как в игре, по-английски.
+ * The animation for the question "is there air resistance on the server": how to
+ * open the ACE range table in the game (Ctrl+Win → the item with the weapon name →
+ * the table). Two variants side by side: the item without and with an asterisk, and what
+ * the table then holds. The labels are as in the game, in English.
  */
 
 const LOOP = '8s'
@@ -12,7 +12,7 @@ const FONT = 'Inter, system-ui, sans-serif'
 const MONO = 'ui-monospace, Consolas, monospace'
 const STAR = '#ffb020'
 
-// Видно на доле цикла [from, to] (с плавным появлением и исчезновением)
+// Visible on the [from, to] part of the cycle (fading in and out)
 function Phase({ from, to, children }: { from: number; to: number; children: ReactNode }) {
   return (
     <g opacity="0">
@@ -28,7 +28,7 @@ function Phase({ from, to, children }: { from: number; to: number; children: Rea
   )
 }
 
-// Пейзаж игры: небо, холмы, грунтовая дорога
+// The game landscape: sky, hills, a dirt road
 function Scene({ id }: { id: string }) {
   return (
     <>
@@ -55,7 +55,7 @@ function Scene({ id }: { id: string }) {
 
 type Icon = 'dot' | 'table' | 'self' | 'plus'
 
-// Пункт меню ACE: значок и подпись под ним (белые, с тенью, как в игре)
+// An ACE menu item: an icon and a label under it (white, with a shadow, as in the game)
 function MenuItem({ x, y, label, icon = 'dot' }: { x: number; y: number; label: string; icon?: Icon }) {
   return (
     <g fontFamily={FONT} textAnchor="middle">
@@ -69,8 +69,8 @@ function MenuItem({ x, y, label, icon = 'dot' }: { x: number; y: number; label: 
   )
 }
 
-// Строки таблицы Sholef, HIGH, заряд 0 (data-sources/sholef): без
-// сопротивления воздуха и с ним (ветер, температура, плотность воздуха)
+// Rows of the Sholef table, HIGH, charge 0 (data-sources/sholef): without
+// air resistance and with it (wind, temperature, air density)
 const NO_AIR = [
   ['850', '1417', '30.9'],
   ['900', '1406', '30.8'],
@@ -98,7 +98,7 @@ const AIR = [
 const COL = 25.3
 const colX = (i: number) => 40 + COL / 2 + i * COL
 
-// Лист таблицы стрельбы ACE: слева HIGH/LOW и заряды, справа белая таблица
+// The ACE range table sheet: HIGH/LOW and charges on the left, a white table on the right
 function RangeSheet({ withAir }: { withAir: boolean }) {
   const rows = withAir ? AIR : NO_AIR
   return (
@@ -139,7 +139,7 @@ function RangeSheet({ withAir }: { withAir: boolean }) {
           })}
         </g>
       ))}
-      {/* Столбцы погоды: здесь и видна разница */}
+      {/* The weather columns: this is where the difference shows */}
       <Phase from={0.68} to={0.98}>
         <rect x={40 + 3 * COL + 1} y="2" width={3 * COL - 2.5} height="138" rx="3" fill="none" stroke={STAR} strokeWidth="1.6">
           <animate attributeName="stroke-opacity" values="1;.35;1" dur="1.2s" repeatCount="indefinite" />
@@ -150,9 +150,9 @@ function RangeSheet({ withAir }: { withAir: boolean }) {
 }
 
 /**
- * Как открыть таблицу стрельбы ACE в игре: Ctrl+Win → пункт с названием
- * орудия («Sholef» или «Sholef*») → таблица. withAir — вариант со звёздочкой
- * (сопротивление воздуха есть) и заполненными столбцами погоды.
+ * How to open the ACE range table in the game: Ctrl+Win → the item with the weapon
+ * name ("Sholef" or "Sholef*") → the table. withAir is the variant with an asterisk
+ * (air resistance is on) and filled weather columns.
  */
 export function AceMenuDemo({ withAir }: { withAir: boolean }) {
   const id = withAir ? 'ace-air' : 'ace-noair'
@@ -160,7 +160,7 @@ export function AceMenuDemo({ withAir }: { withAir: boolean }) {
     <svg viewBox="0 0 200 150" className="block w-full" aria-hidden="true">
       <Scene id={id} />
       <g style={{ filter: 'drop-shadow(0 0 1.2px rgba(0,0,0,.75))' }}>
-        {/* Клавиши меню ACE на себя (по умолчанию) */}
+        {/* The ACE self-interaction menu keys (the defaults) */}
         <Phase from={0} to={0.22}>
           <g fontFamily={FONT} fontSize="8.5" fontWeight="700" textAnchor="middle" fill="#fff">
             <rect x="61" y="7" width="34" height="15" rx="3" fill="#111" stroke="#fff" strokeOpacity=".5" />
@@ -170,7 +170,7 @@ export function AceMenuDemo({ withAir }: { withAir: boolean }) {
             <text x="122" y="17.6">Win</text>
           </g>
         </Phase>
-        {/* Меню ACE на себя */}
+        {/* The ACE self-interaction menu */}
         <Phase from={0.08} to={0.6}>
           <MenuItem x={100} y={40} label="Medical" icon="plus" />
           <MenuItem x={46} y={58} label="Accessories" />
@@ -179,11 +179,11 @@ export function AceMenuDemo({ withAir }: { withAir: boolean }) {
           <MenuItem x={48} y={96} label="Equipment" />
           <MenuItem x={156} y={96} label="Team Management" />
           <MenuItem x={58} y={124} label="Open Kestrel 4500" />
-          {/* Наведение на пункт с названием орудия */}
+          {/* Hovering over the item with the weapon name */}
           <Phase from={0.34} to={0.6}>
             <rect x="111" y="112" width="60" height="30" rx="5" fill="#fff" fillOpacity=".2" stroke="#fff" strokeOpacity=".7" strokeWidth=".8" />
           </Phase>
-          {/* Пункт с названием орудия: значок таблицы, подпись, звёздочка */}
+          {/* The item with the weapon name: the table icon, the label, the asterisk */}
           <g fontFamily={FONT}>
             <rect x="131" y="118" width="10" height="8" rx="1" fill="#fff" stroke="#c84040" strokeWidth=".8" />
             <path d="M131 120.5h10M134.5 118v8M137.8 118v8" stroke="#c84040" strokeWidth=".5" />
@@ -199,7 +199,7 @@ export function AceMenuDemo({ withAir }: { withAir: boolean }) {
             )}
           </g>
         </Phase>
-        {/* Курсор: к пункту орудия и щелчок */}
+        {/* The cursor: to the weapon item and a click */}
         <Phase from={0.08} to={0.6}>
           <circle cx="140" cy="117" fill="none" stroke="#fff" strokeWidth="1">
             <animate attributeName="r" dur={LOOP} repeatCount="indefinite" keyTimes="0;0.48;0.56;1" values="0;0;11;11" />
@@ -217,7 +217,7 @@ export function AceMenuDemo({ withAir }: { withAir: boolean }) {
           </path>
         </Phase>
       </g>
-      {/* Таблица стрельбы */}
+      {/* The range table */}
       <Phase from={0.58} to={0.98}>
         <rect width="200" height="150" fill="#000" fillOpacity=".35" />
         <RangeSheet withAir={withAir} />

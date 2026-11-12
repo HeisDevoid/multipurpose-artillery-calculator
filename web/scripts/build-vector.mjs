@@ -1,19 +1,19 @@
 /**
- * Векторный слой карты из выгрузки grad_meh (geojson/*.geojson.gz + dem.asc.gz):
- * здания, дороги, леса, названия, отметки высот и горизонтали.
- * Результат — компактный vector.json (координаты целыми в половинах метра,
- * внутри линии — разности соседних точек).
+ * The vector layer of a map from a grad_meh export (geojson/*.geojson.gz + dem.asc.gz):
+ * buildings, roads, forests, names, spot heights and contour lines.
+ * The result is a compact vector.json (coordinates as integers in half metres,
+ * inside a line the differences between neighbouring points).
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { gunzipSync } from 'node:zlib'
 
-// Единиц координаты на метр: 2 → точность 0,5 м
+// Coordinate units per metre: 2 → 0.5 m precision
 const Q = 2
-const CONTOUR_STEP = 10 // м по высоте
-const CONTOUR_GRID = 20 // м между узлами сетки для горизонталей
-const SIMPLIFY = 1.5 // м, упрощение линий
-const MIN_HOUSE_AREA = 4 // м², мельче — не здание
+const CONTOUR_STEP = 10 // m of height
+const CONTOUR_GRID = 20 // m between grid nodes for contour lines
+const SIMPLIFY = 1.5 // m, line simplification
+const MIN_HOUSE_AREA = 4 // m², anything smaller is not a building
 
 function readLayer(dir, name) {
   const file = join(dir, `${name}.geojson.gz`)
@@ -22,7 +22,7 @@ function readLayer(dir, name) {
   return Array.isArray(data) ? data : (data.features ?? [])
 }
 
-/** Дельта-кодирование: первая точка целиком, дальше разности. */
+/** Delta encoding: the first point in full, then differences. */
 function encodePath(points, simplifyTol = 0) {
   const pts = simplifyTol > 0 ? douglasPeucker(points, simplifyTol) : points
   const out = []
@@ -76,7 +76,7 @@ function ringArea(ring) {
   return Math.abs(s / 2)
 }
 
-// ---- горизонтали: marching squares по DEM ----
+// ---- contour lines: marching squares over the DEM ----
 
 function readDem(source) {
   const text = gunzipSync(readFileSync(join(source, 'dem.asc.gz'))).toString('latin1')
@@ -93,7 +93,7 @@ function readDem(source) {
   const step = cellsize * k
   const size = Math.floor((Math.min(ncols, nrows) - 1) / k) + 1
   const grid = new Float32Array(size * size)
-  // Строка 0 сетки — юг
+  // Grid row 0 is the south
   for (let j = 0; j < size; j += 1) {
     const values = lines[row0 + (nrows - 1 - j * k)].trim().split(/\s+/)
     for (let i = 0; i < size; i += 1) grid[j * size + i] = Number(values[i * k])
@@ -111,10 +111,10 @@ function contourLines({ grid, size, step }) {
   }
   const at = (i, j) => grid[j * size + i]
   for (let level = Math.ceil(Math.max(min, 1) / CONTOUR_STEP) * CONTOUR_STEP; level <= max; level += CONTOUR_STEP) {
-    // Отрезки; ключ узла — по середине ребра
+    // Segments; a node key is the middle of an edge
     const segments = []
     const edge = (i, j, dir) => {
-      // dir 0: ребро (i,j)-(i+1,j); dir 1: (i,j)-(i,j+1)
+      // dir 0: edge (i,j)-(i+1,j); dir 1: (i,j)-(i,j+1)
       const a = at(i, j)
       const b = dir === 0 ? at(i + 1, j) : at(i, j + 1)
       const t = (level - a) / (b - a)
@@ -147,7 +147,7 @@ function contourLines({ grid, size, step }) {
         for (const [p, q] of pairs) segments.push([p(), q()])
       }
     }
-    // Склейка отрезков в ломаные
+    // Joining segments into polylines
     const byKey = new Map()
     segments.forEach((s, idx) => {
       for (const p of s) {
@@ -188,7 +188,7 @@ function contourLines({ grid, size, step }) {
   return result
 }
 
-/** Высоты из уже импортированной карты (heights.bin), если в выгрузке нет dem. */
+/** Heights from an already imported map (heights.bin) when the export has no dem. */
 function readHeightsBin(mapDir) {
   const mapFile = join(mapDir, 'map.json')
   if (!existsSync(mapFile) || !existsSync(join(mapDir, 'heights.bin'))) return null
@@ -200,7 +200,7 @@ function readHeightsBin(mapDir) {
   return { grid, size: heights.size, step: heights.step }
 }
 
-/** Вершины: локальные максимумы сетки высот, не ближе 300 м друг к другу. */
+/** Peaks: local maxima of the height grid, at least 300 m apart. */
 function peaks({ grid, size, step }) {
   const found = []
   const at = (i, j) => grid[j * size + i]
@@ -280,7 +280,7 @@ export function buildVector(source, outFile, mapDir = null) {
     }
   }
 
-  // Отметки высот: не чаще одной на ячейку 200 м (берём самую высокую)
+  // Spot heights: at most one per 200 m cell (the highest one)
   const spots = new Map()
   for (const f of readLayer(dir, 'mounts')) {
     const [x, y] = f.geometry.coordinates
@@ -296,7 +296,7 @@ export function buildVector(source, outFile, mapDir = null) {
   if (existsSync(join(source, 'dem.asc.gz'))) dem = readDem(source)
   else if (mapDir) dem = readHeightsBin(mapDir)
   if (dem) contours = contourLines(dem)
-  // В выгрузке из игры нет mounts: вершины ищем по высотам
+  // An export from the game has no mounts: peaks are found from the heights
   if (dem && spots.size === 0) {
     for (const p of peaks(dem)) spots.set(`${p[0]},${p[1]}`, p)
   }

@@ -8,14 +8,14 @@ import {
 } from '../i18n'
 import { PUBLIC_SITE_URL } from './sync'
 
-/** Ссылка на версию сайта на языке: английская — основной адрес. */
+/** A link to the site version in a language: English is the main address. */
 export function languageUrl(language: Language): string {
   return language === 'en' ? PUBLIC_SITE_URL : `${PUBLIC_SITE_URL}?lang=${language}`
 }
 
 /**
- * Язык при открытии: из адреса (?lang=de), иначе выбранный раньше,
- * иначе как у системы.
+ * The language at start: from the address (?lang=de), else the one chosen earlier,
+ * else the system one.
  */
 export function initialLanguage(): Language {
   if (typeof window === 'undefined') return 'en'
@@ -25,7 +25,7 @@ export function initialLanguage(): Language {
     const stored = localStorage.getItem('language')
     if (isLanguage(stored)) return stored
   } catch {
-    // Хранилище недоступно — язык системы.
+    // Storage is unavailable: the system language.
   }
   return detectLanguage(navigator.languages?.length ? navigator.languages : [navigator.language])
 }
@@ -40,8 +40,8 @@ function setHeadTag(selector: string, create: () => HTMLElement, attribute: stri
 }
 
 /**
- * Заголовок вкладки, описание и canonical — на языке интерфейса: поиск
- * показывает каждую языковую версию своим текстом.
+ * The tab title, the description and canonical are in the interface language: search
+ * shows every language version with its own text.
  */
 export function applyHead(language: Language) {
   document.documentElement.lang = localeOf(language)
@@ -52,7 +52,7 @@ export function applyHead(language: Language) {
     'content',
     t('seo.description')
   )
-  // canonical только у опубликованного сайта (не у программы для ПК)
+  // canonical only on the published site (not in the Windows app)
   if (window.location.href.startsWith(PUBLIC_SITE_URL)) {
     setHeadTag(
       'link[rel="canonical"]',

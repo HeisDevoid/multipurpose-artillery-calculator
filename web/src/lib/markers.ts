@@ -2,8 +2,8 @@ import { t } from '../i18n'
 import { useSyncExternalStore } from 'react'
 
 /**
- * Метки на карте: ставятся в приложении или распознаются со скриншота
- * карты игры; по связке расходятся всем в комнате.
+ * Map markers: placed in the app or recognised from a screenshot of the
+ * game map; over Link they go to everyone in the room.
  */
 
 export type PresetColor =
@@ -15,7 +15,7 @@ export type PresetColor =
   | 'purple'
   | 'black'
 
-// Готовый цвет Arma или любой свой — «#rrggbb» (круг оттенков)
+// A ready Arma colour or any custom one, "#rrggbb" (the hue wheel)
 export type MarkerColor = PresetColor | `#${string}`
 
 export const MARKER_COLORS: readonly PresetColor[] = [
@@ -28,7 +28,7 @@ export const MARKER_COLORS: readonly PresetColor[] = [
   'black',
 ]
 
-// Цвета как у меток Arma (ColorRed, ColorBlue…)
+// Colours as for Arma markers (ColorRed, ColorBlue…)
 export const MARKER_RGB: Record<PresetColor, string> = {
   red: '#e60000',
   orange: '#d96600',
@@ -39,7 +39,7 @@ export const MARKER_RGB: Record<PresetColor, string> = {
   black: '#000000',
 }
 
-/** Это допустимый цвет метки: готовый или «#rrggbb». */
+/** This is a valid marker colour: a ready one or "#rrggbb". */
 export function isMarkerColor(value: unknown): value is MarkerColor {
   return (
     typeof value === 'string' &&
@@ -47,27 +47,27 @@ export function isMarkerColor(value: unknown): value is MarkerColor {
   )
 }
 
-/** CSS-цвет метки. */
+/** The CSS colour of a marker. */
 export function markerRgb(color: MarkerColor): string {
   return color.startsWith('#') ? color : MARKER_RGB[color as PresetColor]
 }
 
 export interface MapMarker {
   id: string
-  // Карта (worldName); '' — неизвестна (поставлена по координате)
+  // The map (worldName); '' means unknown (placed by a coordinate)
   world: string
-  // Метры от начала сетки: восток, север
+  // Metres from the grid origin: east, north
   x: number
   y: number
   label: string
   color: MarkerColor
-  // Когда метка появилась, мс
+  // When the marker appeared, ms
   createdAt: number
-  // Позывной или роль того, кто поставил
+  // The call sign or the role of the one who placed it
   author: string
-  // Устройство-владелец: только оно меняет и удаляет метку
+  // The owner device: only it changes and removes the marker
   owner: string
-  // Откуда: поставлена руками или найдена на скриншоте карты
+  // Where it came from: placed by hand or found on a map screenshot
   source: 'app' | 'screen'
 }
 
@@ -76,7 +76,7 @@ const isNumber = (value: unknown): value is number =>
 
 const isString = (value: unknown): value is string => typeof value === 'string'
 
-/** Проверка метки из хранилища или по связке. */
+/** Validation of a marker from storage or Link. */
 export function parseMarker(value: unknown): MapMarker | null {
   if (typeof value !== 'object' || value === null) return null
   const m = value as Record<string, unknown>
@@ -110,7 +110,7 @@ export function parseMarker(value: unknown): MapMarker | null {
   }
 }
 
-/** «2 мин», «1 ч 5 мин» — сколько метке. */
+/** "2 min", "1 h 5 min": how old the marker is. */
 export function formatAge(ms: number): string {
   const minutes = Math.floor(Math.max(0, ms) / 60_000)
   if (minutes < 1) return t('markers.just-now')
@@ -120,16 +120,16 @@ export function formatAge(ms: number): string {
   return rest ? t('markers.h-min', hours, rest) : t('markers.h', hours)
 }
 
-/** Насколько метка «свежая»: 1 — новая, к 30 минутам бледнеет до 0.35. */
+/** How "fresh" the marker is: 1 is new, by 30 minutes it fades to 0.35. */
 export function markerOpacity(ageMs: number): number {
   const fade = Math.min(1, Math.max(0, ageMs / (30 * 60_000)))
   return 1 - fade * 0.65
 }
 
-// ---- хранилище ----
+// ---- storage ----
 
 const STORAGE_KEY = 'mapMarkers'
-// Старше — не загружаются: прошлые игры не нужны
+// Older ones are not loaded: past games are not needed
 const MAX_AGE_MS = 12 * 60 * 60_000
 
 function newId(): string {
@@ -138,7 +138,7 @@ function newId(): string {
   ).join('')
 }
 
-/** Постоянный номер устройства — владелец своих меток. */
+/** A permanent device number: the owner of its markers. */
 export const deviceId: string = (() => {
   try {
     const stored = localStorage.getItem('deviceId')
@@ -180,7 +180,7 @@ function commit(next: MapMarker[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(markers))
   } catch {
-    // Хранилище недоступно — метки живут до перезагрузки.
+    // Storage is unavailable: the markers live until a reload.
   }
   listeners.forEach((listener) => listener())
 }
@@ -200,7 +200,7 @@ export function useMarkers(): MapMarker[] {
   return useSyncExternalStore(subscribeMarkers, getMarkers, getMarkers)
 }
 
-/** Изменения на этом устройстве — связка отправляет их остальным. */
+/** Changes on this device: Link sends them to the others. */
 export function onLocalMarkerChange(listener: (change: MarkerChange) => void) {
   localListeners.add(listener)
   return () => {
@@ -243,23 +243,23 @@ export function removeMarker(id: string) {
   local({ type: 'remove', id })
 }
 
-/** Метка или удаление пришли по связке — обратно не отправляем. */
+/** A marker or a removal came over Link: it is not sent back. */
 export function applyRemoteMarker(change: MarkerChange) {
   if (change.type === 'upsert') {
     const current = markers.find((m) => m.id === change.marker.id)
-    // Чужие правки своих меток не принимаем
+    // Edits of own markers by others are not accepted
     if (current && current.owner === deviceId) return
     if (change.marker.owner === deviceId && !current) return
   }
   apply(change)
 }
 
-/** Свои метки — заново отправить после подключения. */
+/** Own markers: send them again after connecting. */
 export function ownMarkers(): MapMarker[] {
   return markers.filter((m) => m.owner === deviceId)
 }
 
-// ---- слияние со скриншотом ----
+// ---- merging with a screenshot ----
 
 export interface DetectedMarker {
   x: number
@@ -273,10 +273,10 @@ export interface ScreenMergePlan {
 }
 
 /**
- * Новый снимок карты против меток, найденных раньше:
- * совпавшие по цвету и месту остаются (и сохраняют возраст),
- * новые добавляются, а пропавшие в видимой области — удаляются
- * (метку стёрли в игре).
+ * A new map image against the markers found earlier:
+ * the ones matching in colour and place stay (and keep their age),
+ * new ones are added, and the ones gone from the visible area are removed
+ * (the marker was erased in the game).
  */
 export function planScreenMerge(
   existing: readonly MapMarker[],

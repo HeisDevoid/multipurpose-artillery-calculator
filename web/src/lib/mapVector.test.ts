@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { parseVector } from './mapVector'
 
 describe('parseVector', () => {
-  it('раскодирует дельты и считает границы', () => {
+  it('decodes the deltas and calculates the bounds', () => {
     const v = parseVector({
       version: 1,
       q: 2,
@@ -24,7 +24,7 @@ describe('parseVector', () => {
     expect(v!.spots[0].elevation).toBe(345)
   })
 
-  it('отвергает неверную версию', () => {
+  it('rejects a wrong version', () => {
     expect(parseVector({ version: 2, q: 2 })).toBeNull()
     expect(parseVector(null)).toBeNull()
   })
