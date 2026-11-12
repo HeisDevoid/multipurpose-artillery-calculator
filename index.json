@@ -1,0 +1,701 @@
+{
+  "maps": [
+    {
+      "world": "altis",
+      "displayName": "Altis",
+      "author": "Bohemia Interactive",
+      "kind": "official",
+      "worldSize": 30720,
+      "names": {
+        "ru": "Алтис",
+        "uk": "Алтіс",
+        "ja": "アルティス",
+        "zh": "阿尔蒂斯"
+      }
+    },
+    {
+      "world": "tem_anizay",
+      "displayName": "Anizay",
+      "author": "Temppa",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "archie",
+      "displayName": "Archie, Summer",
+      "author": "SSG - Kalle",
+      "kind": "community",
+      "worldSize": 12288
+    },
+    {
+      "world": "archie_w",
+      "displayName": "Archie, Winter",
+      "author": "SSG - Kalle",
+      "kind": "community",
+      "worldSize": 12288
+    },
+    {
+      "world": "australia",
+      "displayName": "Australia",
+      "author": "Aussie",
+      "kind": "community",
+      "worldSize": 40960
+    },
+    {
+      "world": "beketov",
+      "displayName": "Beketov",
+      "author": "Dead_Kennedy, SenChi",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "bozcaada",
+      "displayName": "Bozcaada",
+      "author": "OFCRA",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "bootcamp_acr",
+      "displayName": "Bukovina",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 3840
+    },
+    {
+      "world": "woodland_acr",
+      "displayName": "Bystrica",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 7680
+    },
+    {
+      "world": "chernarus",
+      "displayName": "Chernarus (Autumn)",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 15360,
+      "names": {
+        "ru": "Черноруссия (осень)",
+        "uk": "Чорнорусь (осінь)",
+        "ja": "チェルナルス（秋）",
+        "zh": "切尔纳鲁斯（秋）"
+      }
+    },
+    {
+      "world": "chernarus_summer",
+      "displayName": "Chernarus (Summer)",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 15360,
+      "names": {
+        "ru": "Черноруссия (лето)",
+        "uk": "Чорнорусь (літо)",
+        "ja": "チェルナルス（夏）",
+        "zh": "切尔纳鲁斯（夏）"
+      }
+    },
+    {
+      "world": "chernarus_winter",
+      "displayName": "Chernarus (Winter)",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 15360,
+      "names": {
+        "ru": "Черноруссия (зима)",
+        "uk": "Чорнорусь (зима)",
+        "ja": "チェルナルス（冬）",
+        "zh": "切尔纳鲁斯（冬）"
+      }
+    },
+    {
+      "world": "cup_chernarus_a3",
+      "displayName": "Chernarus 2020",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 15360,
+      "names": {
+        "ru": "Черноруссия 2020",
+        "uk": "Чорнорусь 2020",
+        "ja": "チェルナルス 2020",
+        "zh": "切尔纳鲁斯 2020"
+      }
+    },
+    {
+      "world": "chernarus_2035",
+      "displayName": "Chernarus 2035",
+      "author": "Crazy Mike",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "chernarus_isles",
+      "displayName": "Chernarus Isles",
+      "author": "Torndeco",
+      "kind": "community",
+      "worldSize": 15360
+    },
+    {
+      "world": "chernarusredux",
+      "displayName": "Chernarus Redux",
+      "author": "CHR Team",
+      "kind": "community",
+      "worldSize": 16384
+    },
+    {
+      "world": "clafghan",
+      "displayName": "CLA Clafghan",
+      "author": "CLA",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "umb_colombia",
+      "displayName": "Colombia",
+      "author": "Chaser",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "desert_e",
+      "displayName": "Desert",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 2048
+    },
+    {
+      "world": "desert_island",
+      "displayName": "Desert Island",
+      "author": "Cold War Rearmed² Team",
+      "kind": "community",
+      "worldSize": 12800
+    },
+    {
+      "world": "dingor",
+      "displayName": "Dingor",
+      "author": "IceBreakr",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "dya",
+      "displayName": "Diyala Iraq",
+      "author": "CypeRevenge",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "dogechnya",
+      "displayName": "Dogechnya",
+      "author": "Ghostovich and friends",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "drakovac",
+      "displayName": "Drakovac",
+      "author": "SSG - Enfisk",
+      "kind": "community",
+      "worldSize": 12288
+    },
+    {
+      "world": "eden",
+      "displayName": "Everon",
+      "author": "Cold War Rearmed² Team",
+      "kind": "community",
+      "worldSize": 12800
+    },
+    {
+      "world": "fallujah",
+      "displayName": "Fallujah 2.0",
+      "author": "Bohemia Interactive",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "farabad",
+      "displayName": "Farabad",
+      "author": "Jacko",
+      "kind": "community",
+      "worldSize": 10752
+    },
+    {
+      "world": "go_map_fjord",
+      "displayName": "Fjord",
+      "author": "Jacko",
+      "kind": "community",
+      "worldSize": 14336
+    },
+    {
+      "world": "pja307",
+      "displayName": "G.O.S Dariyah",
+      "author": "[G.O.S] Makhno",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "pja314",
+      "displayName": "G.O.S Leskovets",
+      "author": "[G.O.S] Makhno",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "pja305",
+      "displayName": "G.O.S N'Ziwasogo",
+      "author": "[G.O.S] Makhno",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "green_sea",
+      "displayName": "Green Sea",
+      "author": "Midgardsorm, Ney",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "hebontes",
+      "displayName": "Hebontes",
+      "author": "Andre and Chrissi",
+      "kind": "community",
+      "worldSize": 18432
+    },
+    {
+      "world": "hellanmaa",
+      "displayName": "Hellanmaa",
+      "author": "Temppa",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "hellanmaaw",
+      "displayName": "Hellanmaa winter",
+      "author": "Temppa",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "abramia",
+      "displayName": "Isla Abramia",
+      "author": "IceBreakr",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "islapera",
+      "displayName": "Isla Pera",
+      "author": "Jacko",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "kerama",
+      "displayName": "Kerama Islands",
+      "author": "[V]Wollfen",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "cain",
+      "displayName": "Kolgujev",
+      "author": "Cold War Rearmed² Team",
+      "kind": "community",
+      "worldSize": 12800
+    },
+    {
+      "world": "vtf_korsac",
+      "displayName": "Korsac",
+      "author": "Vectif",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "vtf_korsac_winter",
+      "displayName": "Korsac (Winter)",
+      "author": "Vectif & Thoreaufare",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "gc_krayina",
+      "displayName": "Krayina",
+      "author": "Aphex",
+      "kind": "community",
+      "worldSize": 13824
+    },
+    {
+      "world": "tem_kujari",
+      "displayName": "Kujari",
+      "author": "Temppa",
+      "kind": "community",
+      "worldSize": 16384
+    },
+    {
+      "world": "kunduz_valley",
+      "displayName": "Kunduz River",
+      "author": "SSG",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "kunduz",
+      "displayName": "Kunduz, Afghanistan",
+      "author": "James2464",
+      "kind": "community",
+      "worldSize": 5120
+    },
+    {
+      "world": "lingor3",
+      "displayName": "Lingor",
+      "author": "IceBreakr",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "enoch",
+      "displayName": "Livonia",
+      "author": "Bohemia Interactive",
+      "kind": "dlc",
+      "worldSize": 12800,
+      "names": {
+        "ru": "Ливония",
+        "uk": "Лівонія",
+        "ja": "リヴォニア",
+        "zh": "利沃尼亚"
+      }
+    },
+    {
+      "world": "vtf_lybor",
+      "displayName": "Lybor",
+      "author": "Vectif & Thoreaufare",
+      "kind": "community",
+      "worldSize": 6144
+    },
+    {
+      "world": "vtf_lybor_winter",
+      "displayName": "Lybor (Winter)",
+      "author": "Vectif & Thoreaufare",
+      "kind": "community",
+      "worldSize": 6144
+    },
+    {
+      "world": "maksniemi",
+      "displayName": "Maksniemi",
+      "author": "Immonen",
+      "kind": "community",
+      "worldSize": 11264
+    },
+    {
+      "world": "malden",
+      "displayName": "Malden",
+      "author": "Bohemia Interactive",
+      "kind": "official",
+      "worldSize": 12800,
+      "names": {
+        "ru": "Мальден",
+        "uk": "Мальден",
+        "ja": "マルデン",
+        "zh": "马尔登"
+      }
+    },
+    {
+      "world": "mog",
+      "displayName": "Mog",
+      "author": "CPL.Variable.A",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "napf",
+      "displayName": "Napf",
+      "author": "Momo, ported by ANixon",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "napfwinter",
+      "displayName": "Napf (Winter)",
+      "author": "Momo, ported by ANixon",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "noe",
+      "displayName": "Nogova",
+      "author": "Cold War Rearmed² Team",
+      "kind": "community",
+      "worldSize": 12800
+    },
+    {
+      "world": "northtakistan",
+      "displayName": "North Takistan",
+      "author": "Rezlind, Harrsion, Pa3k, and Sven",
+      "kind": "community",
+      "worldSize": 12288
+    },
+    {
+      "world": "swu_public_novogorsk_map",
+      "displayName": "Novogorsk",
+      "author": "swurvin",
+      "kind": "community",
+      "worldSize": 5120
+    },
+    {
+      "world": "panthera3",
+      "displayName": "Panthera",
+      "author": "IceBreakr",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "winthera3",
+      "displayName": "Panthera (Winter)",
+      "author": "IceBreakr",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "cartercity",
+      "displayName": "Pecher",
+      "author": "Argument",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "cartercity_old",
+      "displayName": "Pecher (old)",
+      "author": "Argument",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "carter_winter",
+      "displayName": "Pecher (Winter)",
+      "author": "Argument",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "porto",
+      "displayName": "Porto",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 5120
+    },
+    {
+      "world": "provinggrounds_pmc",
+      "displayName": "Proving Grounds",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 2048
+    },
+    {
+      "world": "pryvilne",
+      "displayName": "Pryvilne",
+      "author": "Mazay",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "pulau",
+      "displayName": "Pulau",
+      "author": "Temppa",
+      "kind": "community",
+      "worldSize": 12288
+    },
+    {
+      "world": "intro",
+      "displayName": "Rahmadi",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 5120
+    },
+    {
+      "world": "wl_rosche",
+      "displayName": "Rosche, Germany (2.0)",
+      "author": "UnitedOperations.net Team",
+      "kind": "community",
+      "worldSize": 15360
+    },
+    {
+      "world": "ruha",
+      "displayName": "Ruha",
+      "author": "Temppa",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "juju_sahatra",
+      "displayName": "Sa'hatra",
+      "author": "jujurat",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "sara",
+      "displayName": "Sahrani",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "kapaulio",
+      "displayName": "Saint Kapaulio",
+      "author": "God Father",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "shapur_baf",
+      "displayName": "Shapur",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 2048
+    },
+    {
+      "world": "saralite",
+      "displayName": "Southern Sahrani",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "stratis",
+      "displayName": "Stratis",
+      "author": "Bohemia Interactive",
+      "kind": "official",
+      "worldSize": 8192,
+      "names": {
+        "ru": "Стратис",
+        "uk": "Стратіс",
+        "ja": "ストラティス",
+        "zh": "斯特拉蒂斯"
+      }
+    },
+    {
+      "world": "stubbhult",
+      "displayName": "Stubbhult",
+      "author": "SSG - Enfisk",
+      "kind": "community",
+      "worldSize": 12288
+    },
+    {
+      "world": "brf_sumava",
+      "displayName": "Šumava",
+      "author": "Bref",
+      "kind": "community",
+      "worldSize": 12288
+    },
+    {
+      "world": "brf_sumava_winter",
+      "displayName": "Šumava Winter",
+      "author": "Bref",
+      "kind": "community",
+      "worldSize": 12288
+    },
+    {
+      "world": "takistan",
+      "displayName": "Takistan",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 12800
+    },
+    {
+      "world": "mountains_acr",
+      "displayName": "Takistan Mountains",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 6400
+    },
+    {
+      "world": "tanoa",
+      "displayName": "Tanoa",
+      "author": "Bohemia Interactive",
+      "kind": "dlc",
+      "worldSize": 15360,
+      "names": {
+        "ru": "Таноа",
+        "uk": "Таноа",
+        "ja": "タノア",
+        "zh": "塔诺亚"
+      }
+    },
+    {
+      "world": "tembelan",
+      "displayName": "Tembelan Island",
+      "author": "Ben",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "sara_dbe1",
+      "displayName": "United Sahrani",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "utes",
+      "displayName": "Utes",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 5120
+    },
+    {
+      "world": "tem_vinjesvingenc",
+      "displayName": "Vinjesvingen",
+      "author": "Temppa",
+      "kind": "community",
+      "worldSize": 6144
+    },
+    {
+      "world": "vt7",
+      "displayName": "Virolahti",
+      "author": "Furean",
+      "kind": "community",
+      "worldSize": 17920
+    },
+    {
+      "world": "vr",
+      "displayName": "Virtual Reality",
+      "author": "Bohemia Interactive",
+      "kind": "official",
+      "worldSize": 8192,
+      "names": {
+        "ru": "Виртуальная реальность",
+        "uk": "Віртуальна реальність",
+        "ja": "バーチャルリアリティ",
+        "zh": "虚拟现实"
+      }
+    },
+    {
+      "world": "wake",
+      "displayName": "Wake",
+      "author": "OFCRA",
+      "kind": "community",
+      "worldSize": 10240
+    },
+    {
+      "world": "xcam_taunus",
+      "displayName": "X-Cam-Taunus",
+      "author": "xcam_dev_team",
+      "kind": "community",
+      "worldSize": 20480
+    },
+    {
+      "world": "zargabad",
+      "displayName": "Zargabad",
+      "author": "CUP",
+      "kind": "community",
+      "worldSize": 8192
+    },
+    {
+      "world": "carter_wrp",
+      "displayName": "Zarzibash",
+      "author": "Argument",
+      "kind": "community",
+      "worldSize": 8192
+    }
+  ]
+}

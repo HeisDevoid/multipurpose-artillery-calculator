@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "kunduz",
+  "displayName": "Kunduz, Afghanistan",
+  "author": "James2464",
+  "worldSize": 5120,
+  "background": "#dab360",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 256,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 4,
+    "metersPerTile": 640,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

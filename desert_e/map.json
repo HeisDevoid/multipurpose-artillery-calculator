@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "desert_e",
+  "displayName": "Desert",
+  "author": "CUP",
+  "worldSize": 2048,
+  "background": "#4d545e",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 103,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 3,
+    "metersPerTile": 512,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

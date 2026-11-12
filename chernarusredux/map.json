@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "chernarusredux",
+  "displayName": "Chernarus Redux",
+  "author": "CHR Team",
+  "worldSize": 16384,
+  "background": "#4d545e",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 820,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 5,
+    "metersPerTile": 1365.3333333333333,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

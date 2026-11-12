@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "porto",
+  "displayName": "Porto",
+  "author": "CUP",
+  "worldSize": 5120,
+  "background": "#4d545e",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 256,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 4,
+    "metersPerTile": 640,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

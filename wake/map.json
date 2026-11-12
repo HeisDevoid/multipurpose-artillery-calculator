@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "wake",
+  "displayName": "Wake",
+  "author": "OFCRA",
+  "worldSize": 10240,
+  "background": "#4b555f",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 512,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 5,
+    "metersPerTile": 853.3333333333334,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

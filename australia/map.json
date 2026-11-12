@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "australia",
+  "displayName": "Australia",
+  "author": "Aussie",
+  "worldSize": 40960,
+  "background": "#4b555f",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 2048,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 5,
+    "metersPerTile": 3413.3333333333335,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

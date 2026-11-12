@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "brf_sumava_winter",
+  "displayName": "Šumava Winter",
+  "author": "Bref",
+  "worldSize": 12288,
+  "background": "#c7ccd6",
+  "heights": {
+    "file": "heights.bin",
+    "step": 18,
+    "size": 683,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 5,
+    "metersPerTile": 1024,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "pja307",
+  "displayName": "G.O.S Dariyah",
+  "author": "[G.O.S] Makhno",
+  "worldSize": 20480,
+  "background": "#3a4662",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 1024,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 5,
+    "metersPerTile": 1706.6666666666667,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

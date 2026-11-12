@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "clafghan",
+  "displayName": "CLA Clafghan",
+  "author": "CLA",
+  "worldSize": 20480,
+  "background": "#4d545e",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 1024,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 4,
+    "metersPerTile": 3413.3333333333335,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "hebontes",
+  "displayName": "Hebontes",
+  "author": "Andre and Chrissi",
+  "worldSize": 18432,
+  "background": "#4b555f",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20.25,
+    "size": 911,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 5,
+    "metersPerTile": 1536,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

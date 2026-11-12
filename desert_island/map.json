@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "desert_island",
+  "displayName": "Desert Island",
+  "author": "Cold War Rearmed² Team",
+  "worldSize": 12800,
+  "background": "#4d545e",
+  "heights": {
+    "file": "heights.bin",
+    "step": 25,
+    "size": 512,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 5,
+    "metersPerTile": 1066.6666666666667,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

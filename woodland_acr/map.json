@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "woodland_acr",
+  "displayName": "Bystrica",
+  "author": "CUP",
+  "worldSize": 7680,
+  "background": "#4d545e",
+  "heights": {
+    "file": "heights.bin",
+    "step": 22.5,
+    "size": 342,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 4,
+    "metersPerTile": 960,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

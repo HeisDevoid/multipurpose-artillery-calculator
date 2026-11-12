@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "mog",
+  "displayName": "Mog",
+  "author": "CPL.Variable.A",
+  "worldSize": 20480,
+  "background": "#4b555f",
+  "heights": {
+    "file": "heights.bin",
+    "step": 20,
+    "size": 1024,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 5,
+    "metersPerTile": 1706.6666666666667,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

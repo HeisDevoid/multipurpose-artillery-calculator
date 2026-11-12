@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "bootcamp_acr",
+  "displayName": "Bukovina",
+  "author": "CUP",
+  "worldSize": 3840,
+  "background": "#4d545e",
+  "heights": {
+    "file": "heights.bin",
+    "step": 22.5,
+    "size": 171,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 3,
+    "metersPerTile": 960,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}

@@ -1,0 +1,22 @@
+{
+  "format": "arma-map",
+  "version": 1,
+  "world": "mountains_acr",
+  "displayName": "Takistan Mountains",
+  "author": "CUP",
+  "worldSize": 6400,
+  "background": "#4d545e",
+  "heights": {
+    "file": "heights.bin",
+    "step": 18.75,
+    "size": 342,
+    "scale": 0.1
+  },
+  "tiles": {
+    "size": 512,
+    "levels": 4,
+    "metersPerTile": 800,
+    "ext": "webp"
+  },
+  "vector": "vector.json"
+}
