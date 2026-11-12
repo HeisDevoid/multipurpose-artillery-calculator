@@ -13,7 +13,7 @@ const DESCRIPTION = {
   format: 'arma-map',
   version: 1,
   world: 'stratis',
-  displayName: 'Стратис',
+  displayName: 'Stratis Island',
   author: 'Bohemia Interactive',
   worldSize: 8192,
   background: '#4b555f',
@@ -33,7 +33,7 @@ const TILES: MapTiles = {
 
 describe('parseMapDescription', () => {
   it('accepts the importer output', () => {
-    expect(parseMapDescription(DESCRIPTION)?.displayName).toBe('Стратис')
+    expect(parseMapDescription(DESCRIPTION)?.displayName).toBe('Stratis Island')
   })
 
   it('rejects other formats and unsafe paths', () => {
@@ -71,14 +71,14 @@ describe('tile pyramid', () => {
   })
 
   it('picks the coarsest level that is sharp enough', () => {
-    // Вся карта на 500 px — хватает одного тайла 512 px
+    // The whole map in 500 px: one 512 px tile is enough
     expect(tileLevel(TILES, 500 / 8192)).toBe(0)
-    // На 576 px тайла 512 px уже мало — уровень 1
+    // At 576 px a 512 px tile is too small: level 1
     expect(tileLevel(TILES, 576 / 8192)).toBe(1)
-    // Уровни дают 0.0625 / 0.125 / 0.25 / 0.5 px/м
+    // The levels give 0.0625 / 0.125 / 0.25 / 0.5 px/m
     expect(tileLevel(TILES, 0.2)).toBe(2)
     expect(tileLevel(TILES, 0.4)).toBe(3)
-    // Ближе самого подробного — остаётся последний уровень
+    // Closer than the most detailed level: the last level stays
     expect(tileLevel(TILES, 3)).toBe(3)
   })
 

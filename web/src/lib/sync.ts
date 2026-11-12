@@ -3,24 +3,24 @@ import { parseMarker, type MapMarker } from './markers'
 import type { MrsiShot, TerrainStatus } from './mrsi'
 
 /**
- * Связка наводчик ↔ стрелок: общее для всех устройств.
+ * Link between fire direction and the gunner: shared by all devices.
  *
- * Устройства встречаются в «комнате» на публичном MQTT-брокере.
- * Из кода комнаты (PBKDF2) получаются ключ AES-GCM и имя канала:
- * брокер и посторонние видят только шифр, а по имени канала код
- * не подобрать быстрее, чем перебором PBKDF2.
+ * Devices meet in a "room" on a public MQTT broker.
+ * The room code (PBKDF2) gives an AES-GCM key and a channel name:
+ * the broker and outsiders see only the cipher, and the code cannot be guessed
+ * from the channel name faster than by brute-forcing PBKDF2.
  */
 
-/** Кто на этом устройстве: считает или стреляет. */
+/** Who is on this device: the one who calculates or the one who fires. */
 export type SyncRole = 'computer' | 'gunner'
 
 export const SYNC_ROLES: readonly SyncRole[] = ['computer', 'gunner']
 
-/** Опубликованный сайт: ссылка-приглашение из программы для ПК ведёт сюда. */
+/** The published site: an invitation link from the Windows app leads here. */
 export const PUBLIC_SITE_URL =
   'https://heisdevoid.github.io/multipurpose-artillery-calculator/'
 
-/** Публичные брокеры MQTT через WebSocket (без регистрации). */
+/** Public MQTT brokers over WebSocket (no registration). */
 export const SYNC_SERVERS = [
   { id: 'hivemq', url: 'wss://broker.hivemq.com:8884/mqtt' },
   { id: 'emqx', url: 'wss://broker.emqx.io:8084/mqtt' },
@@ -33,7 +33,7 @@ export const SYNC_SERVER_IDS: readonly SyncServerId[] = SYNC_SERVERS.map(
   (server) => server.id
 )
 
-/** Установки, которые наводчик отправляет стрелку. */
+/** The settings fire direction sends to the gunner. */
 export interface SyncSolution {
   title: string
   targetName: string | null
@@ -43,37 +43,37 @@ export interface SyncSolution {
   azimuth: string | null
   azimuthUnit: string
   tof: number
-  // Огонь по времени: момент разрыва, мс (часы устройства); null — нет
+  // Time on target: the moment of impact, ms (the device clock); null: none
   tot?: number | null
-  // Рельеф на пути снаряда: стрелок видит, что огонь впритык или закрыт
+  // Terrain on the shell path: the gunner sees that the fire is tight or blocked
   terrain?: TerrainStatus
-  // Одновременный удар: план выстрелов (старт — по сигналу «выстрел»)
+  // Simultaneous impact: the shot plan (the start is on the "shot" signal)
   mrsi?: { shots: MrsiShot[] } | null
 }
 
 export type SyncMessage =
-  // Наводчик → стрелки; хранится на брокере (retain) для опоздавших.
-  // null — решения нет (цель сброшена).
+  // Fire direction → gunners; stored on the broker (retain) for latecomers.
+  // null: no solution (the target was cleared).
   | { kind: 'solution'; from: string; sentAt: number; solution: SyncSolution | null }
-  // Выстрел с любого устройства: отсчёт до разрыва у всех
+  // A shot from any device: a countdown to impact for everyone
   | { kind: 'shot'; from: string; sentAt: number }
-  // «Я в сети» — раз в несколько секунд
+  // "I am online" once every few seconds
   | { kind: 'hello'; from: string; sentAt: number; role: SyncRole }
-  // Метка на карте; хранится на брокере (retain) в своём канале
+  // A map marker; stored on the broker (retain) in its own channel
   | { kind: 'marker'; from: string; sentAt: number; marker: MapMarker }
 
-// Без похожих символов: 0/O, 1/I/L — код диктуют голосом.
+// No look-alike characters: 0/O, 1/I/L, since the code is dictated by voice.
 const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ'
 const CODE_LENGTH = 8
 
-/** Новый случайный код комнаты вида XXXX-XXXX. */
+/** A new random room code of the XXXX-XXXX form. */
 export function generateRoomCode(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(CODE_LENGTH))
   const chars = Array.from(bytes, (byte) => ALPHABET[byte % ALPHABET.length])
   return formatRoomCode(chars.join(''))
 }
 
-/** Код в каноническом виде: заглавные, без пробелов и дефисов. */
+/** The code in the canonical form: capitals, no spaces or dashes. */
 export function normalizeRoomCode(value: string): string {
   return value
     .toUpperCase()
@@ -94,7 +94,7 @@ export function isValidRoomCode(value: string): boolean {
 }
 
 export interface Room {
-  // Канал на брокере: <topic>/state и <topic>/events
+  // The channel on the broker: <topic>/state and <topic>/events
   topic: string
   key: CryptoKey
 }
@@ -102,7 +102,7 @@ export interface Room {
 const SALT = new TextEncoder().encode('artillery-calculator/sync/v1')
 const ITERATIONS = 100_000
 
-/** Канал и ключ комнаты из кода. */
+/** The room channel and key from the code. */
 export async function deriveRoom(code: string): Promise<Room> {
   const material = await crypto.subtle.importKey(
     'raw',
@@ -118,7 +118,7 @@ export async function deriveRoom(code: string): Promise<Room> {
       384
     )
   )
-  // Первые 256 бит — ключ, остальные 128 — имя канала
+  // The first 256 bits are the key, the remaining 128 the channel name
   const key = await crypto.subtle.importKey(
     'raw',
     bits.slice(0, 32),
@@ -134,7 +134,7 @@ export async function deriveRoom(code: string): Promise<Room> {
 
 const IV_LENGTH = 12
 
-/** Сообщение → nonce + шифр AES-GCM. */
+/** A message → nonce + AES-GCM cipher. */
 export async function encryptMessage(
   key: CryptoKey,
   message: SyncMessage
@@ -150,7 +150,7 @@ export async function encryptMessage(
   return packet
 }
 
-/** Расшифровка; null — чужой ключ, повреждение или не наш формат. */
+/** Decryption; null: another key, damage or not our format. */
 export async function decryptMessage(
   key: CryptoKey,
   packet: Uint8Array
@@ -168,7 +168,7 @@ export async function decryptMessage(
   }
 }
 
-/** Пакет ↔ текст для брокера (base64). */
+/** A packet ↔ text for the broker (base64). */
 export function packetToText(packet: Uint8Array): string {
   let binary = ''
   for (const byte of packet) binary += String.fromCharCode(byte)
@@ -183,7 +183,7 @@ export function textToPacket(text: string): Uint8Array {
   }
 }
 
-/** Приглашение по ссылке: …?room=XXXX-XXXX&server=hivemq — для стрелка. */
+/** An invitation by link: …?room=XXXX-XXXX&server=hivemq, for the gunner. */
 export function readInvite(
   search: string
 ): { code: string; server: SyncServerId } | null {
@@ -194,7 +194,7 @@ export function readInvite(
   return { code: formatRoomCode(code), server: server ?? 'hivemq' }
 }
 
-/** Ссылка-приглашение в комнату для стрелка. */
+/** An invitation link to the room for the gunner. */
 export function inviteLink(
   page: string,
   code: string,
@@ -270,13 +270,13 @@ function parseSolution(value: unknown): SyncSolution | null | undefined {
     azimuthUnit: s.azimuthUnit as string,
     tof: s.tof as number,
     tot: (s.tot as number | null | undefined) ?? null,
-    // Поля новых версий: у старых их нет, неверные не показываются
+    // Fields of newer versions: old ones lack them, wrong ones are not shown
     ...(s.terrain === 'tight' || s.terrain === 'blocked' ? { terrain: s.terrain } : {}),
     ...(mrsiShots ? { mrsi: { shots: mrsiShots } } : {}),
   }
 }
 
-/** Проверка формы сообщения (другая версия приложения, мусор). */
+/** Validation of the message shape (another app version, junk). */
 export function parseMessage(value: unknown): SyncMessage | null {
   if (typeof value !== 'object' || value === null) return null
   const m = value as Record<string, unknown>
@@ -303,13 +303,13 @@ export function parseMessage(value: unknown): SyncMessage | null {
   }
 }
 
-/** Насколько старым может прийти «выстрел» или «я в сети» (часы устройств немного расходятся). */
+/** How old a "shot" or "I am online" may arrive (device clocks differ slightly). */
 export const MAX_EVENT_AGE_MS = 120_000
 
 /**
- * Защита от повтора: подделать шифр нельзя, но перехваченный пакет можно
- * переслать в канал ещё раз. Повтор того же сообщения, старые выстрелы и
- * решение старее уже показанного отбрасываются.
+ * Replay protection: the cipher cannot be forged, but an intercepted packet can be
+ * sent to the channel again. A replay of the same message, old shots and
+ * a solution older than the one shown are dropped.
  */
 export class ReplayGuard {
   private seen = new Set<string>()

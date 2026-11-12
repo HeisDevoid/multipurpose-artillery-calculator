@@ -8,9 +8,9 @@ import type {
 const MODES: readonly ArtilleryMode[] = ['HIGH', 'LOW']
 
 /**
- * Снята ли таблица с сопротивлением воздуха. ACE показывает погодные поправки
- * (ветер, температура, плотность воздуха) только при включённом сопротивлении:
- * таблица с ними — для улучшенной баллистики, без них — для игры без неё.
+ * Whether a table was taken with air resistance. ACE shows weather corrections
+ * (wind, temperature, air density) only with air resistance on:
+ * a table with them is for advanced ballistics, one without them is for a game without it.
  */
 export function hasDragData(profile: BallisticProfile | undefined): boolean {
   if (!profile) return false
@@ -25,20 +25,20 @@ export function hasDragData(profile: BallisticProfile | undefined): boolean {
 
 export interface ProfileChoice {
   profile: BallisticProfile | undefined
-  // Траектории, для которых нет таблиц под выбранную физику: взяты таблицы
-  // другой физики, калькулятор об этом предупреждает
+  // Trajectories that have no tables for the selected physics: tables of the
+  // other physics are used, and the calculator warns about it
   substituted: ArtilleryMode[]
 }
 
-// Склеенный профиль не пересобирается на каждый рендер
+// The merged profile is not rebuilt on every render
 const merged = new WeakMap<BallisticProfile, WeakMap<BallisticProfile, BallisticProfile>>()
 
 /**
- * Таблицы для боеприпаса под выбранную физику (advanced — игра с
- * сопротивлением воздуха). Профиль advanced всегда с сопротивлением; обычный —
- * с ним, если в нём есть погодные поправки (у таких орудий таблиц без
- * сопротивления пока нет). Траектории, которых нет в нужных таблицах,
- * берутся из таблиц другой физики и попадают в substituted.
+ * Tables for the ammunition for the selected physics (advanced is a game with
+ * air resistance). The advanced profile is always with air resistance; the plain one
+ * is with it if it has weather corrections (such weapons have no tables without
+ * air resistance yet). Trajectories missing from the needed tables
+ * are taken from the tables of the other physics and go into substituted.
  */
 export function selectProfile(
   reference: Pick<ArtilleryReference, 'profiles'>,

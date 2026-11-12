@@ -11,18 +11,18 @@ interface Props {
   entries: readonly JournalEntry[]
   activeId: string | null
   onLoad: (entry: JournalEntry) => void
-  // Экспорт и импорт целей (когда карты нет, это единственное место)
+  // Export and import of targets (without the map this is the only place)
   actions?: JournalActions
 }
 
-/** Короткое имя модели: «M252 (81 mm)» → «M252». */
+/** A short model name: "M252 (81 mm)" → "M252". */
 function shortModel(modelId: string): string {
   return isModelId(modelId) ? models[modelId].name.split(' ')[0] : modelId
 }
 
 /**
- * Быстрое переключение между последними сохранёнными целями
- * прямо над калькулятором.
+ * Quick switching between the last saved targets
+ * right above the calculator.
  */
 export function TargetBar({ entries, activeId, onLoad, actions }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)

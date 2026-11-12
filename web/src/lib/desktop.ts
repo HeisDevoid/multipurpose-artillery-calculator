@@ -13,15 +13,15 @@ import { DEV_BUILD } from './devBuild'
 import type { MapTarget } from './journal'
 import type { MrsiRun, TerrainStatus } from './mrsi'
 
-/** Приложение запущено как программа для ПК (Tauri), а не в браузере. */
+/** The app runs as the Windows app (Tauri), not in a browser. */
 export const isDesktop =
   typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
-/** Окно-оверлей поверх игры открывается с адресом …#overlay. */
+/** The overlay window over the game opens with the address …#overlay. */
 export const isOverlayWindow =
   typeof window !== 'undefined' && window.location.hash === '#overlay'
 
-/** Глобальные горячие клавиши (src-tauri/src/main.rs). */
+/** Global hotkeys (src-tauri/src/main.rs). */
 export type HotkeyAction =
   | 'fire'
   | 'overlay'
@@ -38,53 +38,53 @@ export const GLOBAL_HOTKEYS: readonly {
   { keys: 'Ctrl + Alt + F', action: 'fire' },
   { keys: 'Ctrl + Alt + O', action: 'overlay' },
   { keys: 'Ctrl + Alt + D', action: 'input' },
-  // Метки с экрана игры: экспериментальные, только в сборке для разработки
+  // Markers from the game screen: experimental, only in the development build
   ...(DEV_BUILD ? [{ keys: 'Ctrl + Alt + S', action: 'screen-markers' as const }] : []),
   { keys: 'Ctrl + Alt + M', action: 'mode' },
   { keys: 'Ctrl + Alt + N', action: 'next-target' },
   { keys: 'Ctrl + Alt + P', action: 'previous-target' },
 ]
 
-/** Готовые установки для орудия. */
+/** Ready settings for the gun. */
 export interface FiringSolution {
   charge: number
   mode: ArtilleryMode
   elevation: number
-  // Готовый азимут в единицах ввода; null — не введён
+  // The final azimuth in the input units; null: not entered
   azimuth: string | null
   azimuthUnit: string
   tof: number
 }
 
-/** Поля ввода, которые можно менять из оверлея. */
+/** Input fields that can be changed from the overlay. */
 export type OverlayField = 'distance' | 'azimuth' | 'ownHeight' | 'targetHeight'
 
-/** Что показывает оверлей: вводные основного окна и решение. */
+/** What the overlay shows: the inputs of the main window and the solution. */
 export interface OverlayState {
   language: Language
   title: string
   targetName: string | null
   mode: ArtilleryMode
-  // Режимы, для которых есть таблицы
+  // The modes that have tables
   modes: ArtilleryMode[]
-  // Заряды, которыми можно достать цель
+  // The charges that can reach the target
   charges: number[]
-  // «мил» или «°» — единицы поля азимута
+  // "mil" or "°": the units of the azimuth field
   azimuthUnit: string
   fields: Record<OverlayField, string>
-  // Сумма поправок корректировки, м, и число докладов
+  // The sum of the adjustment corrections, m, and the number of reports
   adjust: { range: number; lateral: number; count: number }
-  // null — решения нет
+  // null: no solution
   solution: FiringSolution | null
-  // Решение пришло от наводчика по связке: ввод в оверлее не нужен
+  // The solution came from fire direction over Link: no input in the overlay is needed
   readOnly?: boolean
-  // Огонь по времени: момент выстрела, мс; null — нет
+  // Time on target: the moment of the shot, ms; null: none
   fireAt?: number | null
-  // Рельеф на пути снаряда на текущем заряде
+  // Terrain on the shell path at the current charge
   terrain?: TerrainStatus
-  // Одновременный удар выбран: план и старт
+  // Simultaneous impact is selected: the plan and the start
   mrsi?: MrsiRun | null
-  // Карта в основном окне включена: «Ввод» открывает её в оверлее
+  // The map in the main window is on: Input opens it in the overlay
   map?: {
     target: MapTarget | null
     reach: { min: number; max: number } | null
@@ -93,20 +93,20 @@ export interface OverlayState {
   } | null
 }
 
-/** Команда из оверлея в основное окно. */
+/** A command from the overlay to the main window. */
 export type OverlayCommand =
   | { type: 'field'; field: OverlayField; value: string }
   | { type: 'charge'; charge: number }
   | { type: 'mode' }
-  // Доклад по линии орудия: > 0 — перелёт / правее цели, м
+  // A report along the gun line: > 0 means over / right of the target, m
   | { type: 'spot'; over: number; right: number }
   | { type: 'undo-adjust' }
-  // Орудие и цель поставлены на карте в оверлее
+  // The gun and the target were placed on the map in the overlay
   | { type: 'map'; selection: MapSelection }
 
 /**
- * Подписка на событие Tauri. Возвращает функцию отписки, которую можно
- * вызвать и до того, как подписка успела оформиться.
+ * A subscription to a Tauri event. Returns an unsubscribe function, which can
+ * be called even before the subscription has been set up.
  */
 function subscribe<T>(event: string, handler: (payload: T) => void) {
   if (!isDesktop) return () => {}
@@ -120,7 +120,7 @@ function subscribe<T>(event: string, handler: (payload: T) => void) {
       else unlisten = stop
     })
     .catch(() => {
-      // Нет прав на события — работаем без них.
+      // No permission for events: work without them.
     })
 
   return () => {
@@ -141,7 +141,7 @@ export function onSolution(handler: (state: OverlayState) => void) {
   return subscribe<OverlayState>('solution', handler)
 }
 
-/** Выстрел не с глобальной клавиши (кнопка, связка) — отсчёт в оверлее. */
+/** A shot not from the global key (a button, Link): a countdown in the overlay. */
 export function notifyOverlayShot() {
   if (isDesktop) void emit('overlay-shot').catch(() => {})
 }
@@ -158,7 +158,7 @@ export function onOverlayCommand(handler: (command: OverlayCommand) => void) {
   return subscribe<OverlayCommand>('overlay-command', handler)
 }
 
-/** Оверлей открылся и просит текущее решение. */
+/** The overlay opened and asks for the current solution. */
 export function requestSolution() {
   if (isDesktop) void emit('overlay-ready').catch(() => {})
 }
@@ -175,11 +175,11 @@ export async function toggleOverlay() {
     if (await overlay.isVisible()) await overlay.hide()
     else await overlay.show()
   } catch {
-    // Окно недоступно — ничего не делаем.
+    // The window is unavailable: do nothing.
   }
 }
 
-/** Показать оверлей поверх игры и забрать фокус клавиатуры. */
+/** Show the overlay over the game and take the keyboard focus. */
 export async function focusCurrentWindow() {
   if (!isDesktop) return
   try {
@@ -187,17 +187,17 @@ export async function focusCurrentWindow() {
     await current.show()
     await current.setFocus()
   } catch {
-    // Окно недоступно — ничего не делаем.
+    // The window is unavailable: do nothing.
   }
 }
 
-/** Размер окна под содержимое (оверлей раскрывает панель ввода). */
+/** The window size fits the content (the overlay opens the input panel). */
 export async function resizeCurrentWindow(width: number, height: number) {
   if (!isDesktop) return
   try {
     await getCurrentWebviewWindow().setSize(new LogicalSize(width, height))
   } catch {
-    // Нет прав или окно недоступно — остаётся прежний размер.
+    // No permission or the window is unavailable: the old size stays.
   }
 }
 
@@ -206,6 +206,6 @@ export async function hideCurrentWindow() {
   try {
     await getCurrentWebviewWindow().hide()
   } catch {
-    // Окно недоступно — ничего не делаем.
+    // The window is unavailable: do nothing.
   }
 }

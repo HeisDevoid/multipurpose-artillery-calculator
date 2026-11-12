@@ -12,7 +12,7 @@ beforeEach(() => {
 afterEach(cleanup)
 
 describe('features', () => {
-  it('разделы выключены, подсказки включены по умолчанию', () => {
+  it('sections are off and hints are on by default', () => {
     const { result } = renderHook(() => ({
       adjust: useFeature('adjust'),
       journal: useFeature('journal'),
@@ -21,7 +21,7 @@ describe('features', () => {
     expect(result.current).toEqual({ adjust: false, journal: false, hints: true })
   })
 
-  it('переключение видно всем подписчикам и сохраняется', () => {
+  it('a switch is seen by all subscribers and is saved', () => {
     const a = renderHook(() => useFeature('weather'))
     const b = renderHook(() => useFeature('weather'))
     act(() => setFeature('weather', true))
@@ -32,7 +32,7 @@ describe('features', () => {
     expect(a.result.current).toBe(false)
   })
 
-  it('подсказки можно выключить', () => {
+  it('hints can be turned off', () => {
     const { result } = renderHook(() => useFeature('hints'))
     act(() => setFeature('hints', false))
     expect(result.current).toBe(false)
@@ -41,7 +41,7 @@ describe('features', () => {
 })
 
 describe('animation', () => {
-  it('по умолчанию минимальная и на карте', () => {
+  it('minimal and on the map by default', () => {
     const { result } = renderHook(() => ({
       style: useFlightStyle(),
       onMap: useFlightOnMap(),
@@ -49,7 +49,7 @@ describe('animation', () => {
     expect(result.current).toEqual({ style: 'minimal', onMap: true })
   })
 
-  it('вид и показ на карте переключаются и запоминаются', () => {
+  it('the style and the map display switch and are remembered', () => {
     const { result } = renderHook(() => ({
       style: useFlightStyle(),
       onMap: useFlightOnMap(),
@@ -67,7 +67,7 @@ describe('animation', () => {
 })
 
 describe('uiPanels', () => {
-  it('окна открываются, закрываются и переключаются', () => {
+  it('panels open, close and switch', () => {
     const { result } = renderHook(() => usePanel('hotkeys'))
     expect(result.current).toBe(false)
     act(() => setPanel('hotkeys', true))
@@ -76,7 +76,7 @@ describe('uiPanels', () => {
     expect(result.current).toBe(false)
   })
 
-  it('обучение помнит, что его прошли', () => {
+  it('the tutorial remembers that it was finished', () => {
     expect(tourDone()).toBe(false)
     markTourDone()
     expect(tourDone()).toBe(true)
@@ -84,7 +84,7 @@ describe('uiPanels', () => {
 })
 
 describe('motion', () => {
-  it('каждая анимация включается отдельно, выбор отмечается на <html>', async () => {
+  it('each animation is turned on separately, the choice is marked on <html>', async () => {
     const { getMotion, setMotion, useMotion, MOTION_KINDS } = await import('./motion')
     const numbers = renderHook(() => useMotion('numbers'))
     const switches = renderHook(() => useMotion('switches'))
@@ -92,7 +92,7 @@ describe('motion', () => {
     expect(numbers.result.current).toBe(true)
     act(() => setMotion('numbers', false))
     expect(numbers.result.current).toBe(false)
-    // остальные не затронуты
+    // the others are not affected
     expect(switches.result.current).toBe(true)
     expect(getMotion('smooth')).toBe(true)
     expect(document.documentElement.getAttribute('data-m-numbers')).toBe('off')
@@ -104,7 +104,7 @@ describe('motion', () => {
 })
 
 describe('timerSound', () => {
-  it('звук включён по умолчанию и переключается', async () => {
+  it('sound is on by default and switches', async () => {
     const { setTimerSound, useTimerSound } = await import('./timerSound')
     const { result } = renderHook(() => useTimerSound())
     expect(result.current).toBe(true)
@@ -116,7 +116,7 @@ describe('timerSound', () => {
 })
 
 describe('favorites', () => {
-  it('добавляет и убирает, помнит между показами', async () => {
+  it('adds and removes, remembers between visits', async () => {
     const { useFavorites } = await import('./favorites')
     const first = renderHook(() => useFavorites('favTest'))
     act(() => first.result.current[1]('a'))
@@ -128,7 +128,7 @@ describe('favorites', () => {
     expect(again.result.current[0]).toEqual(['b'])
   })
 
-  it('мусор в хранилище не ломает список', async () => {
+  it('junk in storage does not break the list', async () => {
     const { useFavorites } = await import('./favorites')
     localStorage.setItem('favBroken', '{not json')
     expect(renderHook(() => useFavorites('favBroken')).result.current[0]).toEqual([])

@@ -25,7 +25,7 @@ import { parseReference } from './parse'
 
 export { parseReference }
 
-// Все таблицы сразу — для проверок и инструментов; приложение грузит их по одной (tables.ts)
+// All tables at once, for checks and tools; the app loads them one by one (tables.ts)
 export const artilleryCatalog = {
   mk6: parseReference(mk6Data, 'mk6'),
   m252_rhsusaf: parseReference(

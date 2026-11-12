@@ -4,7 +4,7 @@ import { artilleryRegistry } from '../data/artillery/registry'
 import type { BallisticProfile, BallisticRow } from '../types/artillery'
 import { hasDragData, selectProfile } from './profileSelect'
 
-// Строка без погодных поправок (5 столбцов) и с ними (12 столбцов)
+// A row without weather corrections (5 columns) and with them (12 columns)
 const plain = [1000, 1300, 4.8, 0.7, 30.7] as unknown as BallisticRow
 const weather = [1000, 1290, 4.9, 0.7, 30.9, 0.1, 2, -2, 1, -1, 1, -1] as unknown as BallisticRow
 
@@ -15,42 +15,42 @@ describe('selectProfile', () => {
   const drag = make({ LOW: { 0: [weather] } })
   const ammo = { profile: 'default', advancedProfile: 'advanced' }
 
-  it('погодные поправки в таблице — значит, снята с сопротивлением воздуха', () => {
+  it('weather corrections in a table mean it was taken with air resistance', () => {
     expect(hasDragData(noDrag)).toBe(false)
     expect(hasDragData(drag)).toBe(true)
   })
 
-  it('без улучшенной баллистики — таблицы без сопротивления', () => {
+  it('without advanced ballistics: tables without air resistance', () => {
     const r = selectProfile({ profiles: { default: noDrag, advanced: drag } }, ammo, false)
     expect(r).toEqual({ profile: noDrag, substituted: [] })
   })
 
-  it('с улучшенной баллистикой — таблицы с сопротивлением, недостающая траектория из других', () => {
+  it('with advanced ballistics: tables with air resistance, a missing trajectory from the others', () => {
     const r = selectProfile({ profiles: { default: noDrag, advanced: drag } }, ammo, true)
     expect(r.substituted).toEqual(['HIGH'])
     expect(r.profile?.modes.LOW).toBe(drag.modes.LOW)
     expect(r.profile?.modes.HIGH).toBe(noDrag.modes.HIGH)
-    // Тот же объект при повторном вызове
+    // The same object on a repeated call
     expect(selectProfile({ profiles: { default: noDrag, advanced: drag } }, ammo, true).profile).toBe(r.profile)
   })
 
-  it('обычные таблицы с погодными поправками — это таблицы с сопротивлением', () => {
+  it('plain tables with weather corrections are tables with air resistance', () => {
     const only = { profiles: { default: drag } }
     expect(selectProfile(only, { profile: 'default' }, true)).toEqual({ profile: drag, substituted: [] })
-    // Без сопротивления своих таблиц нет: берутся эти же и предупреждение
+    // There are no tables of its own without air resistance: these are used with a warning
     expect(selectProfile(only, { profile: 'default' }, false)).toEqual({ profile: drag, substituted: ['LOW'] })
   })
 
-  it('таблиц с сопротивлением нет — обычные и предупреждение', () => {
+  it('no tables with air resistance: the plain ones and a warning', () => {
     const r = selectProfile({ profiles: { default: noDrag } }, { profile: 'default' }, true)
     expect(r).toEqual({ profile: noDrag, substituted: ['HIGH', 'LOW'] })
   })
 
-  it('нет профиля вообще — предупреждения нет', () => {
+  it('no profile at all: no warning', () => {
     expect(selectProfile({ profiles: {} }, undefined, true)).toEqual({ profile: undefined, substituted: [] })
   })
 
-  it('M101: обе траектории без сопротивления, настильная и с ним', () => {
+  it('M101: both trajectories without air resistance, the low one with it too', () => {
     const m101 = artilleryRegistry.m101
     const ammo101 = m101.ammunition?.[0]
     expect(selectProfile(m101, ammo101, false).substituted).toEqual([])

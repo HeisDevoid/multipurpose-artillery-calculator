@@ -1,7 +1,7 @@
 import { t } from '../i18n'
 import { exportJournal, parseJournalFile, type JournalEntry } from './journal'
 
-/** Скачать журнал целей файлом. */
+/** Download the target journal as a file. */
 export function downloadJournal(entries: readonly JournalEntry[]) {
   const date = new Date().toISOString().slice(0, 10)
   const blob = new Blob([exportJournal(entries)], { type: 'application/json' })
@@ -14,8 +14,8 @@ export function downloadJournal(entries: readonly JournalEntry[]) {
 }
 
 /**
- * Прочитать файл журнала и добавить цели; возвращает сообщение для
- * пользователя («Добавлено: 3. Уже были: 1.»).
+ * Read a journal file and add the targets; returns a message for
+ * the user ("Added: 3. Already present: 1.").
  */
 export async function importJournalFile(
   file: File,
@@ -24,7 +24,7 @@ export async function importJournalFile(
   return describeImport(await file.text(), onImport)
 }
 
-/** То же по тексту файла (отдельно — чтобы проверять без File). */
+/** The same from the file text (separately, to test without File). */
 export function describeImport(
   text: string,
   onImport: (entries: JournalEntry[]) => { added: number; skipped: number }
@@ -40,10 +40,10 @@ export function describeImport(
   )
 }
 
-/** Действия над журналом, которые панель целей на карте вызывает сама. */
+/** Journal actions the targets panel on the map calls by itself. */
 export interface JournalActions {
   exportAll: () => void
-  // Импорт файла; результат — сообщение пользователю
+  // File import; the result is a message for the user
   importFile: (file: File) => Promise<string>
   rename: (id: string, name: string) => void
   remove: (id: string) => void

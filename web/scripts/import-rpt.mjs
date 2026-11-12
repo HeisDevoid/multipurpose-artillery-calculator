@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Данные карты из RPT-файла (скрипт tools/arma/gradtopo_export.sqf) → папка в формате
- * выгрузки grad_meh без спутника: meta.json, dem.asc.gz, geojson/*.geojson.gz.
+ * Map data from an RPT file (the tools/arma/gradtopo_export.sqf script) → a folder in the
+ * grad_meh export format without a satellite image: meta.json, dem.asc.gz, geojson/*.geojson.gz.
  *
- *   node scripts/import-rpt.mjs <файл.rpt> <папка-выгрузки> [--name "Cam Lao Nam"] [--author "SOG"]
+ *   node scripts/import-rpt.mjs <file.rpt> <export-folder> [--name "Cam Lao Nam"] [--author "SOG"]
  *
- * Дальше (карта без спутника, только топо):
- *   node scripts/import-grad-meh.mjs --no-sat "<папка-выгрузки>"
+ * Next (a map without a satellite image, topo only):
+ *   node scripts/import-grad-meh.mjs --no-sat "<export-folder>"
  */
 import { createReadStream, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -44,11 +44,11 @@ const lines = createInterface({ input: createReadStream(rptFile, 'utf8'), crlfDe
 for await (const raw of lines) {
   const at = raw.indexOf('GRADTOPO|')
   if (at < 0) continue
-  // В RPT строка выглядит как: 18:11:40 "GRADTOPO|..." — кавычки убираем
+  // A line in the RPT looks like: 18:11:40 "GRADTOPO|..." (the quotes are removed)
   const parts = raw.slice(at + 9).trim().replace(/"+$/, '').split('|')
   switch (parts[0]) {
     case 'META': {
-      // Новый запуск скрипта в том же RPT начинает всё заново
+      // A new run of the script in the same RPT starts everything over
       meta = { worldName: parts[1], worldSize: Number(parts[2]), step: Number(parts[3]), n: Number(parts[4]) }
       grid = new Float32Array(meta.n * meta.n)
       houses.length = 0
@@ -92,12 +92,12 @@ for await (const raw of lines) {
 }
 
 if (!meta) {
-  console.error('В RPT нет строк GRADTOPO|META — скрипт не запускался или лог другой.')
+  console.error('The RPT has no GRADTOPO|META lines: the script did not run or this is another log.')
   process.exit(1)
 }
-if (!ended) console.warn('ВНИМАНИЕ: нет строки GRADTOPO|END — экспорт мог не закончиться, данные неполные.')
+if (!ended) console.warn('WARNING: no GRADTOPO|END line, the export may not have finished and the data is incomplete.')
 
-// Склейка отрезков дорог в ломаные
+// Joining road segments into polylines
 function join_(segs) {
   const key = (p) => `${p[0]},${p[1]}`
   const byEnd = new Map()
@@ -149,7 +149,7 @@ writeFileSync(
       author: flag('--author') ?? '',
       worldSize: meta.worldSize,
       colorOutside: [0.96, 0.95, 0.92, 1],
-      // Карта без спутникового снимка: только топо
+      // A map without a satellite image: topo only
       source: 'gradtopo',
     },
     null,
@@ -157,7 +157,7 @@ writeFileSync(
   ) + '\n'
 )
 
-// ESRI ASCII: строка 0 — север
+// ESRI ASCII: row 0 is the north
 const { n, step } = meta
 const asc = [`ncols ${n}`, `nrows ${n}`, 'xllcorner 0', 'yllcorner 0', `cellsize ${step}`, 'NODATA_value -9999']
 for (let j = n - 1; j >= 0; j -= 1) {
@@ -198,6 +198,6 @@ for (const [type, list] of locations) {
 }
 
 console.log(
-  `${meta.worldName}: сетка ${n}×${n} (шаг ${step} м), зданий ${houses.length}, дорожных отрезков ${Object.values(segments).reduce((a, s) => a + s.length, 0)}, названий ${[...locations.values()].reduce((a, l) => a + l.length, 0)}`
+  `${meta.worldName}: grid ${n}×${n} (step ${step} m), buildings ${houses.length}, road segments ${Object.values(segments).reduce((a, s) => a + s.length, 0)}, names ${[...locations.values()].reduce((a, l) => a + l.length, 0)}`
 )
-console.log(`Папка: ${outDir}\nДальше: node scripts/import-grad-meh.mjs --no-sat "${outDir}"`)
+console.log(`Folder: ${outDir}\nNext: node scripts/import-grad-meh.mjs --no-sat "${outDir}"`)

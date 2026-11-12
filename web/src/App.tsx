@@ -22,8 +22,8 @@ import { useWakeLock } from './lib/useWakeLock'
 import { CrashProbe } from './components/ErrorBoundary'
 import type { Language, Theme } from './types/settings'
 
-// Связка и настройки грузятся по требованию: главный экран
-// открывается быстрее, особенно на телефоне.
+// Link and the settings load on demand: the main screen
+// opens faster, especially on a phone.
 const SyncPage = lazy(() =>
   import('./pages/SyncPage').then((m) => ({ default: m.SyncPage }))
 )
@@ -31,11 +31,11 @@ const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
 )
 
-// Язык по умолчанию — как у системы
+// The default language is the system one
 const parseFlag = (fallback: boolean) => (raw: string | null) =>
   raw === null ? fallback : raw === 'true'
 
-/** Второстепенный экран: «Назад» и заголовок. */
+/** A secondary screen: Back and a title. */
 function SubView({
   title,
   onBack,
@@ -66,32 +66,32 @@ function App() {
     (raw) => (raw && isAvailableModel(raw) ? raw : 'mk6')
   )
 
-  // По ссылке-приглашению стрелка — сразу «Связка»
+  // A gunner's invitation link opens Link at once
   const [view, setView] = useState<View>(() =>
     readInvite(window.location.search) ? 'sync' : 'dashboard'
   )
 
-  // Язык: из адреса (?lang=), иначе выбранный раньше, иначе как у системы
+  // The language: from the address (?lang=), else the one chosen earlier, else the system one
   const [language, setLanguage] = usePersistentState<Language>('language', initialLanguage)
-  // Язык для t(): задаётся до отрисовки дочерних компонентов
+  // The language for t(): set before the child components render
   setI18nLanguage(language)
   const [theme, setTheme] = usePersistentState<Theme>('theme', (raw) =>
     raw === 'light' ? 'light' : 'dark'
   )
-  // Не гасить экран (телефон у орудия)
+  // Keep the screen on (a phone at the gun)
   const [keepAwake, setKeepAwake] = usePersistentState(
     'keepAwake',
     parseFlag(false)
   )
-  // Экспериментальный ввод по координатам сетки
+  // Experimental input by grid coordinates
   const [gridInput, setGridInput] = usePersistentState(
     'experimentalGrid',
     parseFlag(false)
   )
-  // Карта с метками и высотами
+  // The map with markers and heights
   const [mapInput, setMapInput] = usePersistentState('showMap', parseFlag(true))
 
-  // Метки на карте и метки с экрана игры — по желанию, в настройках
+  // Map markers and markers from the game screen are optional, in the settings
   const [showMarkers, setShowMarkers] = usePersistentState(
     'showMarkers',
     parseFlag(false)
@@ -103,7 +103,7 @@ function App() {
 
   useWakeLock(keepAwake)
 
-  // Программа для ПК: Ctrl+Alt+O показывает и скрывает оверлей
+  // Windows app: Ctrl+Alt+O shows and hides the overlay
   useEffect(
     () =>
       onHotkey((action) => {
@@ -114,8 +114,8 @@ function App() {
 
   useEffect(() => applyHead(language), [language])
 
-  // Смена языка: сначала словарь (он грузится по требованию), потом
-  // интерфейс; ?lang= в адресе тоже меняется, чтобы не вернуть старый язык
+  // Changing the language: the dictionary first (it loads on demand), then
+  // the interface; ?lang= in the address changes too, so the old language does not come back
   function changeLanguage(next: Language) {
     void loadLanguage(next).then(() => {
       const url = new URL(window.location.href)
@@ -136,13 +136,13 @@ function App() {
 
   const back = () => setView('dashboard')
 
-  // Смена темы: круг расходится от кнопки; без поддержки браузера — сразу
+  // Changing the theme: a circle spreads from the button; without browser support it is instant
   function toggleTheme(origin: { x: number; y: number }) {
     const next: Theme = theme === 'dark' ? 'light' : 'dark'
     const doc = document as Document & {
       startViewTransition?: (update: () => void) => { ready: Promise<void> }
     }
-    // Круг при смене темы встроен и работает всегда, где браузер умеет
+    // The theme circle is built in and always works where the browser can do it
     if (!doc.startViewTransition) {
       setTheme(next)
       return
@@ -176,10 +176,10 @@ function App() {
     <div className="flex min-h-screen flex-col">
       <CrashProbe area="app" />
       <main className="mx-auto w-full max-w-[1240px] flex-1 px-4 pt-6 pb-4 sm:px-6 lg:pt-14">
-        {/* Стрелок ушёл со страницы «Связка»: установки не обновляются */}
+        {/* The gunner left the Link page: the settings are not updated */}
         {view !== 'sync' && <GunnerAwayBanner onBack={() => setView('sync')} />}
 
-        {/* Заголовок страницы для поиска и экранных дикторов */}
+        {/* The page title for search and screen readers */}
         {view === 'dashboard' && <h1 className="sr-only">{t('seo.heading')}</h1>}
         {view === 'dashboard' && (
           <DashboardPage

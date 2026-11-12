@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Сборка программы для ПК без встроенных карт: тайлы весят десятки
- * мегабайт, а программа берёт их с опубликованного сайта
+ * The Windows app build without the built-in maps: the tiles weigh tens of
+ * megabytes, and the app takes them from the published site
  * (src/lib/builtinMaps.ts, MAPS_BASE).
  */
 import { rmSync } from 'node:fs'

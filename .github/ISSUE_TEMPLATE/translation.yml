@@ -1,18 +1,18 @@
-name: Перевод / Translation
-description: Неточный или странный перевод интерфейса / An inaccurate or odd translation
+name: Translation
+description: An inaccurate or odd translation of the interface
 labels: [translation]
 body:
   - type: dropdown
     id: language
     attributes:
-      label: Язык / Language
-      options: [Русский, English, Українська, Deutsch, Français, 日本語, 中文]
+      label: Language
+      options: [Russian, English, Ukrainian, German, French, Japanese, Chinese]
     validations:
       required: true
   - type: textarea
     id: text
     attributes:
-      label: Где и что не так / Where and what is wrong
-      description: Текст сейчас и как правильно / Current text and the correct one
+      label: Where and what is wrong
+      description: The current text and the correct one
     validations:
       required: true

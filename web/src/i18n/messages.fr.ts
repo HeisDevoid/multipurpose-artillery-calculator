@@ -1,6 +1,8 @@
 import type { ru } from './messages'
 
 export const fr: Record<keyof typeof ru, string> = {
+  "settings.usage-stats": "Statistiques anonymes",
+  "settings.usage-stats-description": "Une fois par jour, l'application signale qu'elle a été utilisée. Aucune donnée sur vous ni sur votre appareil.",
   "footer.donate": "Soutenir sur Donatello",
   "footer.donate-hint": "Participer au domaine du site",
   "settings.physics-why": "Influe sur tous les éléments de tir.",

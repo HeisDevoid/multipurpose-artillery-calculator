@@ -1,6 +1,6 @@
 # Sholef (155 mm), LOW, Charge 2
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): mortar_155mm_AMOS, 388.8 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): mortar_155mm_AMOS, 388.8 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 1200 42 - - 3.2 0.1 0.2 -1.4 0.0 -1.2 -1.5 0.3
 2700 101 - - 7.6 0.2 1.0 -2.0 0.0 -1.1 -3.6 2.5
 3100 118 - - 8.8 0.3 1.3 -2.3 0.0 -1.1 -4.0 2.8

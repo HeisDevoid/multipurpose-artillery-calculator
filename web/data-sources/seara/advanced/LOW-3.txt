@@ -1,6 +1,6 @@
 # Seara (227 mm), LOW, Charge 3
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rockets_230mm_GAT, 170 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rockets_230mm_GAT, 170 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 1050 195 -100.7 -0.1 6.5 0.2 0.3 -0.8 0.0 -0.5 -0.7 0.2
 1200 226 -89.1 -0.1 7.5 0.2 1.0 -0.4 0.5 -0.0 -0.3 0.8
 1250 236 -85.1 -0.1 7.8 0.2 1.0 -0.5 0.5 -0.0 -0.3 0.8

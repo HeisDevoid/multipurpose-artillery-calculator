@@ -2,17 +2,17 @@ import { useSyncExternalStore } from 'react'
 
 import { isDesktop, isOverlayWindow } from './desktop'
 
-/** Новая версия программы для ПК (GitHub Releases, подписанный установщик). */
+/** A new version of the Windows app (GitHub Releases, a signed installer). */
 export interface AvailableUpdate {
   version: string
   notes: string | null
-  // Скачать, установить и перезапустить; onProgress — доля 0…1 (null, если размер неизвестен)
+  // Download, install and restart; onProgress gets the fraction 0…1 (null if the size is unknown)
   install: (onProgress: (share: number | null) => void) => Promise<void>
 }
 
 /**
- * Есть ли обновление. В браузере и в окне-оверлее — никогда. Ошибки (нет
- * сети, нет доступа) не глотаются: их показывает «О программе».
+ * Whether there is an update. Never in a browser or in the overlay window. Errors (no
+ * network, no access) are not swallowed: About shows them.
  */
 export async function checkForUpdate(): Promise<AvailableUpdate | null> {
   if (!isDesktop || isOverlayWindow) return null
@@ -54,7 +54,7 @@ function setStatus(next: UpdateStatus) {
   listeners.forEach((listener) => listener())
 }
 
-/** Состояние проверки обновлений: плашка и «О программе». */
+/** The update check state: the banner and About. */
 export function useUpdateStatus(): UpdateStatus {
   return useSyncExternalStore(
     (listener) => {
@@ -65,7 +65,7 @@ export function useUpdateStatus(): UpdateStatus {
   )
 }
 
-/** Проверить сейчас. Найденное обновление не перепроверяется: плашка уже есть. */
+/** Check now. A found update is not checked again: the banner is already there. */
 export async function runUpdateCheck(): Promise<void> {
   if (!isDesktop || isOverlayWindow) return
   if (status.kind === 'checking' || status.kind === 'available') return
@@ -79,13 +79,13 @@ export async function runUpdateCheck(): Promise<void> {
   }
 }
 
-// Программа может работать часами: новая версия ищется и во время работы
+// The app may run for hours: a new version is looked for while it runs too
 const INTERVAL = 30 * 60 * 1000
 
 /**
- * Проверки: через несколько секунд после запуска (не мешать старту), потом
- * раз в полчаса, при возврате к окну (если давно не проверяли) и при
- * повторном запуске программы (он открывает уже работающее окно).
+ * Checks: a few seconds after the start (so as not to slow it down), then
+ * every half an hour, when the window gets focus back (if the last check was long ago) and on
+ * a second launch of the app (it opens the window that is already running).
  */
 export function startUpdateChecks(): () => void {
   if (!isDesktop || isOverlayWindow) return () => {}

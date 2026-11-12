@@ -7,30 +7,30 @@ const STORAGE_KEY = 'artilleryJournal'
 export type AngleUnit = 'mil' | 'deg'
 export type WindMode = 'vector' | 'components'
 
-/** Погодные вводные (как ввёл пользователь). */
+/** Weather inputs (as the user entered them). */
 export interface JournalWeather {
   windMode: WindMode
-  // Режим vector: скорость, м/с, и откуда дует, °
+  // The vector mode: speed, m/s, and the direction it blows from, °
   windSpeed: number | null
   windFrom: number | null
-  // Режим components: встречный (+) / попутный (−) и боковой
-  // справа (+) / слева (−), м/с
+  // The components mode: head (+) / tail (−) and cross
+  // from the right (+) / from the left (−), m/s
   headwind: number | null
   crosswind: number | null
   temperature: number | null // °C
-  pressure: number | null // гПа
+  pressure: number | null // hPa
 }
 
 /**
- * Запись журнала: сохранённые вводные и результат на момент сохранения.
- * Запись относится к календарному дню (dayKey), когда она создана.
+ * A journal entry: the saved inputs and the result at the moment of saving.
+ * The entry belongs to the calendar day (dayKey) when it was created.
  */
 export interface JournalEntry {
   id: string
   name: string
 
-  createdAt: string // ISO-время создания
-  dayKey: string // YYYY-MM-DD, локальная дата создания
+  createdAt: string // ISO creation time
+  dayKey: string // YYYY-MM-DD, the local creation date
 
   modelId: string
   ammoId: string
@@ -41,28 +41,28 @@ export interface JournalEntry {
   targetHeight: number | null
   rangeCorrection: number
 
-  // Снимок результата
+  // A snapshot of the result
   elevation: number
   tof: number
 
-  // Поля v0.7, в старых записях отсутствуют.
-  // Азимут на цель и азимут с поправкой на ветер — в единицах azimuthUnit.
+  // v0.7 fields, missing in old entries.
+  // The azimuth to the target and the wind-corrected azimuth, in azimuthUnit units.
   azimuth?: number | null
   azimuthUnit?: AngleUnit
   firingAzimuth?: number | null
   weather?: JournalWeather | null
 
-  // Поле v0.8: боковая поправка, м (> 0 — вправо)
+  // A v0.8 field: the lateral correction, m (> 0 to the right)
   lateralCorrection?: number
 
-  // Поле v0.10: режим таблицы; нет — HIGH
+  // A v0.10 field: the table mode; missing means HIGH
   mode?: ArtilleryMode
 
-  // Поле v0.12: точка цели на карте, если цель ставили на карте
+  // A v0.12 field: the target point on the map, if the target was placed on the map
   target?: MapTarget | null
 }
 
-/** Цель на карте: мир (worldName) и метры от начала сетки. */
+/** A target on the map: the world (worldName) and metres from the grid origin. */
 export interface MapTarget {
   world: string
   x: number
@@ -153,19 +153,19 @@ export function loadEntries(): JournalEntry[] {
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
 
-    // Повреждённые записи отбрасываются, остальные сохраняются.
+    // Damaged entries are dropped, the rest are saved.
     return parsed.filter(isEntry)
   } catch {
     return []
   }
 }
 
-// ---- перенос журнала между устройствами ----
+// ---- moving the journal between devices ----
 
 const EXPORT_APP = 'multipurpose-artillery-calculator'
 const EXPORT_VERSION = 1
 
-/** Файл экспорта: обёртка с пометкой приложения и версии формата. */
+/** The export file: a wrapper with the app mark and the format version. */
 export function exportJournal(
   entries: readonly JournalEntry[],
   now = new Date()
@@ -183,9 +183,9 @@ export function exportJournal(
 }
 
 /**
- * Разбор файла журнала. Принимает файл экспорта или голый массив
- * записей. Возвращает корректные записи (повреждённые отбрасываются)
- * и число отброшенных; null — файл не похож на журнал.
+ * Parsing a journal file. Accepts an export file or a bare array
+ * of entries. Returns the valid entries (damaged ones are dropped)
+ * and the number dropped; null: the file does not look like a journal.
  */
 export function parseJournalFile(
   text: string
@@ -213,7 +213,7 @@ export function parseJournalFile(
   return { entries, invalid: list.length - entries.length }
 }
 
-/** Добавить новые записи; записи с уже существующим id пропускаются. */
+/** Add new entries; entries with an existing id are skipped. */
 export function mergeEntries(
   existing: readonly JournalEntry[],
   incoming: readonly JournalEntry[]
@@ -234,10 +234,10 @@ export function mergeEntries(
   }
 }
 
-/** Сколько последних целей в полоске и при переключении клавишами */
+/** How many recent targets go into the strip and the key switching */
 export const RECENT_TARGETS = 10
 
-/** Последние цели, свежие первыми (полоска целей и переключение). */
+/** The recent targets, newest first (the target strip and switching). */
 export function recentEntries(
   entries: readonly JournalEntry[],
   limit = RECENT_TARGETS
@@ -248,8 +248,8 @@ export function recentEntries(
 }
 
 /**
- * Соседняя цель по списку recent: direction 1 — следующая (старше),
- * −1 — предыдущая. Без текущей — самая свежая.
+ * The neighbouring target in the recent list: direction 1 is the next one (older),
+ * −1 the previous one. Without a current one, the newest.
  */
 export function neighbourEntry(
   list: readonly JournalEntry[],
@@ -262,7 +262,7 @@ export function neighbourEntry(
   return list[(index + direction + list.length) % list.length]
 }
 
-/** Поиск по названию, модели и дистанции (без учёта регистра). */
+/** Search by name, model and distance (case-insensitive). */
 export function matchesQuery(
   entry: JournalEntry,
   query: string,
@@ -280,7 +280,7 @@ function saveEntries(entries: JournalEntry[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
   } catch {
-    // Хранилище недоступно или переполнено — журнал живёт до перезагрузки.
+    // Storage is unavailable or full: the journal lives until a reload.
   }
 }
 
@@ -306,7 +306,7 @@ export function formatTime(iso: string): string {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-/** Группировка по дням: свежие дни сверху, внутри дня свежие записи сверху. */
+/** Grouping by day: the newest days on top, the newest entries on top within a day. */
 export function groupByDay(
   entries: readonly JournalEntry[]
 ): JournalDay[] {
@@ -354,7 +354,7 @@ export function useJournal() {
     return entry
   }
 
-  /** Перезаписать вводные и результат записи, сохранив её id и день. */
+  /** Overwrite the inputs and the result of an entry, keeping its id and day. */
   function update(id: string, draft: JournalDraft) {
     commit(
       entries.map((e) =>
@@ -365,7 +365,7 @@ export function useJournal() {
     )
   }
 
-  /** Импорт: возвращает, сколько записей добавлено и пропущено. */
+  /** Import: returns how many entries were added and skipped. */
   function importEntries(incoming: readonly JournalEntry[]) {
     const result = mergeEntries(entries, incoming)
     if (result.added > 0) commit(result.entries)

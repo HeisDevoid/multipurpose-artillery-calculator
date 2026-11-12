@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Карты (public/maps, ~100 МБ) живут не в основной истории git, а в отдельной
- * ветке maps из одного коммита: при обновлении она перезаписывается целиком,
- * поэтому репозиторий не растёт от каждого переимпорта карт.
+ * Maps (public/maps, ~100 MB) live not in the main git history but in a separate
+ * maps branch of a single commit: an update rewrites it as a whole,
+ * so the repository does not grow with every map re-import.
  *
- *   npm run maps:pull     — скачать карты из ветки maps в public/maps (после клонирования)
- *   npm run maps:publish  — заменить ветку maps содержимым public/maps
+ *   npm run maps:pull     - download the maps from the maps branch into public/maps (after cloning)
+ *   npm run maps:publish  - replace the maps branch with the contents of public/maps
  *
- * Сборка сайта в CI берёт карты из этой ветки (см. .github/workflows).
+ * The site build in CI takes the maps from this branch (see .github/workflows).
  */
 import { execFileSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
@@ -25,7 +25,7 @@ const command = process.argv[2]
 
 if (command === 'publish') {
   if (!existsSync(join(MAPS, 'index.json'))) {
-    console.error('Нет public/maps/index.json — нечего публиковать.')
+    console.error('No public/maps/index.json: nothing to publish.')
     process.exit(1)
   }
   const remote = git(['remote', 'get-url', 'origin'])
@@ -36,12 +36,12 @@ if (command === 'publish') {
   git(['init', '-q', '-b', BRANCH], dir)
   git(['add', '-A'], dir)
   git(['-c', `user.name=${name}`, '-c', `user.email=${email}`, 'commit', '-q', '-m', `maps: ${readdirSync(MAPS).filter((f) => !f.includes('.')).length} maps`], dir)
-  console.log(`публикую ветку ${BRANCH} в ${remote}…`)
+  console.log(`publishing the ${BRANCH} branch to ${remote}…`)
   execFileSync('git', ['push', '--force', remote, `${BRANCH}:${BRANCH}`], { cwd: dir, stdio: 'inherit' })
   rmSync(dir, { recursive: true, force: true })
-  console.log('готово')
+  console.log('done')
 } else if (command === 'pull') {
-  // archive из подпапки web/ взял бы только web/… — запускаем от корня репозитория
+  // archive from the web/ subfolder would take only web/…: run from the repository root
   const root = git(['rev-parse', '--show-toplevel'])
   git(['fetch', '--depth=1', 'origin', BRANCH], root)
   const work = mkdtempSync(join(tmpdir(), 'maps-pull-'))
@@ -49,18 +49,18 @@ if (command === 'publish') {
   const out = join(work, 'maps')
   git(['archive', '--format=tar', '-o', tar, 'FETCH_HEAD'], root)
   mkdirSync(out)
-  // Относительные пути: GNU tar принимает «C:\…» за адрес удалённой машины
+  // Relative paths: GNU tar takes "C:\…" for a remote machine address
   execFileSync('tar', ['-xf', 'maps.tar', '-C', 'maps'], { cwd: work, stdio: 'inherit' })
-  // Старые карты заменяются, только если новые действительно распаковались
+  // The old maps are replaced only when the new ones were really unpacked
   if (!existsSync(join(out, 'index.json'))) {
-    console.error('В ветке maps нет index.json — public/maps не тронута.')
+    console.error('The maps branch has no index.json: public/maps is untouched.')
     process.exit(1)
   }
   rmSync(MAPS, { recursive: true, force: true })
   cpSync(out, MAPS, { recursive: true })
   rmSync(work, { recursive: true, force: true })
-  console.log(`карты из ветки ${BRANCH} → ${MAPS}`)
+  console.log(`maps from the ${BRANCH} branch → ${MAPS}`)
 } else {
-  console.error('команды: pull | publish')
+  console.error('commands: pull | publish')
   process.exit(1)
 }

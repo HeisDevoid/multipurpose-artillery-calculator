@@ -1,18 +1,18 @@
-/** Разбор числа из поля ввода: допускаются запятая и знак «−». */
+/** Parsing a number from an input field: a comma and the "−" sign are allowed. */
 export function parseNumber(value: string): number | null {
   if (value.trim() === '') return null
   const number = Number(value.replace(',', '.').replace('−', '-'))
   return Number.isFinite(number) ? number : null
 }
 
-/** Поле заполнено, но число не распознано. */
+/** The field is filled in, but the number is not recognised. */
 export function isInvalid(value: string): boolean {
   return value.trim() !== '' && parseNumber(value) === null
 }
 
 export function formatSigned(value: number, digits = 1): string {
   const fixed = value.toFixed(digits)
-  // −0.03 → «0.0», а не «-0.0»
+  // −0.03 → "0.0", not "-0.0"
   if (Number(fixed) === 0) return (0).toFixed(digits)
   return value > 0 ? `+${fixed}` : fixed
 }
@@ -38,11 +38,11 @@ export function writeStored(key: string, value: string) {
   try {
     localStorage.setItem(key, value)
   } catch {
-    // Хранилище недоступно — настройка живёт до перезагрузки.
+    // Storage is unavailable: the setting lives until a reload.
   }
 }
 
-/** Произвольная строка из хранилища (например, координата). */
+/** An arbitrary string from storage (for example, a coordinate). */
 export function readStoredText(key: string): string {
   try {
     return localStorage.getItem(key) ?? ''

@@ -1,6 +1,6 @@
 /**
- * Разделы настроек сворачиваются (так при прокрутке не задеть пункт случайно);
- * раскрытые запоминаются. Переход по чипу сверху раскрывает раздел.
+ * Settings sections collapse (so that an item is not touched by accident while scrolling);
+ * the open ones are remembered. A jump from the chip on top opens the section.
  */
 export const SETTINGS_CARD_OPEN = 'settings-card-open'
 

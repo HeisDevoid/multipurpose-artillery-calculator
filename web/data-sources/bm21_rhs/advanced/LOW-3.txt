@@ -1,6 +1,6 @@
 # BM-21 Grad (122 mm), LOW, Charge 3
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_bm21, 357.42 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_bm21, 357.42 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 1300 54 - - 3.8 0.1 0.2 -1.3 0.0 -1.1 -1.4 0.3
 2100 90 - - 6.3 0.2 1.7 -0.6 1.1 -0.0 -0.9 1.9
 2200 95 - - 6.6 0.2 0.7 -1.7 0.0 -1.0 -2.0 0.9

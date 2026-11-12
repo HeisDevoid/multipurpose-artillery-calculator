@@ -1,6 +1,6 @@
 # 2S9 Sochor (155 mm), HIGH, Charge 2
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): mortar_155mm_AMOS, 388.8 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): mortar_155mm_AMOS, 388.8 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 3200 1420 0.7 0.4 65.7 6.0 21 -21 0.4 -0.3 -13 12
 3300 1414 0.8 0.4 65.7 5.8 21 -21 0.4 -0.3 -13 12
 3400 1408 0.8 0.4 65.6 5.7 21 -21 0.3 -0.4 -14 12

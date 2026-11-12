@@ -1,26 +1,26 @@
 import type { ReactNode } from 'react'
 
 /**
- * Значки-подсказки у полей ввода: сразу видно, что вводится, чтобы
- * не перепутать (дистанцию с высотой, азимут с возвышением).
- * Линейные, сетка 24×24, наследуют цвет текста.
+ * Hint icons at the input fields: it is clear at once what goes where, so that
+ * nothing is mixed up (distance with height, azimuth with elevation).
+ * Line icons on a 24×24 grid, they inherit the text colour.
  */
 const paths = {
-  // линейка: расстояние до цели
+  // a ruler: the distance to the target
   distance: (
     <>
       <path d="M3 8.5h18v7H3z" />
       <path d="M7 8.5v3M11 8.5v2M15 8.5v3M19 8.5v2" />
     </>
   ),
-  // компас: азимут
+  // a compass: azimuth
   azimuth: (
     <>
       <circle cx="12" cy="12" r="8.5" />
       <path d="m15.5 8.5-2 5-5 2 2-5z" />
     </>
   ),
-  // возвышение: угол ствола над горизонтом
+  // elevation: the barrel angle above the horizon
   elevation: (
     <>
       <path d="M3 19h18" />
@@ -28,21 +28,21 @@ const paths = {
       <path d="M11 19a6 6 0 0 0-1.6-4.1" />
     </>
   ),
-  // секундомер: время полёта
+  // a stopwatch: time of flight
   time: (
     <>
       <circle cx="12" cy="13.5" r="7" />
       <path d="M12 13.5V9.5M10 3h4" />
     </>
   ),
-  // заряд: гильза
+  // charge: a cartridge case
   charge: (
     <>
       <path d="M9 3.5h6v3.5l1.2 2.2V20H7.8V9.2L9 7z" />
       <path d="M7.8 16h8.4" />
     </>
   ),
-  // навесная траектория: дуга
+  // high trajectory: an arc
   trajectory: (
     <>
       <path d="M3 19c3-12 15-12 18 0" />
@@ -50,7 +50,7 @@ const paths = {
       <circle cx="21" cy="19" r="0.8" />
     </>
   ),
-  // орудие на холме: высота позиции
+  // a gun on a hill: the position height
   gunHeight: (
     <>
       <path d="M2.5 20.5 8.5 11l3.5 5 2.5-3.2 6.5 7.7z" />
@@ -58,7 +58,7 @@ const paths = {
       <circle cx="12" cy="7" r="1.3" />
     </>
   ),
-  // цель на холме: высота цели
+  // a target on a hill: the target height
   targetHeight: (
     <>
       <path d="M2.5 20.5 8.5 11l3.5 5 2.5-3.2 6.5 7.7z" />
@@ -66,7 +66,7 @@ const paths = {
       <path d="M16.5 2.5v2M16.5 8.5v2M12.5 6.5h2M18.5 6.5h2" />
     </>
   ),
-  // орудие
+  // gun
   weapon: (
     <>
       <path d="M4 17.5 16.5 6.5l2.2 2.4L7.5 19.5z" />
@@ -74,14 +74,14 @@ const paths = {
       <path d="M17.5 5.5 20.5 3" />
     </>
   ),
-  // снаряд
+  // shell
   shell: (
     <>
       <path d="M12 2.5c3 2.5 4 5.5 4 8.5v8.5H8V11c0-3 1-6 4-8.5z" />
       <path d="M8 15.5h8" />
     </>
   ),
-  // ветер
+  // wind
   wind: (
     <>
       <path d="M3 9h11a2.5 2.5 0 1 0-2.5-2.5" />
@@ -89,7 +89,7 @@ const paths = {
       <path d="M3 18h7" />
     </>
   ),
-  // направление ветра: стрелка по кругу
+  // wind direction: an arrow around a circle
   windDirection: (
     <>
       <circle cx="12" cy="12" r="8.5" />
@@ -109,21 +109,21 @@ const paths = {
       <path d="M7.5 15.5h9" />
     </>
   ),
-  // карта: координаты сетки
+  // map: grid coordinates
   grid: (
     <>
       <path d="M3.5 3.5h17v17h-17z" />
       <path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17" />
     </>
   ),
-  // поправка: смещение разрыва
+  // correction: the burst offset
   correction: (
     <>
       <circle cx="12" cy="12" r="3.2" />
       <path d="M12 3v3.5M12 17.5V21M3 12h3.5M17.5 12H21" />
     </>
   ),
-  // наблюдатель
+  // observer
   observer: (
     <>
       <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z" />
@@ -142,7 +142,7 @@ const paths = {
       <path d="M8 10.5V8a4 4 0 0 1 7.7-1.5" />
     </>
   ),
-  // дистанция между выстрелами / перезарядка
+  // the interval between shots / reload
   reload: (
     <>
       <path d="M20 11a8 8 0 1 0-1.6 5.6" />
@@ -153,28 +153,28 @@ const paths = {
   arrowRight: <path d="M5 12h14M13 6l6 6-6 6" />,
   arrowUp: <path d="M12 19V5M6 11l6-6 6 6" />,
   arrowDown: <path d="M12 5v14M6 13l6 6 6-6" />,
-  // орудие на карте: синяя точка с кольцом
+  // the gun on the map: a blue dot with a ring
   gun: (
     <>
       <circle cx="12" cy="12" r="3.2" />
       <circle cx="12" cy="12" r="8" />
     </>
   ),
-  // цель: перекрестие
+  // target: a crosshair
   target: (
     <>
       <circle cx="12" cy="12" r="6" />
       <path d="M12 2.5v4.5M12 17v4.5M2.5 12H7M17 12h4.5" />
     </>
   ),
-  // метка: булавка
+  // marker: a pin
   marker: (
     <>
       <path d="M12 21s6.5-5.6 6.5-11a6.5 6.5 0 1 0-13 0c0 5.4 6.5 11 6.5 11z" />
       <circle cx="12" cy="10" r="2.3" />
     </>
   ),
-  // огневая линия: ломаная с точками
+  // line of fire: a polyline with dots
   line: (
     <>
       <path d="M4 18 10 9l5 6 5-9" />
@@ -206,7 +206,7 @@ const paths = {
       <path d="M8 4v5h7V4M8 20v-6h8v6" />
     </>
   ),
-  // Боевой экран: монитор с прицелом (не путать с «Вся» — рамкой по углам)
+  // Combat screen: a monitor with a sight (not to be confused with "Fit", the corner frame)
   combat: (
     <>
       <rect x="3" y="4.5" width="18" height="12.5" rx="2" />
@@ -325,7 +325,7 @@ const paths = {
       <path d="M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5" />
     </>
   ),
-  // Сердце: поддержать проект (Donatello)
+  // A heart: support the project (Donatello)
   heart: <path d="M12 19.5s-7.5-4.4-7.5-9.6A4.1 4.1 0 0 1 12 7.6a4.1 4.1 0 0 1 7.5 2.3c0 5.2-7.5 9.6-7.5 9.6z" />,
   steam: (
     <>
@@ -335,24 +335,24 @@ const paths = {
       <path d="m10.6 13.5 3-2.4" />
     </>
   ),
-  // Лучший заряд: весы — золотая середина между скоростью и точностью
+  // The best charge: scales, a balance between speed and precision
   balance: (
     <>
       <path d="M12 4v16M7 20h10M5 7.5h14" />
       <path d="M7.5 7.5 4.5 14h6zM16.5 7.5 13.5 14h6z" />
     </>
   ),
-  // Траектории: навесная — крутая дуга, настильная — пологая, авто — обе
+  // Trajectories: the high one is a steep arc, the low one is flat, auto is both
   trajectoryHigh: <path d="M3 19C6 4.5 18 4.5 21 19" />,
   trajectoryLow: <path d="M3 18c4-6 14-6 18 0" />,
-  // Авто: стрелки по кругу — «подбирается само»
+  // Auto: arrows in a circle, "it picks by itself"
   autoCycle: (
     <>
       <path d="M20 12a8 8 0 0 1-13.7 5.6M4 12A8 8 0 0 1 17.7 6.4" />
       <path d="M17.7 3v3.4h-3.4M6.3 21v-3.4h3.4" />
     </>
   ),
-  // Ветер: скорость — стрелка прибора; вдоль линии огня и поперёк
+  // Wind: the speed is a gauge needle; along the line of fire and across it
   speed: (
     <>
       <path d="M4 17a8 8 0 1 1 16 0" />
@@ -362,16 +362,16 @@ const paths = {
   ),
   along: <path d="M12 4v16M8 8l4-4 4 4M8 16l4 4 4-4" />,
   across: <path d="M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4" />,
-  // Обучение
+  // Tutorial
   book: (
     <>
       <path d="M12 6.5C10.5 5 8 4.5 4.5 4.5v13c3.5 0 6 .5 7.5 2 1.5-1.5 4-2 7.5-2v-13C16 4.5 13.5 5 12 6.5z" />
       <path d="M12 6.5v13" />
     </>
   ),
-  // карандаш
+  // pencil
   pen: <path d="M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19zM14 7l3 3" />,
-  // прямая линия рисунка
+  // a straight drawing line
   drawLine: (
     <>
       <path d="M5 19 19 5" />
@@ -379,16 +379,16 @@ const paths = {
       <circle cx="19" cy="5" r="1.3" />
     </>
   ),
-  // ластик
+  // eraser
   eraser: <path d="M8 20h12M5.5 14.5l8-8a2 2 0 0 1 2.8 0l2.2 2.2a2 2 0 0 1 0 2.8L11 20H7.5l-2-2a2 2 0 0 1 0-2.8z" />,
-  // спутник: тарелка антенны с лучами
+  // satellite: a dish with rays
   satellite: (
     <>
       <rect x="9.5" y="9.5" width="5" height="5" rx="1" transform="rotate(45 12 12)" />
       <path d="M5.5 5.5 8.5 8.5M15.5 15.5l3 3M4 10a6 6 0 0 1 6-6M2 10a8 8 0 0 1 8-8M14 20a6 6 0 0 0 6-6M14 22a8 8 0 0 0 8-8" />
     </>
   ),
-  // топографическая карта: горизонтали
+  // topographic map: contour lines
   topo: (
     <>
       <path d="M3 17c3-1 4-5 8-5s5 3 10 1" />
@@ -396,7 +396,7 @@ const paths = {
       <path d="M6 12c1-4 4-7 8-7s5 3 4 6" />
     </>
   ),
-  // рельеф: две вершины
+  // terrain: two peaks
   mountain: (
     <>
       <path d="M2.5 19.5 9 8l4.2 7.2" />
@@ -404,25 +404,25 @@ const paths = {
       <path d="M2.5 19.5h19" />
     </>
   ),
-  // предупреждение: треугольник с восклицательным знаком
+  // warning: a triangle with an exclamation mark
   warning: (
     <>
       <path d="M12 3.5 2.5 20h19z" />
       <path d="M12 10v4.5M12 17.5h.01" />
     </>
   ),
-  // проверено: щит с галочкой
+  // verified: a shield with a check mark
   shieldCheck: (
     <>
       <path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.9 7.5-9.5V6z" />
       <path d="m8.5 12 2.5 2.5 4.5-5" />
     </>
   ),
-  // раскрыть / свернуть
+  // expand / collapse
   chevron: <path d="m6 9 6 6 6-6" />,
-  // пример: треугольник «пуск»
+  // example: a "play" triangle
   play: <path d="M8 5.5v13l10.5-6.5z" />,
-  // куда достаю: сектор обстрела от орудия
+  // where I can hit: the field of fire from the gun
   reachFrom: (
     <>
       <circle cx="12" cy="19" r="1.7" />
@@ -431,7 +431,7 @@ const paths = {
       <path d="M8 12.6a8.2 8.2 0 0 1 8 0" strokeDasharray="1.6 2.2" />
     </>
   ),
-  // где встать: булавка над кругом места
+  // where to stand: a pin over a spot circle
   standTo: (
     <>
       <path d="M12 15.5s4.6-3.9 4.6-7.7a4.6 4.6 0 1 0-9.2 0c0 3.8 4.6 7.7 4.6 7.7z" />

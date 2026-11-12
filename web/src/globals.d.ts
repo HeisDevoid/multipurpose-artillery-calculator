@@ -1,2 +1,2 @@
-// Подставляется Vite из package.json (см. vite.config.ts)
+// Vite fills it in from package.json (see vite.config.ts)
 declare const __APP_VERSION__: string

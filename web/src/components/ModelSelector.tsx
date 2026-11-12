@@ -17,30 +17,30 @@ interface ModelSelectorProps {
   onChange: (value: ModelId) => void
 }
 
-// Только орудия с обоими наборами таблиц (с сопротивлением воздуха и без)
+// Only weapons with both table sets (with air resistance and without)
 const modelIds = availableModelIds
 
-/** Орудия из ванили (Arma 3) — в списке; остальные — в окне с поиском. */
+/** Vanilla (Arma 3) weapons are in the list; the rest are in a window with search. */
 const isVanilla = (id: ModelId) => models[id].mod.startsWith('Arma 3')
 
 const MODS = '__mods__'
 
-/** Название на закрытом списке: без калибра, он виден в раскрытом списке. */
+/** The name on the closed list: without the calibre, which is visible in the open list. */
 const shortModelName = (name: string) => name.replace(/\s*\(\d+\s*mm\)$/, '')
 
 
 /**
- * Выбор орудия: значок класса отдельно от списка. В списке — ванильные
- * орудия (и выбранное модовое), модовые ищутся в окне «Модовые орудия».
+ * Weapon choice: the class icon is separate from the list. The list has vanilla
+ * weapons (and the selected mod one), mod weapons are searched in the mod weapons window.
  */
 export function ModelSelector({ value, onChange }: ModelSelectorProps) {
   const [picking, setPicking] = useState(false)
-  // Окно «Предложить орудие»
+  // The "Suggest a weapon" window
   const [suggesting, setSuggesting] = useState(false)
   const [favorites, toggleFavorite] = useFavorites('favModels')
   const current = models[value]
 
-  // В списке: избранные (в том числе модовые), ванильные и выбранное модовое
+  // In the list: favourites (mod ones included), vanilla weapons and the selected mod one
   const isFav = (id: ModelId) => favorites.includes(id)
   const listed = [
     ...modelIds.filter(isFav),

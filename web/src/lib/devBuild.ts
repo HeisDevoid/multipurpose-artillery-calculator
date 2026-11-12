@@ -1,6 +1,6 @@
 /**
- * Сборка для разработки: `npm run dev` или `npm run build:dev`. Только в ней
- * видны экспериментальные функции (ввод по координатам сетки, метки с экрана
- * игры). В обычной сборке (сайт, программа для ПК) их нет.
+ * The development build: `npm run dev` or `npm run build:dev`. Only it shows
+ * the experimental features (input by grid coordinates, markers from the game
+ * screen). The normal build (the site, the Windows app) does not have them.
  */
 export const DEV_BUILD: boolean = import.meta.env.DEV || import.meta.env.MODE === 'devbuild'

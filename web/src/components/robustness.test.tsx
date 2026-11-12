@@ -15,8 +15,8 @@ function Boom({ message = 'boom' }: { message?: string }): never {
 
 beforeEach(() => {
   localStorage.clear()
-  setLanguage('ru')
-  // React пишет пойманную ошибку в консоль — в тестах это шум
+  setLanguage('en')
+  // React logs a caught error to the console: noise in tests
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 
@@ -26,53 +26,53 @@ afterEach(() => {
 })
 
 describe('ErrorBoundary', () => {
-  it('вместо белого экрана показывает сообщение и пишет ошибку в журнал', () => {
+  it('shows a message instead of a white screen and logs the error', () => {
     render(
       <ErrorBoundary area="test">
-        <Boom message="сломалось в тесте" />
+        <Boom message="broken in a test" />
       </ErrorBoundary>
     )
     expect(screen.getByRole('alert')).toBeInTheDocument()
-    expect(screen.getByText('Что-то сломалось')).toBeInTheDocument()
-    expect(screen.getByText('сломалось в тесте')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Перезагрузить/ })).toBeInTheDocument()
+    expect(screen.getByText('Something broke')).toBeInTheDocument()
+    expect(screen.getByText('broken in a test')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Reload/ })).toBeInTheDocument()
     const log = readErrors()
     expect(log).toHaveLength(1)
     expect(log[0].area).toBe('test')
-    expect(log[0].message).toBe('сломалось в тесте')
+    expect(log[0].message).toBe('broken in a test')
   })
 
-  it('карточка блока: «Повторить» снова показывает содержимое', () => {
+  it('block card: "Try again" shows the content again', () => {
     let fail = true
     function Flaky() {
       if (fail) throw new Error('flaky')
-      return <p>карта на месте</p>
+      return <p>the map is in place</p>
     }
     render(
       <ErrorBoundary area="map" variant="inline">
         <Flaky />
       </ErrorBoundary>
     )
-    expect(screen.getByText('Карта не открылась')).toBeInTheDocument()
+    expect(screen.getByText('The map did not open')).toBeInTheDocument()
     fail = false
-    fireEvent.click(screen.getByRole('button', { name: /Повторить/ }))
-    expect(screen.getByText('карта на месте')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Try again/ }))
+    expect(screen.getByText('the map is in place')).toBeInTheDocument()
   })
 
-  it('ссылка «Сообщить о проблеме» ведёт в issues с текстом ошибки', () => {
+  it('the "Report a problem" link leads to issues with the error text', () => {
     render(
       <ErrorBoundary area="test">
-        <Boom message="ссылка" />
+        <Boom message="link" />
       </ErrorBoundary>
     )
-    const link = screen.getByRole('link', { name: /Сообщить о проблеме/ })
+    const link = screen.getByRole('link', { name: /Report a problem/ })
     expect(link.getAttribute('href')).toContain('/issues/new?title=')
-    expect(decodeURIComponent(link.getAttribute('href')!)).toContain('ссылка')
+    expect(decodeURIComponent(link.getAttribute('href')!)).toContain('link')
   })
 })
 
-describe('журнал ошибок', () => {
-  it('хранит не больше 10 последних записей', () => {
+describe('error log', () => {
+  it('keeps no more than the last 10 entries', () => {
     for (let i = 0; i < 15; i += 1) recordError('test', new Error(`e${i}`))
     const log = readErrors()
     expect(log).toHaveLength(10)
@@ -82,7 +82,7 @@ describe('журнал ошибок', () => {
 })
 
 describe('DataStatusBadge', () => {
-  it('проверенные и непроверенные таблицы различаются значком и подсказкой', () => {
+  it('verified and unverified tables differ in the badge and the tooltip', () => {
     render(
       <>
         <DataStatusBadge status="verified" />
@@ -91,12 +91,12 @@ describe('DataStatusBadge', () => {
     )
     const badges = screen.getAllByRole('img')
     expect(badges[0]).toHaveAttribute('data-status', 'verified')
-    expect(badges[0].getAttribute('aria-label')).toMatch(/проверено в игре/)
-    expect(badges[1].getAttribute('aria-label')).toMatch(/не проверено в игре/)
-    expect(badges[1].getAttribute('aria-label')).toMatch(/возможны промахи/)
+    expect(badges[0].getAttribute('aria-label')).toMatch(/verified in game/)
+    expect(badges[1].getAttribute('aria-label')).toMatch(/not verified in game/)
+    expect(badges[1].getAttribute('aria-label')).toMatch(/shots may miss/)
   })
 
-  it('у каждого орудия есть статус проверки таблиц', () => {
+  it('every weapon has a table verification status', () => {
     for (const reference of Object.values(artilleryRegistry)) {
       expect(['pending', 'in-progress', 'verified']).toContain(reference.source.status)
     }

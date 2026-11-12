@@ -1,6 +1,6 @@
 # M252 (81 mm), HIGH, Charge 2
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_mortar_81mm, 120 м/с, сопротивление воздуха -0.0001.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_mortar_81mm, 120 m/s, air friction -0.0001.
+# With air resistance (ACE advanced ballistics).
 250 1503 3.3 0.9 23.5 6.6 1.8 -1.6 0.0 -0.1 -0.3 0.2
 300 1483 4.0 0.9 23.5 5.5 1.8 -1.6 0.0 -0.1 -0.3 0.3
 350 1463 4.7 0.9 23.4 4.7 1.9 -1.7 0.0 -0.0 -0.4 0.4

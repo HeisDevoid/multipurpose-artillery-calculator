@@ -12,8 +12,8 @@ function read(key: string): string[] {
 }
 
 /**
- * Избранное (карты, орудия): список идентификаторов в localStorage.
- * toggle добавляет или убирает идентификатор.
+ * Favourites (maps, weapons): a list of ids in localStorage.
+ * toggle adds or removes an id.
  */
 export function useFavorites(storageKey: string) {
   const [favorites, setFavorites] = useState<string[]>(() => read(storageKey))
@@ -27,7 +27,7 @@ export function useFavorites(storageKey: string) {
         try {
           localStorage.setItem(storageKey, JSON.stringify(next))
         } catch {
-          // Список живёт до перезагрузки.
+          // The list lives until a reload.
         }
         return next
       })

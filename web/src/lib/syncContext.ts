@@ -13,7 +13,7 @@ export interface SyncPeer {
 
 export interface RemoteSolution {
   solution: SyncSolution | null
-  // Когда наводчик отправил и когда пришло сюда, мс
+  // When fire direction sent it and when it arrived here, ms
   sentAt: number
   receivedAt: number
 }
@@ -23,16 +23,16 @@ export interface SyncApi {
   role: SyncRole
   code: string
   server: SyncServerId
-  // Позывной — подпись к своим меткам
+  // The call sign: the label of own markers
   callsign: string
   status: SyncStatus
-  // Связь включена и брокер на связи
+  // The connection is on and the broker is reachable
   active: boolean
-  // Другие устройства в комнате, которые недавно отзывались
+  // Other devices in the room that answered recently
   peers: SyncPeer[]
-  // Последнее решение от наводчика (для стрелка)
+  // The last solution from fire direction (for the gunner)
   remote: RemoteSolution | null
-  // Когда наводчик последний раз отправил решение
+  // When fire direction last sent a solution
   lastSharedAt: number | null
   setRole: (role: SyncRole) => void
   setCode: (code: string) => void
@@ -40,11 +40,11 @@ export interface SyncApi {
   setCallsign: (callsign: string) => void
   connect: () => void
   disconnect: () => void
-  // Наводчик: текущее решение (повторы без изменений не отправляются)
+  // Fire direction: the current solution (repeats without changes are not sent)
   shareSolution: (solution: SyncSolution | null) => void
-  // Выстрел: у остальных запускается отсчёт до разрыва
+  // A shot: the others start a countdown to impact
   sendShot: () => void
-  // Выстрел с другого устройства; возвращает отписку
+  // A shot from another device; returns an unsubscribe function
   onShot: (handler: () => void) => () => void
 }
 

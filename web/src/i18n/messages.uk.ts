@@ -1,6 +1,8 @@
 import type { ru } from './messages'
 
 export const uk: Record<keyof typeof ru, string> = {
+  "settings.usage-stats": "Анонімна статистика",
+  "settings.usage-stats-description": "Раз на день застосунок повідомляє, що ним користувалися. Без даних про вас і пристрій.",
   "footer.donate": "Підтримати на Donatello",
   "footer.donate-hint": "Скинутися на домен для сайту",
   "settings.physics-why": "Впливає на всі установки.",

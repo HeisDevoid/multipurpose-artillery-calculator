@@ -1,8 +1,8 @@
 # M101 (S.O.G. Prairie Fire), LOW, Charge 0
-# С сопротивлением воздуха (улучшенная баллистика ACE): погодные столбцы заполнены. Таблица без сопротивления: ../LOW-0.txt.
-# Снято 17.10.2026. В режиме LOW «D ELEV / TIME OF FLIGHT PER 100 M DR»
-# отрицательные: цель выше — возвышение больше. Часть дальностей игра пропускает.
-# Один скриншот.
+# With air resistance (ACE advanced ballistics): the weather columns are filled. The table without air resistance: ../LOW-0.txt.
+# Taken 17.10.2026. In the LOW mode the "D ELEV / TIME OF FLIGHT PER 100 M DR" values
+# are negative: a higher target needs more elevation. The game skips some ranges.
+# One screenshot.
 1000 228 -106.6 -0.1 6.9 0.2 0.8 -0.3 0.5 -0.0 -0.2 0.7
 1050 240 -101.7 -0.1 7.2 0.2 0.9 -0.4 0.5 -0.0 -0.2 0.7
 1100 254 -98.4 -0.1 7.6 0.2 0.4 -0.9 0.0 -0.5 -0.7 0.2

@@ -3,11 +3,11 @@ import type { Heightmap } from './heightmap'
 import { PUBLIC_SITE_URL } from './sync'
 
 /**
- * Встроенные карты: спутниковый снимок тайлами и высоты, собранные
- * скриптом scripts/import-grad-meh.mjs из выгрузки мода grad_meh.
- * Лежат в public/maps/ и открываются без импорта — на сайте, телефоне
- * и в программе для ПК (она берёт их с сайта, чтобы не раздувать
- * установщик).
+ * Built-in maps: a tiled satellite image and heights, built by
+ * scripts/import-grad-meh.mjs from an export of the grad_meh mod.
+ * They live in public/maps/ and open without an import: on the site, a phone
+ * and in the Windows app (it takes them from the site, so as not to bloat
+ * the installer).
  */
 
 export const MAPS_BASE = isDesktop ? `${PUBLIC_SITE_URL}maps/` : './maps/'
@@ -15,31 +15,31 @@ export const MAPS_BASE = isDesktop ? `${PUBLIC_SITE_URL}maps/` : './maps/'
 export interface BuiltinMapEntry {
   world: string
   displayName: string
-  // Названия на других языках (ключ — код языка), если отличаются от displayName
+  // Names in other languages (the key is the language code) if they differ from displayName
   names?: Partial<Record<string, string>>
   author: string
-  // official — базовая игра, dlc — дополнения Bohemia и Creator DLC, community — карты сообщества
+  // official: the base game, dlc: Bohemia expansions and Creator DLC, community: community maps
   kind?: MapKind
-  // low — карта снята из игры без grad_meh: высоты грубее, фон — снимок карты игры
+  // low: the map was taken from the game without grad_meh: coarser heights, the background is a picture of the game map
   quality?: 'low'
   worldSize: number
 }
 
 export type MapKind = 'official' | 'dlc' | 'community'
 
-/** Происхождение карты; у старых записей index.json kind нет — смотрим на автора. */
+/** The origin of the map; old index.json entries have no kind, so the author decides. */
 export function mapKind(entry: Pick<BuiltinMapEntry, 'kind' | 'author'>): MapKind {
   if (entry.kind) return entry.kind
   return /bohemia/i.test(entry.author) ? 'official' : 'community'
 }
 
 export interface MapTiles {
-  // Адрес папки тайлов, с «/» на конце
+  // The tile folder address, ending with "/"
   base: string
   size: number
-  // Уровней пирамиды; 0 — вся карта одним тайлом
+  // Pyramid levels; 0 is the whole map in one tile
   levels: number
-  // Метров на тайл верхнего (самого подробного) уровня
+  // Metres per tile of the top (most detailed) level
   metersPerTile: number
   ext: string
   background: string
@@ -53,9 +53,9 @@ export interface MapDescription {
   worldSize: number
   background: string
   heights: { file: string; step: number; size: number; scale: number }
-  // vector.json: здания, дороги, горизонтали (есть не у всех карт)
+  // vector.json: buildings, roads, contour lines (not every map has it)
   vector?: string
-  // Нет у карт без спутникового снимка (только топо)
+  // Missing for maps without a satellite image (topo only)
   tiles: { size: number; levels: number; metersPerTile: number; ext: string } | null
 }
 
@@ -64,7 +64,7 @@ const isNumber = (value: unknown): value is number =>
 
 const isString = (value: unknown): value is string => typeof value === 'string'
 
-/** Проверка map.json; null — не наш формат или повреждён. */
+/** map.json validation; null: not our format or damaged. */
 export function parseMapDescription(value: unknown): MapDescription | null {
   if (typeof value !== 'object' || value === null) return null
   const v = value as Record<string, unknown>
@@ -119,7 +119,7 @@ export function parseMapDescription(value: unknown): MapDescription | null {
   }
 }
 
-/** Высоты из heights.bin: Int16, строки с юга на север. */
+/** Heights from heights.bin: Int16, rows from south to north. */
 export function decodeHeights(
   buffer: ArrayBuffer,
   description: MapDescription
@@ -153,7 +153,7 @@ export async function listBuiltinMaps(): Promise<BuiltinMapEntry[]> {
         isNumber((m as BuiltinMapEntry).worldSize)
     )
   } catch {
-    // Нет сети и нет кэша — встроенных карт нет
+    // No network and no cache: no built-in maps
     return []
   }
 }
@@ -189,14 +189,14 @@ export async function loadBuiltinMap(
   }
 }
 
-/** Метров на тайл уровня z. */
+/** Metres per tile of level z. */
 export function metersPerTile(tiles: MapTiles, z: number): number {
   return tiles.metersPerTile * 2 ** (tiles.levels - 1 - z)
 }
 
 /**
- * Уровень пирамиды для масштаба: самый грубый, у которого пикселей
- * тайла на метр не меньше, чем пикселей экрана на метр.
+ * The pyramid level for a scale: the coarsest one whose tile pixels
+ * per metre are not fewer than the screen pixels per metre.
  */
 export function tileLevel(tiles: MapTiles, screenPixelsPerMeter: number): number {
   for (let z = 0; z < tiles.levels; z += 1) {
@@ -207,13 +207,13 @@ export function tileLevel(tiles: MapTiles, screenPixelsPerMeter: number): number
 
 export interface VisibleTile {
   url: string
-  // Левый верхний угол тайла в метрах карты (y — север)
+  // The top left corner of a tile in map metres (y is north)
   x: number
   y: number
   meters: number
 }
 
-/** Тайлы уровня z, попадающие в область [minX, maxX] × [minY, maxY], м. */
+/** Tiles of level z that fall into the area [minX, maxX] × [minY, maxY], m. */
 export function visibleTiles(
   tiles: MapTiles,
   z: number,
@@ -224,7 +224,7 @@ export function visibleTiles(
   const top = tiles.worldSize
   const x0 = Math.max(0, Math.floor(area.minX / meters))
   const x1 = Math.min(cols - 1, Math.floor(area.maxX / meters))
-  // Строка 0 — север: y тайла отсчитывается от верхнего края карты
+  // Row 0 is the north: the tile y is counted from the top edge of the map
   const y0 = Math.max(0, Math.floor((top - area.maxY) / meters))
   const y1 = Math.min(cols - 1, Math.floor((top - area.minY) / meters))
   const result: VisibleTile[] = []

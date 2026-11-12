@@ -7,11 +7,11 @@ import sharp from 'sharp'
 import { describe, expect, it } from 'vitest'
 
 describe('scripts/import-photos.mjs', () => {
-  it('склеивает кадры карты в плитки sat/<столбец>/<строка>.png (север сверху)', async () => {
+  it('stitches map frames into sat/<column>/<row>.png tiles (north up)', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'photos-'))
     const images = join(dir, 'shots')
     mkdirSync(images)
-    // Мир 4096 м, четыре кадра по 2048 м: север-запад красный, северо-восток зелёный, юго-запад синий, юго-восток жёлтый
+    // A 4096 m world, four frames of 2048 m: north-west red, north-east green, south-west blue, south-east yellow
     const colors = [
       { r: 255, g: 0, b: 0 },
       { r: 0, g: 255, b: 0 },
@@ -37,7 +37,7 @@ describe('scripts/import-photos.mjs', () => {
     mkdirSync(out)
     execFileSync('node', ['scripts/import-photos.mjs', rpt, out, '--images', images, '--mpp', '2'])
 
-    // n = 1: одна плитка 2048 px на весь мир (2 м на пиксель)
+    // n = 1: one 2048 px tile for the whole world (2 m per pixel)
     const tile = sharp(join(out, 'sat', '0', '0.png'))
     const { data, info } = await tile.raw().toBuffer({ resolveWithObject: true })
     expect(info.width).toBe(2048)

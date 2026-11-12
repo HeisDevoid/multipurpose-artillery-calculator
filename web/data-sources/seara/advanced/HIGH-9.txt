@@ -1,6 +1,6 @@
 # Seara (227 mm), HIGH, Charge 9
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rockets_230mm_GAT, 374 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rockets_230mm_GAT, 374 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 6500 1166 2.8 0.5 59.2 2.7 23 -23 0.6 -0.6 -25 23
 6600 1157 2.9 0.5 59.0 2.6 23 -23 0.6 -0.6 -25 23
 6700 1148 2.9 0.5 58.8 2.6 23 -23 0.9 -0.7 -26 24

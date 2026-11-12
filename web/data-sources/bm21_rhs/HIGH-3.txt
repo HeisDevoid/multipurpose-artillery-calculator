@@ -1,6 +1,6 @@
 # BM-21 Grad (122 mm), HIGH, Charge 3
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_bm21, 357.42 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_bm21, 357.42 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 10000 1154 - - 66.0
 10100 1148 2.9 0.4 65.8
 10200 1142 3.0 0.4 65.6

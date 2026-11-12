@@ -12,7 +12,7 @@ import {
 } from '../lib/uiPanels'
 
 interface Step {
-  // Элемент, который подсвечивается; null — шаг по центру экрана
+  // The element that is highlighted; null: the step is in the middle of the screen
   target: (() => Element | null) | null
   title: MessageKey
   text: MessageKey
@@ -22,7 +22,7 @@ const byTour = (name: string) => () =>
   document.querySelector(`[data-tour="${name}"]`)
 const rowOf = (id: string) => () =>
   document.getElementById(id)?.closest('.row') ?? null
-// Целиком блок строк (дистанция, азимут, высота цели): подсвечиваются все
+// The whole block of rows (distance, azimuth, target height): all are highlighted
 const blockOf = (id: string) => () =>
   document.getElementById(id)?.closest('dl') ?? null
 
@@ -33,7 +33,7 @@ const BASIC: Step[] = [
     text: 'tour.a-short-tour-of-where',
   },
   {
-    // Главное для точности: есть ли на сервере физика снаряда
+    // The main thing for accuracy: does the server have shell physics
     target: byTour('settings'),
     title: 'physics.title',
     text: 'tour.physics-text',
@@ -143,21 +143,21 @@ interface Rect {
   left: number
   width: number
   height: number
-  // Отступ рамки сверху и снизу (не больше PAD)
+  // The frame margin above and below (no more than PAD)
   padTop: number
   padBottom: number
 }
 
 const PAD = 6
-// Толщина рамки (ring-2), она рисуется снаружи подсветки
+// The frame thickness (ring-2), it is drawn outside the highlight
 const RING = 2
 const CARD_MAX = 352
 const GAP = 12
 
 /**
- * Границы подсвечиваемого: у строки списка — по её содержимому (подпись и
- * поля), а не по всей высоте строки. Поле в две строки (снаряд «105 mm [HE]»
- * на телефоне) растягивает строку, и рамка соседа на него заезжала.
+ * The borders of the highlight: for a list row they follow its content (the label and
+ * the fields), not the full row height. A field in two lines (the "105 mm [HE]" shell
+ * on a phone) stretches the row, and the neighbour's frame overlapped it.
  */
 function contentBox(element: Element) {
   const box = element.getBoundingClientRect()
@@ -169,7 +169,7 @@ function contentBox(element: Element) {
   return { top: Math.min(...parts.map((r) => r.top)), bottom: Math.max(...parts.map((r) => r.bottom)) }
 }
 
-/** Отступ рамки: PAD, но рамка не должна заходить на соседние строки. */
+/** The frame margin: PAD, but the frame must not reach the neighbouring rows. */
 function padsOf(element: Element) {
   const own = contentBox(element)
   const box = element.getBoundingClientRect()
@@ -185,14 +185,14 @@ function padsOf(element: Element) {
     const below = contentBox(next).top
     if (below >= own.bottom - 1) bottom = Math.max(0, Math.min(PAD, below - own.bottom - RING - 1))
   }
-  // Отступы считаются от содержимого: переводим их в отступы от самой строки
+  // The margins are measured from the content: convert them to margins from the row itself
   return { padTop: top - (own.top - box.top), padBottom: bottom - (box.bottom - own.bottom) }
 }
 
 /**
- * Обучение: базовое при первом запуске, продвинутое — после базового.
- * Подсвечивает элементы, любой тур можно пропустить. Подсветка и карточка
- * плавно переезжают от шага к шагу.
+ * The tutorial: the basic one on the first start, the advanced one after the basic.
+ * It highlights elements, and any tour can be skipped. The highlight and the card
+ * glide smoothly from step to step.
  */
 export function Tour() {
   const basicOpen = usePanel('tour')
@@ -201,26 +201,26 @@ export function Tour() {
   const steps = advancedOpen ? ADVANCED : BASIC
 
   const [index, setIndex] = useState(0)
-  // Последняя измеренная подсветка: при смене шага остаётся, пока не придёт новая
+  // The last measured highlight: it stays during a step change until the new one arrives
   const [measured, setMeasured] = useState<Rect | null>(null)
   const [cardH, setCardH] = useState(200)
   const [viewport, setViewport] = useState(() => ({
     w: typeof window === 'undefined' ? 1200 : window.innerWidth,
     h: typeof window === 'undefined' ? 800 : window.innerHeight,
   }))
-  // Предложение продвинутого обучения после базового
+  // The offer of the advanced tutorial after the basic one
   const [offer, setOffer] = useState(false)
   const [cardNode, setCardNode] = useState<HTMLDivElement | null>(null)
 
-  // При первом запуске базовое обучение открывается само
-  // (если ещё не спросили про физику на сервере — обучение откроется после ответа)
+  // On the first start the basic tutorial opens by itself
+  // (if the server physics question has not been asked yet, the tutorial opens after the answer)
   useEffect(() => {
     if (tourDone() || !physicsAsked()) return
     const timer = window.setTimeout(() => setPanel('tour', true), 800)
     return () => window.clearTimeout(timer)
   }, [])
 
-  // Шаги, у которых нет элемента на экране (карта выключена, нет решения), пропускаются
+  // Steps without an element on the screen (the map is off, no solution) are skipped
   const available = open
     ? steps.filter((s) => s.target === null || s.target() !== null)
     : []
@@ -234,7 +234,7 @@ export function Tour() {
     setPanel('tourAdvanced', false)
     setIndex(0)
     setMeasured(null)
-    // Базовое пройдено до конца — предлагаем продвинутое
+    // The basic one is finished: offer the advanced one
     if (completed && !advanced && !advancedTourDone()) setOffer(true)
   }
 
@@ -249,7 +249,7 @@ export function Tour() {
     return () => window.removeEventListener('keydown', onKey)
   })
 
-  // Высота карточки — чтобы ставить её над или под подсветкой точными координатами
+  // The card height: to place it above or below the highlight at exact coordinates
   useEffect(() => {
     if (!cardNode) return
     const observer = new ResizeObserver(() => setCardH(cardNode.offsetHeight))
@@ -257,7 +257,7 @@ export function Tour() {
     return () => observer.disconnect()
   }, [cardNode])
 
-  // Подсветка: прокрутить к элементу и следить за его положением
+  // The highlight: scroll to the element and follow its position
   useLayoutEffect(() => {
     if (!open || !step) return
     const element = step.target?.() ?? null
@@ -321,7 +321,7 @@ export function Tour() {
   const last = index >= available.length - 1
   const cardW = Math.min(CARD_MAX, viewport.w - 32)
 
-  // Подсветка: без элемента — схлопнутая точка в центре (затемнение остаётся)
+  // The highlight: without an element it is a collapsed dot in the centre (the dimming stays)
   const spot = measured ?? {
     top: viewport.h / 2,
     left: viewport.w / 2,
@@ -332,7 +332,7 @@ export function Tour() {
   const padTop = measured ? measured.padTop : 0
   const padBottom = measured ? measured.padBottom : 0
 
-  // Карточка: под подсветкой, если влезает, иначе над; без элемента — по центру
+  // The card: under the highlight if it fits, else above; without an element in the centre
   let cardTop: number
   let cardLeft: number
   if (measured) {
@@ -374,7 +374,7 @@ export function Tour() {
         className={`panel absolute p-4 shadow-2xl ${move}`}
         style={{ width: cardW, top: cardTop, left: cardLeft }}
       >
-        {/* Текст меняется с коротким появлением, карточка при этом переезжает */}
+        {/* The text changes with a short fade-in while the card glides */}
         <div key={`${advancedOpen ? 'a' : 'b'}:${step.title}`} className="tour-fade-always">
           <p className="label mb-1">
             {advancedOpen ? (t('tour.advanced')) : ''}

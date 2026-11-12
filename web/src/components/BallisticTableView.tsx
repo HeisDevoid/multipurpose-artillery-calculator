@@ -13,11 +13,11 @@ interface Props {
   mode: ArtilleryMode
   onModeChange: (mode: ArtilleryMode) => void
   charges: readonly number[] | undefined
-  // Заряд текущего решения: таблица переключается на него
+  // The charge of the current solution: the table switches to it
   activeCharge: number | null
-  // Дальность текущего решения: соседние строки подсвечиваются
+  // The range of the current solution: the neighbouring rows are highlighted
   highlightRange: number | null
-  // Таблицы выгружены из игры (а не перепечатаны со скриншотов)
+  // The tables were exported from the game (not retyped from screenshots)
   exported?: boolean
 }
 
@@ -32,7 +32,7 @@ const m = 'unit.m'
 const mil = 'unit.mil'
 const s = 'unit.s'
 
-// Заголовки повторяют столбцы игровой таблицы ACE3.
+// The headers repeat the columns of the ACE3 game table.
 const COLUMNS: Column[] = [
   { label: 'ballisticTableView.range', unit: m },
   { label: 'ballisticTableView.elev', unit: mil },
@@ -50,15 +50,15 @@ const COLUMNS: Column[] = [
 
 function formatCell(value: number | null, column: number): string {
   if (value === null) return '-'
-  // Дальность и возвышение в игре — целые.
+  // Range and elevation are integers in the game.
   if (column <= 1) return String(value)
-  // Большие погодные поправки игра округляет до целых («21»).
+  // The game rounds large weather corrections to integers ("21").
   return column >= 5 && Number.isInteger(value) && Math.abs(value) >= 10
     ? String(value)
     : value.toFixed(1)
 }
 
-/** Индексы двух строк, между которыми лежит дальность. */
+/** The indexes of the two rows the range lies between. */
 function bracket(
   rows: readonly BallisticRow[],
   range: number | null
@@ -96,7 +96,7 @@ export function BallisticTableView({
     .filter((c) => charges === undefined || charges.includes(c))
     .sort((a, b) => a - b)
 
-  // null — следовать за зарядом текущего решения
+  // null: follow the charge of the current solution
   const [picked, setPicked] = useState<number | null>(null)
 
   const shown =
@@ -140,7 +140,7 @@ export function BallisticTableView({
         ))}
       </div>
 
-      {/* Режимы HIGH / LOW: без данных режим недоступен */}
+      {/* HIGH / LOW modes: a mode without data is unavailable */}
       <div
         role="group"
         aria-label={t('ballisticTableView.table-mode')}

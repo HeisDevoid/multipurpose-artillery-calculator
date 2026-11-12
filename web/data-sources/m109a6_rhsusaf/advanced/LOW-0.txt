@@ -1,6 +1,6 @@
 # M109A6 (155 mm), LOW, Charge 0
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_m284, 153.9 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_m284, 153.9 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 1000 228 -106.6 -0.1 6.9 0.2 0.8 -0.3 0.5 -0.0 -0.2 0.7
 1050 240 -101.7 -0.1 7.2 0.2 0.9 -0.4 0.5 -0.0 -0.2 0.7
 1100 254 -98.4 -0.1 7.6 0.2 0.4 -0.9 0.0 -0.5 -0.7 0.2

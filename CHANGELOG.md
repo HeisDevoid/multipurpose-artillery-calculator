@@ -1,170 +1,181 @@
 # Changelog
 
-Все заметные изменения. Формат — [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/), версии — [SemVer](https://semver.org/lang/ru/).
+All notable changes. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versions follow [SemVer](https://semver.org/).
+
+## [0.19.0] - 2026-11-12
+
+### Map
+- Pinch to zoom: on a phone or tablet two fingers zoom and drag the map. The + and − buttons are for the mouse and are hidden on touch screens.
+
+### Statistics
+- Anonymous usage counter: once a day the site and the Windows app download a small file from a GitHub release, and the download counts become the "Daily use" chart in the README. Nothing about the user or the device is sent. The setting "Anonymous statistics" turns it off.
+- The stats picture in the README shows installer downloads by version and daily use of the site and the app as lines.
+
+### Repository
+- The changelog, issue forms, comments and test names are in English.
 
 ## [0.18.2] - 2026-11-04
 
-### Исправлено
-- Выпадающие списки больше не уходят за край экрана: на телефоне меню «Обучение» открывалось за левым краем. Теперь любой список сам сдвигается, чтобы целиком помещаться на экране.
+### Fixed
+- Dropdown lists no longer run off the screen: on a phone the Tutorial menu opened beyond the left edge. Any list now shifts itself to fit on the screen.
 
-### Сайт
-- Сайт добавлен в Google Search Console (файл подтверждения в корне сайта).
+### Site
+- The site is registered in Google Search Console (the verification file is in the site root).
 
 ## [0.18.1] - 2026-11-04
 
-### Таблицы
-- Seara и KamAZ MRL снова в списке орудий. В наборе без сопротивления воздуха лежали старые таблицы навесной траектории зарядов 13–15 со скриншотов, снятые с сопротивлением. Без сопротивления ACE считает таблицы только до 29 900 м, а навесная на этих зарядах целиком дальше, поэтому таких таблиц в игре нет. Остальные таблицы обоих орудий сверены с новой выгрузкой из игры построчно.
-- Выгрузка таблиц из игры (tables:game) сама убирает такие остатки.
+### Tables
+- Seara and KamAZ MRL are back in the weapon list. The set without air resistance held old high-trajectory tables for charges 13 to 15 that had been taken with air resistance on. Without air resistance ACE calculates tables only up to 29,900 m, and the high trajectory of these charges lies entirely beyond that, so the game has no such tables. The other tables of both weapons were checked line by line against a new export from the game.
+- The table export from the game (tables:game) removes such leftovers by itself.
 
 ## [0.18.0] - 2026-11-04
 
-### Интерфейс
-- Звёздочка избранного прямо на выбранном орудии и выбранной карте: видно, в избранном ли, и можно добавить или убрать, не раскрывая список.
-- На кнопке выбора орудия название без калибра; калибр виден в раскрытом списке.
-- Если у орудия один снаряд, вместо списка затемнённое поле (как высота орудия под замком).
-- Короче и понятнее тексты настроек, связки и обучения на всех языках. Раздел «Сопротивление воздуха в игре»: переключатель «В меню ACE есть звёздочка *» и ссылка «Где её искать».
-- «О программе»: ник автора ведёт в его профиль Steam, пункт «Поддержать на Donatello».
-- Ввод по координатам сетки и метки с экрана игры — экспериментальные, теперь только в сборке для разработки.
+### Interface
+- A favourite star right on the selected weapon and the selected map: it shows whether the item is a favourite and adds or removes it without opening the list.
+- The weapon button shows the name without the calibre; the calibre is in the open list.
+- A weapon with a single shell shows a dimmed field instead of a list (like the gun height under the lock).
+- Shorter, clearer texts in the settings, Link and the tutorial in all languages. The section "Air resistance in the game" has the switch "Asterisk * in the ACE menu" and the link "Where to find it".
+- About: the author's name leads to the Steam profile, and there is a "Support on Donatello" item.
+- Grid coordinate input and markers from the game screen are experimental and now exist only in the development build.
 
-### Карты
-- Автор карт Черноруссии (осень, лето, зима) — CUP, мод, в который они перенесены.
+### Maps
+- The author of the Chernarus maps (autumn, summer, winter) is CUP, the mod they were ported to.
 
 ## [0.17.0] - 2026-11-04
 
-### Главное: сопротивление воздуха в игре
-- При первом запуске (до обучения) калькулятор спрашивает, есть ли в игре сопротивление воздуха. Две анимации рядом показывают меню ACE (Ctrl+Win): пункт с названием орудия без звёздочки и со звёздочкой *, и что тогда в таблице стрельбы. Ответ включает или выключает «Сопротивление воздуха и погода»; поменять его можно в настройках, раздел «Сопротивление воздуха в игре». То же — первым вопросом в справке.
+### Headline: air resistance in the game
+- On the first start (before the tutorial) the calculator asks whether the game has air resistance. Two animations side by side show the ACE menu (Ctrl+Win): the item with the weapon name without an asterisk and with an asterisk *, and what the range table looks like in each case. The answer turns "Air resistance and weather" on or off; it can be changed in the settings, section "Air resistance in the game". The same is the first question in the help.
 
-### Адрес сайта
-- Аккаунт GitHub переименован в HeisDevoid, сайт теперь на heisdevoid.github.io/multipurpose-artillery-calculator. Программа для ПК берёт карты и ссылки-приглашения с нового адреса.
+### Site address
+- The GitHub account was renamed to HeisDevoid, so the site is now at heisdevoid.github.io/multipurpose-artillery-calculator. The Windows app takes maps and invitation links from the new address.
 
-### Таблицы
-- Таблицы выгружаются прямо из игры, без скриншотов: скрипт для отладочной консоли (web/tools/arma/export_tables.sqf) берёт тот же расчёт ACE, что окно таблицы стрельбы, сразу для всех зарядов и обеих траекторий, без сопротивления воздуха и с ним.
-- По выгрузке из игры переписаны Mk6, Sholef, Seara, 2S9 Sochor, KamAZ MRL, M109A6, M119A2, M252 и M777: у каждого теперь таблицы и без сопротивления воздуха, и с ним. Таблицы с сопротивлением совпали со снятыми раньше со скриншотов построчно; у Sochor заполнены недостающие дальности настильной траектории заряда 2.
-- Mk6 по умолчанию считается без сопротивления воздуха (как в ACE без улучшенной баллистики); с ним разница около 100 тысячных на 2 км.
+### Tables
+- Tables are exported straight from the game, without screenshots: a script for the debug console (web/tools/arma/export_tables.sqf) uses the same ACE calculation as the range table window, for all charges and both trajectories at once, without air resistance and with it.
+- Mk6, Sholef, Seara, 2S9 Sochor, KamAZ MRL, M109A6, M119A2, M252 and M777 were rewritten from the game export: each now has tables both without air resistance and with it. The tables with air resistance matched the ones taken from screenshots earlier line by line; the missing low-trajectory ranges of Sochor charge 2 are filled in.
+- Mk6 is calculated without air resistance by default (as in ACE without advanced ballistics); with it the difference is about 100 mils at 2 km.
 
-### Орудия
-- Новые орудия RHS из выгрузки игры: 2A18M D-30A (122 мм; у D30J из RHSSAF те же таблицы), 2S1 Гвоздика (122 мм), БМ-21 Град, 2Б14-1 Поднос (82 мм), M142 HIMARS (ракеты M26 и M26A1 со своими таблицами).
-- В выборе только орудия, у которых есть таблицы и без сопротивления воздуха, и с ним. Пока скрыты S.O.G. (M2, M29, M101, D-44, H-12, Type 53, Type 63), Seara и KamAZ MRL: вернутся, когда появятся недостающие таблицы.
+### Weapons
+- New RHS weapons from the game export: 2A18M D-30A (122 mm; the D30J from RHSSAF has the same tables), 2S1 Gvozdika (122 mm), BM-21 Grad, 2B14-1 Podnos (82 mm), M142 HIMARS (M26 and M26A1 rockets with tables of their own).
+- The list has only weapons with tables both without air resistance and with it. Hidden for now: S.O.G. (M2, M29, M101, D-44, H-12, Type 53, Type 63), Seara and KamAZ MRL. They return when the missing tables appear.
 
-### Карта
-- Высотные линии из сетки высот (кнопка с горой справа внизу): через 5, 2 или 1 м по мере приближения, с подписями высот, в спутниковом и топо-режиме.
-- Зоны по рельефу «Куда достаю» и «Где встать»: вокруг орудия и вокруг цели, с меткой ближайшего хорошего места. Кнопки — нижняя строка плашки координат по центру карты, со значками и цветной легендой. Контур подробный и огибает рельеф (360 лучей), считается по частям между кадрами, без подвисания. Вода в зоны не входит; цель в воде проверяется отдельно (кольцо «достаёт / впритык / закрыто / не достаёт»).
-- Если снаряд проходит впритык к склону или упирается в него, место отмечено прямо на линии орудие → цель.
-- На узкой карте (телефон, маленькое окно) координаты орудия и цели стоят по центру в две строки, без полоски полёта.
+### Map
+- Contour lines from the height grid (the mountain button at the bottom right): every 5, 2 or 1 m as you zoom in, with height labels, in the satellite and topo modes.
+- Terrain zones "Where I can hit" and "Where to stand": around the gun and around the target, with a mark at the nearest good spot. The buttons are the bottom row of the coordinate plate in the middle of the map, with icons and a colour legend. The outline is detailed and follows the terrain (360 rays) and is calculated in parts between frames, without freezing. Water is not part of the zones; a target in water is checked separately (a ring: reachable, tight, blocked, out of range).
+- When a shell passes tight over a slope or hits it, the spot is marked right on the gun to target line.
+- On a narrow map (a phone, a small window) the gun and target coordinates are centred in two rows, without the flight strip.
 
-### Интерфейс
-- Настройки: разделы сворачиваются и запоминаются, «Сопротивление воздуха в игре» — отдельный раздел первым. Переключатель срабатывает только от самого тумблера: при прокрутке на телефоне подпись случайно не включит опцию. Тексты настроек и связки короче и понятнее.
-- Поля калькулятора на узком окне начинаются на одной линии (длинная подпись переносится, поле не сжимается).
-- Окно «Моды и DLC»: карточки одной высоты, авторы на одной линии; значок упрощённого снимка карты — в правом нижнем углу превью, яркий.
-- Обучение: сопротивление воздуха, орудие и значки таблиц, зоны, рельеф на линии огня, оверлей.
-- Горячие клавиши: «Режим крутой | пологой дуги», «Следующая | предыдущая цель», «Показать | скрыть эту справку»; звуки MRSI подписаны «огонь по времени».
+### Interface
+- Settings: sections collapse and remember their state, "Air resistance in the game" is a section of its own and comes first. A switch reacts only to the toggle itself, so scrolling on a phone cannot turn an option on by touching its label. Texts in the settings and Link are shorter and clearer.
+- Calculator fields in a narrow window start on one line (a long label wraps, the field does not shrink).
+- The "Mods and DLC" window: cards of equal height, authors on one line; the badge of a simplified map image is bright and sits in the bottom right corner of the preview.
+- Tutorial: air resistance, the weapon and table badges, zones, terrain on the line of fire, the overlay.
+- Keyboard shortcuts: "Steep | flat arc mode", "Next | previous target", "Show | hide this help"; MRSI sounds are labelled "time on target".
 
-### Программа для ПК: оверлей
-- Заряд, азимут и возвышение в том же порядке, что в HUD артиллерии Arma (CH, AZ, EL), с теми же подписями.
-- «Ввод» при включённой карте открывает карту прямо в оверлее: орудие и цель ставятся поверх игры, основное окно пересчитывает (и подхватывает новое положение орудия).
-- Предупреждение, если огонь впритык к рельефу или рельеф закрывает цель; по связке оно приходит и стрелку.
-- Одновременный удар: если он выбран (панель раскрыта), оверлей показывает план выстрелов и следующий выстрел; «огонь» начинает удар.
-- Без строки с подсказками клавиш.
+### Windows app: overlay
+- Charge, azimuth and elevation in the same order as in the Arma artillery HUD (CH, AZ, EL), with the same labels.
+- "Input" with the map turned on opens the map right in the overlay: the gun and the target are placed over the game, and the main window recalculates (and picks up the new gun position).
+- A warning when the fire is tight over terrain or terrain blocks the target; over Link the gunner gets it too.
+- Simultaneous impact: when it is selected (the panel is open), the overlay shows the shot plan and the next shot; "fire" starts the strike.
+- No line with key hints.
 
-### Связка
-- Стрелок получает предупреждение о рельефе и план одновременного удара; «огонь» на любом устройстве начинает удар у всех.
-- Предупреждение, что установки от наводчика обновляются только на странице «Связка», и плашка с кнопкой вернуться, если стрелок с неё ушёл.
+### Link
+- The gunner receives the terrain warning and the simultaneous impact plan; "fire" on any device starts the strike for everyone.
+- A warning that the settings from fire direction are updated only on the Link page, and a banner with a button to go back if the gunner has left it.
 
-### Сайт
-- Быстрее открывается (на телефоне с медленным интернетом приложение готово примерно вдвое быстрее, первый экран сразу): таблицы стрельбы грузятся по одному орудию (выбранное сразу, остальные в фоне, чтобы работать без интернета), словари языков, кроме русского и английского, по требованию, React отдельным файлом из кэша браузера. Стартовый код сайта меньше примерно в 3,5 раза.
-- Для поиска: у каждого языка своя ссылка (?lang=de), заголовок вкладки и описание на языке интерфейса, ссылки на языковые версии, карта сайта (sitemap.xml), описание приложения для поиска (schema.org), картинка для превью ссылок в мессенджерах и соцсетях, заставка с описанием до загрузки приложения.
+### Site
+- It opens faster (on a phone with a slow connection the app is ready about twice as fast, and the first screen appears at once): range tables load one weapon at a time (the selected one first, the rest in the background so the app works offline), dictionaries other than Russian and English load on demand, React is a separate file from the browser cache. The startup code is about 3.5 times smaller.
+- For search engines: every language has a link of its own (?lang=de), the tab title and description are in the interface language, there are links to the language versions, a sitemap (sitemap.xml), a description of the app for search (schema.org), a preview picture for links in messengers and social networks, and a splash with a description before the app loads.
 
 ## [0.16.1] - 2026-10-26
 
-### Таблицы
-- M101: таблицы без сопротивления воздуха для обеих траекторий (настильная снята заново, навесная сверена построчно) и настильная с сопротивлением.
-- Правило: ACE показывает погодные поправки только при включённом сопротивлении воздуха. Таблица с ними считается таблицей для улучшенной баллистики, без них — для игры без сопротивления. Если под выбранную физику таблицы нет (у большинства орудий пока есть только таблицы с сопротивлением), берётся другая и показывается предупреждение.
+### Tables
+- M101: tables without air resistance for both trajectories (the low one was taken again, the high one was checked line by line) and the low one with air resistance.
+- The rule: ACE shows weather corrections only when air resistance is on. A table with them counts as a table for advanced ballistics, a table without them as one for a game without air resistance. If there is no table for the selected physics (most weapons have only tables with air resistance for now), another one is used and a warning is shown.
 
-### Программа для ПК
-- Обновления проверяются не только при запуске, но и раз в полчаса, при возврате к окну и при повторном запуске.
-- Программа запускается в одном экземпляре: повторный запуск открывает уже работающее окно.
-- В «О программе» видны версия и кнопка проверки обновлений с результатом или текстом ошибки.
+### Windows app
+- Updates are checked not only on start but also every half an hour, when the window gets focus and on a second launch.
+- The app runs as a single instance: a second launch opens the window that is already running.
+- About shows the version and an update check button with the result or the error text.
 
 ## [0.16.0] - 2026-10-26
 
-### Орудия
-- 10 новых орудий с таблицами со скриншотов игры (все пока «не проверено в игре»):
-  - ванильные: KamAZ MRL (Zamak MRL), Sholef (M4 Scorcher), 2S9 Sochor;
+### Weapons
+- 10 new weapons with tables from game screenshots (all "not verified in the game" for now):
+  - vanilla: KamAZ MRL (Zamak MRL), Sholef (M4 Scorcher), 2S9 Sochor;
   - S.O.G. Prairie Fire (DLC): D-44, H-12, Type 53, Type 63;
   - RHSUSAF: M109A6, M119A2;
-  - мод SOD M777 155mm Howitzer: M777 (только фугасный снаряд).
-- У 2S9 Sochor на настильной траектории заряда 2 пока нет дальностей 1200–4900 м (нет скриншота).
+  - the SOD M777 155mm Howitzer mod: M777 (high-explosive shell only).
+- 2S9 Sochor has no ranges from 1200 to 4900 m on the low trajectory of charge 2 yet (no screenshot).
 
-### Карты
-- Четыре Черноруссии из CUP Terrains (выгрузка grad_meh): осень, лето, зима и Chernarus 2020. Лежат в «Моды и DLC» с фильтром «Моды».
-- Импорт карт сохраняет вид карты (DLC, мод), заданный в index.json руками: у Черноруссии автор Bohemia, но это не базовая игра.
+### Maps
+- Four Chernarus maps from CUP Terrains (grad_meh export): autumn, summer, winter and Chernarus 2020. They are in "Mods and DLC" under the "Mods" filter.
+- The map import keeps the map kind (DLC, mod) set by hand in index.json: the author of Chernarus is Bohemia, but it is not part of the base game.
 
 ## [0.15.0] - 2026-10-26
 
-### Интерфейс
-- Длинные тире убраны из всех текстов сайта на всех 7 языках.
-- Настройки по разделам: значки, быстрый переход по разделам, переключатели справа, как в настройках телефона.
-  Пример функции открывается кнопкой «Показать пример» (без наведения и долгого нажатия, не тормозит на телефоне).
-- Текст больше не обрезается многоточием: переключатели сначала прячут значки и уменьшают шрифт, затем делят ширину по длине подписей; списки переносят длинные названия.
-- Футер на ПК в одну строку без пустот. На телефоне две ровные строки: обучение и настройки сверху, связка, тема и язык снизу.
-- Плашка координат на телефоне в две строки и не заходит на кнопку слоя карты.
-- Строки ввода на телефоне: подписи в одну строку, единицы («м/с», «гПа») не переносятся.
-- Проверка таблиц в игре показана значком в углу плитки орудия (жёлтый «!» или зелёная галочка), в том числе в списке орудий; текст «проверено / не проверено» из подписей убран.
-- Значок качества карты внутри списка карт, кнопки под картой без зазоров.
-- Окно новой метки: подпись на всю ширину, круг оттенков раскрывается внутри окна по нажатию на цвет (отдельный радужный кружок убран).
+### Interface
+- Settings in sections: icons, quick jumps between sections, switches on the right, as in phone settings.
+  An example of a feature opens with the "Show an example" button (no hover or long press, no lag on a phone).
+- Text is no longer cut off with an ellipsis: toggles first hide icons and reduce the font, then split the width by label length; lists wrap long names.
+- The footer on a PC is a single row without gaps. On a phone it is two even rows: the tutorial and settings on top, Link, theme and language below.
+- The coordinate plate on a phone takes two rows and does not overlap the map layer button.
+- Input rows on a phone: labels on one line, units ("m/s", "hPa") do not wrap.
+- Table verification in the game is shown by a badge in the corner of the weapon tile (a yellow "!" or a green check mark), in the weapon list too; the text "verified / not verified" is gone from the labels.
+- The map quality badge is inside the map list, the buttons under the map have no gaps.
+- The new marker window: the label takes the full width, the hue wheel opens inside the window when the colour is pressed (the separate rainbow circle is gone).
 
-### Рельеф по пути снаряда
-- По карте высот проверяется, не упрётся ли снаряд в гору или гребень по пути (дуга считается по углу возвышения как парабола, без сопротивления воздуха, как и таблицы; с сопротивлением снаряд идёт выше, так что оценка с запасом).
-- Заряды, которые упираются, помечены значком горы и зачёркнуты; «Авто» и выбор по приоритету их обходят.
-- Если выбранный способ упирается или проходит впритык (до 15 м над бугром), появляется предупреждение с профилем рельефа и дуги и подсказкой, чем стрелять вместо.
-- Проверка работает, когда орудие и цель стоят на карте и дистанцию не правили руками; деревья и здания не учитываются.
+### Terrain along the shell path
+- The height map is used to check whether the shell hits a hill or a ridge on its way (the arc is calculated from the elevation angle as a parabola, without air resistance, like the tables; with air resistance the shell flies higher, so the estimate is on the safe side).
+- Charges that hit terrain are marked with a mountain icon and struck through; "Auto" and the priority choice avoid them.
+- If the selected solution hits terrain or passes tight (within 15 m over a bump), a warning appears with the terrain and arc profile and a hint what to fire instead.
+- The check works when the gun and the target are on the map and the distance was not edited by hand; trees and buildings are not taken into account.
 
-### Одновременный удар (MRSI)
-- Называется «Одновременный удар», включается в настройках («Разделы калькулятора», с примером). Работает у буксируемых орудий и САУ; у миномёта и РСЗО вместо панели объяснение, почему нет.
-- Новая панель: перезарядка, следующий выстрел крупно (заряд, возвышение, отсчёт), полоса до разрыва, план всех выстрелов.
+### Simultaneous impact (MRSI)
+- It is called "Simultaneous impact" and is turned on in the settings ("Calculator sections", with an example). It works for towed guns and self-propelled guns; a mortar and an MLRS get an explanation instead of the panel.
+- A new panel: reload time, the next shot in large type (charge, elevation, countdown), a bar until impact, the plan of all shots.
 
-### Огонь по линии
-- Вместо типа орудия выбирается плотность огня (плотная, средняя, редкая, очень редкая); рекомендуемая подбирается под текущее орудие.
-- У каждой точки показаны возвышение и азимут (и заряд, если он меняется по линии), текущая точка крупно со стрелками.
+### Line fire
+- Fire density is selected instead of the weapon type (dense, medium, sparse, very sparse); the recommended one fits the current weapon.
+- Every point shows elevation and azimuth (and the charge if it changes along the line), the current point is large and has arrows.
 
-### Карты и орудия
-- Окно «Моды и DLC» (было «Моды») для карт и орудий, фильтр «Все / DLC / Моды»; DLC-карты (Tanoa, Livonia, Cam Lao Nam) перенесены туда.
-- Предупреждение о низком качестве у карт, собранных не через grad_meh (сейчас Cam Lao Nam).
-- Один список «Метки» на карте вместо отдельных «Целей» и «Меток»; при включённой связке метки видят все в комнате.
+### Maps and weapons
+- The "Mods and DLC" window (formerly "Mods") for maps and weapons, with the filter "All / DLC / Mods"; DLC maps (Tanoa, Livonia, Cam Lao Nam) moved there.
+- A low quality warning for maps built without grad_meh (Cam Lao Nam for now).
+- A single "Markers" list on the map instead of separate "Targets" and "Markers"; with Link on, everyone in the room sees the markers.
 
-### Расчёт
-- Вводные сохраняются при смене орудия, снаряда и после перезагрузки: дистанция, высоты, азимут, цель на карте, корректировки. Снаряд, траектория и заряд запоминаются для каждого орудия.
+### Calculation
+- Inputs survive a change of weapon or shell and a reload: distance, heights, azimuth, the target on the map, adjustments. The shell, trajectory and charge are remembered for each weapon.
 
-## [0.14.0] — 2026-10-25
+## [0.14.0] - 2026-10-25
 
-### Карты
-- 26 встроенных карт: официальные (Altis, Stratis, Tanoa, Malden, Livonia, VR, Cam Lao Nam) и карты сообщества с разрешения авторов; карты модов — в окне с поиском и избранным.
-- Векторный слой: здания, дороги, леса, горизонтали, названия и отметки высот; режим «Спутник / Топо» (кнопка в правом нижнем углу карты).
-- Плавное перетаскивание и приближение (основа карты рисуется один раз и сдвигается).
-- Рисование на карте (карандаш, прямая, ластик, цвета), метки на карте, выбор цвета кругом оттенков.
-- Огонь по линии с точками прицеливания, кольца досягаемости, голосование за новые карты и орудия.
+### Maps
+- 26 built-in maps: official ones (Altis, Stratis, Tanoa, Malden, Livonia, VR, Cam Lao Nam) and community maps with their authors' permission; mod maps are in a window with search and favourites.
+- A vector layer: buildings, roads, forests, contour lines, names and spot heights; the "Satellite / Topo" mode (the button in the bottom right corner of the map).
+- Smooth dragging and zooming (the map base is drawn once and shifted).
+- Drawing on the map (pencil, straight line, eraser, colours), map markers, colour choice with a hue wheel.
+- Line fire with aim points, range rings, voting for new maps and weapons.
 
-### Расчёт
-- Автовыбор траектории и заряда («лучший», «быстрый», «точный»), полоса всех зарядов, «только лучшие заряды».
-- Опция «Погода и улучшенная баллистика»: отдельный набор таблиц для игры с сопротивлением воздуха.
-- Значок «проверено / не проверено в игре» у каждого орудия.
-- Анимация полёта в линии таймера, залп («+ снаряд»), звуки таймера.
+### Calculation
+- Automatic choice of trajectory and charge ("best", "fast", "precise"), a strip of all charges, "only the good charges".
+- The option "Weather and advanced ballistics": a separate set of tables for a game with air resistance.
+- A "verified / not verified in the game" badge on every weapon.
+- Flight animation in the timer line, a volley ("+ shell"), timer sounds.
 
-### Интерфейс
-- 7 языков: русский, английский, украинский, немецкий, французский, японский, китайский.
-- Обучение (базовое и продвинутое), горячие клавиши, удобный футер на телефоне.
+### Interface
+- 7 languages: Russian, English, Ukrainian, German, French, Japanese, Chinese.
+- A tutorial (basic and advanced), keyboard shortcuts, a convenient footer on a phone.
 
-### Надёжность
-- Экран ошибки вместо белого экрана, отдельная защита карты, журнал ошибок на устройстве и отчёт в один клик.
-- Смоук-тесты собранного сайта в браузере (Playwright) в CI и перед публикацией.
-- Связка: защита от повтора перехваченных сообщений (шифрование AES-GCM было и раньше).
-- Карты вынесены из основной истории git в ветку `maps`.
+### Reliability
+- An error screen instead of a white screen, separate protection for the map, an error log on the device and a one-click report.
+- Smoke tests of the built site in a browser (Playwright) in CI and before publishing.
+- Link: protection against replay of intercepted messages (AES-GCM encryption was there before).
+- Maps moved out of the main git history to the `maps` branch.
 
-### Инструменты
-- Экспорт карт без grad_meh изнутри игры (топо и фото карты).
+### Tools
+- Map export without grad_meh from inside the game (topo and a photo of the map).
 
-## [0.13.0] — 2026-10-17
-- Встроенные карты Altis, Stratis, Tanoa; исправленная таблица Mk6.
+## [0.13.0] - 2026-10-17
+- Built-in maps Altis, Stratis and Tanoa; a corrected Mk6 table.
 
 ## [0.12.0]
-- Интерфейс в духе калькулятора MTC, огонь по времени (TOT), цели журнала на карте.
+- A new interface design, time on target (TOT), journal targets on the map.

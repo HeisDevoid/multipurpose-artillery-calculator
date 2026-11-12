@@ -1,44 +1,44 @@
 import { heightAt, type Heightmap, type MapPoint } from './heightmap'
 
 /**
- * Проверка, не упрётся ли снаряд в рельеф по пути к цели (гора, гребень
- * перед целью на настильной траектории).
+ * Checks whether the shell hits terrain on its way to the target (a hill, a ridge
+ * before the target on a low trajectory).
  *
- * Таблицы в приложении сняты без сопротивления воздуха, а без него снаряд
- * летит по параболе. По углу возвышения и точкам орудия и цели парабола
- * определяется целиком: y(x) = x·tg θ − (x/D)²·(D·tg θ − Δh). Скорость
- * снаряда для этого не нужна. Если в игре сопротивление всё же есть, дуга
- * идёт выше такой параболы, так что оценка выходит с запасом.
+ * The tables in the app were taken without air resistance, and without it the shell
+ * flies along a parabola. The elevation angle and the gun and target points define
+ * the parabola completely: y(x) = x·tan θ − (x/D)²·(D·tan θ − Δh). The shell
+ * velocity is not needed for this. If the game does have air resistance, the arc
+ * goes above such a parabola, so the estimate is on the safe side.
  */
 
 export interface TerrainProfile {
-  // Расстояние от орудия до цели по карте, м
+  // The distance from the gun to the target on the map, m
   distance: number
-  // Высоты рельефа через равный шаг: первая — у орудия, последняя — у цели, м
+  // Terrain heights at an equal step: the first at the gun, the last at the target, m
   heights: number[]
 }
 
 export interface Clearance {
-  // Наименьший запас снаряда над рельефом, м (меньше нуля — снаряд упрётся)
+  // The smallest clearance of the shell over terrain, m (below zero the shell hits)
   min: number
-  // Где это: расстояние от орудия, м; высота рельефа и снаряда там, м
+  // Where it is: the distance from the gun, m; the terrain and shell heights there, m
   at: number
   terrain: number
   shell: number
 }
 
-// Ствол над землёй, м
+// The barrel above the ground, m
 export const MUZZLE_HEIGHT = 1.5
-// Запас меньше этого — «впритык»: деревья и здания в рельефе карты не учтены, м
+// A clearance below this is "tight": trees and buildings are not in the map terrain, m
 export const TIGHT_CLEARANCE = 15
-// Снаряд ниже рельефа больше чем на столько — «упрётся». Меньше — в пределах
-// точности карты высот (и дуга с сопротивлением идёт чуть выше): «впритык», м
+// The shell below terrain by more than this "hits". Less is within the
+// height map precision (and the arc with air resistance goes slightly higher): "tight", m
 export const BLOCK_TOLERANCE = 3
-// У орудия и у цели рельеф карты сглажен: первые и последние метры не проверяются
+// At the gun and at the target the map terrain is smoothed: the first and last metres are not checked
 const SKIP_START = 30
 const SKIP_END = 20
 
-/** Высоты рельефа по прямой от орудия до цели с шагом не больше maxStep, м. */
+/** Terrain heights along a straight line from the gun to the target at a step no larger than maxStep, m. */
 export function sampleProfile(
   map: Heightmap,
   gun: MapPoint,
@@ -59,7 +59,7 @@ export function sampleProfile(
   return { distance, heights }
 }
 
-/** Высота снаряда над уровнем моря на расстоянии x от орудия, м. */
+/** The shell height above sea level at the distance x from the gun, m. */
 export function shellHeightAt(
   x: number,
   distance: number,
@@ -73,24 +73,24 @@ export function shellHeightAt(
   return gunHeight + x * tan - k * k * (distance * tan - rise)
 }
 
-// Бугор: рельеф выше прямой «земля у орудия — земля у цели» хотя бы на столько, м
+// A bump: terrain above the "ground at the gun to ground at the target" line by at least this much, m
 const BULGE = 2
 
 /**
- * Опасное место для выстрела с этим возвышением: где снаряд упирается
- * в рельеф, а если нигде — где он ниже всего проходит над бугром или
- * гребнем. null — по пути нет ни того ни другого.
+ * A dangerous spot for a shot with this elevation: where the shell hits
+ * terrain, and if nowhere, where it passes lowest over a bump or a
+ * ridge. null: there is neither on the way.
  *
- * «Впритык» считается только над буграми: у настильной стрельбы снаряд
- * перед целью всегда идёт низко, и на ровной земле это не опасно.
+ * "Tight" counts only over bumps: in low trajectory fire the shell
+ * always goes low before the target, and on flat ground this is not dangerous.
  */
 export function clearance(profile: TerrainProfile, elevationMil: number): Clearance | null {
   return clearanceAlong(profile.heights, 0, profile.heights.length - 1, profile.distance, elevationMil)
 }
 
 /**
- * То же по части массива высот без копирования: от индекса first (орудие)
- * до last (цель), в любую сторону. Для зон на карте, где профилей тысячи.
+ * The same over a part of the height array without copying: from the index first (the gun)
+ * to last (the target), in either direction. For the zones on the map, where there are thousands of profiles.
  */
 export function clearanceAlong(
   heights: ArrayLike<number>,
@@ -105,8 +105,8 @@ export function clearanceAlong(
   const own = heights[first]
   const gunHeight = own + MUZZLE_HEIGHT
   const targetHeight = heights[last]
-  // Парабола как в shellHeightAt, но тангенс — один раз на профиль: зоны
-  // на карте проверяют миллионы точек
+  // A parabola as in shellHeightAt, but the tangent is computed once per profile: the zones
+  // on the map check millions of points
   const tan = Math.tan((elevationMil * Math.PI) / 3200)
   const drop = distance * tan - (targetHeight - gunHeight)
   let hit: Clearance | null = null

@@ -1,6 +1,6 @@
 # 2A18M D-30A (122 mm), HIGH, Charge 5
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_d30, 389.16 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_d30, 389.16 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 5400 1278 1.5 0.4 63.6 3.6 23 -23 0.7 -0.5 -21 20
 5500 1271 1.6 0.4 63.4 3.5 24 -23 0.5 -0.7 -22 20
 5600 1263 1.8 0.4 63.3 3.4 24 -23 0.5 -0.7 -23 20

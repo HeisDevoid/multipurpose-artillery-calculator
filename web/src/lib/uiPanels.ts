@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react'
 
 /**
- * Окна, которые открываются из футера и по горячим клавишам:
- * справка по клавишам и обучение. Состояние общее для всего приложения.
+ * Windows that open from the footer and with hotkeys:
+ * the key help and the tutorial. The state is shared by the whole app.
  */
 export type PanelId = 'hotkeys' | 'tour' | 'tourAdvanced' | 'help' | 'physics'
 
@@ -38,7 +38,7 @@ export function usePanel(id: PanelId): boolean {
   return open.has(id)
 }
 
-// ---- обучение: показывать ли при первом запуске ----
+// ---- the tutorial: whether to show it on the first start ----
 
 const TOUR_KEY = 'tourDone'
 
@@ -54,7 +54,7 @@ export function markTourDone() {
   try {
     localStorage.setItem(TOUR_KEY, 'yes')
   } catch {
-    // Хранилище недоступно — обучение покажется снова.
+    // Storage is unavailable: the tutorial will show again.
   }
 }
 
@@ -72,11 +72,11 @@ export function markAdvancedTourDone() {
   try {
     localStorage.setItem(ADVANCED_KEY, 'yes')
   } catch {
-    // Хранилище недоступно — предложение покажется снова.
+    // Storage is unavailable: the offer will show again.
   }
 }
 
-// ---- физика на сервере: спросить один раз (до обучения) ----
+// ---- the server physics: ask once (before the tutorial) ----
 
 const PHYSICS_KEY = 'physicsAsked'
 
@@ -92,6 +92,6 @@ export function markPhysicsAsked() {
   try {
     localStorage.setItem(PHYSICS_KEY, 'yes')
   } catch {
-    // Хранилище недоступно — вопрос появится снова.
+    // Storage is unavailable: the question will appear again.
   }
 }

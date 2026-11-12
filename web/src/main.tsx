@@ -12,28 +12,29 @@ import { loadLanguage } from './i18n'
 import { initialModelId, loadTables, preloadAllTables } from './data/artillery/tables.ts'
 import { initialLanguage } from './lib/seo.ts'
 import { loadCustomSounds } from './lib/sound.ts'
+import { startUsageCounter } from './lib/usage.ts'
 
-// Работа без интернета (PWA). В режиме разработки не нужна — мешала бы
-// горячей перезагрузке.
-// В программе для ПК файлы и так локальные — service worker не нужен.
+// Offline work (PWA). Not needed in development: it would get in the way of
+// hot reload.
+// In the Windows app the files are local anyway: no service worker is needed.
 if (import.meta.env.PROD && 'serviceWorker' in navigator && !isDesktop) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register(`./sw.js?v=${__APP_VERSION__}`)
       .catch(() => {
-        // Без service worker приложение просто работает только онлайн.
+        // Without a service worker the app simply works online only.
       })
   })
 }
 
-// Свои звуки — из IndexedDB; звук подаёт основное окно
+// Own sounds come from IndexedDB; the main window plays the sound
 if (!isOverlayWindow) void loadCustomSounds()
 
-// Окно-оверлей прозрачное: фон страницы не закрашиваем.
-// Поверх игры — всегда тёмная тема, независимо от настроек основного окна.
+// The overlay window is transparent: the page background is not painted.
+// Over the game the theme is always dark, whatever the main window settings are.
 if (isOverlayWindow) document.documentElement.classList.add('overlay', 'dark')
 
-// Тема — до первой отрисовки: без мигания светлым и на экране ошибки тоже
+// The theme before the first render: no flash of light, on the error screen too
 try {
   document.documentElement.classList.toggle('dark', localStorage.getItem('theme') !== 'light')
 } catch {
@@ -43,8 +44,8 @@ try {
 applyMotion()
 installGlobalErrorLog()
 
-// До первой отрисовки: словарь языка (русский и английский уже в основном
-// файле; не загрузился — интерфейс по-английски) и таблицы выбранного орудия
+// Before the first render: the language dictionary (Russian and English are in the main
+// file; if it fails to load, the interface is in English) and the tables of the selected weapon
 await Promise.all([
   loadLanguage(initialLanguage()).catch(() => undefined),
   isOverlayWindow ? undefined : loadTables(initialModelId()).catch(() => undefined),
@@ -64,9 +65,12 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Остальные таблицы — в фоне, когда браузер свободен: потом орудие
-// меняется мгновенно, а сайт работает без интернета
+// The other tables load in the background when the browser is idle: then the weapon
+// changes instantly, and the site works offline
 if (!isOverlayWindow) {
   const idle = window.requestIdleCallback ?? ((callback: () => void) => window.setTimeout(callback, 2000))
   idle(() => void preloadAllTables())
 }
+
+// Anonymous usage counter: one request a day, off in the settings
+startUsageCounter()

@@ -1,6 +1,6 @@
 # 2B14-1 Podnos (82 mm), HIGH, Charge 1
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_2b14, 147.7 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_2b14, 147.7 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 400 1499 2.3 0.7 29.0 4.6 2.0 -1.8 0.1 -0.0 -0.4 0.3
 450 1486 2.7 0.7 29.0 4.1 2.0 -1.9 0.1 -0.1 -0.4 0.4
 500 1473 2.9 0.7 28.9 3.7 2.1 -1.8 0.1 -0.1 -0.4 0.4

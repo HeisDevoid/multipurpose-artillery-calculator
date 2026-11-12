@@ -15,8 +15,8 @@ export type { Language } from './languages'
 
 type Dictionary = Record<MessageKey, string>
 
-// Русский и английский (он же запасной) — в основном файле сайта. Остальные
-// языки грузятся по требованию: первый экран открывается быстрее.
+// Russian and English (the fallback) are in the main site file. The other
+// languages load on demand: the first screen opens faster.
 const dictionaries: Partial<Record<Language, Dictionary>> = { ru, en }
 
 const loaders: Record<Exclude<Language, 'ru' | 'en'>, () => Promise<Dictionary>> = {
@@ -27,19 +27,19 @@ const loaders: Record<Exclude<Language, 'ru' | 'en'>, () => Promise<Dictionary>>
   zh: () => import('./messages.zh').then((m) => m.zh),
 }
 
-/** Словарь языка уже загружен: t() на нём сработает сразу. */
+/** The language dictionary is already loaded: t() works with it at once. */
 export function isLanguageLoaded(language: Language): boolean {
   return dictionaries[language] !== undefined
 }
 
-/** Загрузить словарь языка (до первой отрисовки и перед сменой языка). */
+/** Load a language dictionary (before the first render and before a language change). */
 export async function loadLanguage(language: Language): Promise<void> {
   if (isLanguageLoaded(language)) return
   dictionaries[language] = await loaders[language as keyof typeof loaders]()
 }
 
-// Текущий язык интерфейса. Его задаёт App при каждой отрисовке, а смена
-// языка перерисовывает всё приложение, поэтому t() можно звать откуда угодно.
+// The current interface language. App sets it on every render, and a language
+// change re-renders the whole app, so t() can be called from anywhere.
 let current: Language = 'ru'
 
 export function setLanguage(language: Language) {
@@ -50,7 +50,7 @@ export function getLanguage(): Language {
   return current
 }
 
-/** Текст на языке по ключу; {0}, {1} заменяются аргументами. Словарь ещё не загружен — по-английски. */
+/** A text in a language by key; {0}, {1} are replaced with the arguments. Until the dictionary loads, English. */
 export function translate(
   language: Language,
   key: MessageKey,
@@ -62,7 +62,7 @@ export function translate(
   )
 }
 
-/** Текст на текущем языке. */
+/** A text in the current language. */
 export function t(key: MessageKey, ...args: readonly (string | number)[]): string {
   return translate(current, key, ...args)
 }

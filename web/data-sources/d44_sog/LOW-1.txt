@@ -1,6 +1,6 @@
 # D-44 (S.O.G. Prairie Fire), LOW, Charge 1
-# Снято 26.10.2026. В режиме LOW «D ELEV / TIME OF FLIGHT PER 100 M DR»
-# отрицательные: цель выше — возвышение больше. Часть дальностей игра пропускает.
+# Taken 26.10.2026. In the LOW mode the "D ELEV / TIME OF FLIGHT PER 100 M DR" values
+# are negative: a higher target needs more elevation. The game skips some ranges.
 700 88 - - 3.5 0.1 0.8 -0.1 0.6 -0.0 -0.1 0.7
 950 122 - - 4.9 0.1 0.9 -0.2 0.6 -0.0 -0.2 0.8
 1100 143 -94.0 -0.0 5.7 0.2 0.3 -0.9 0.0 -0.6 -0.9 0.2

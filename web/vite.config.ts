@@ -4,14 +4,14 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// Номер версии — единственный источник: package.json
+// The version number has a single source: package.json
 const { version } = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8')
 ) as { version: string }
 
 export default defineConfig({
-  // Относительные пути: сборка работает из любой папки —
-  // GitHub Pages (/<repo>/), локальный файл, будущее ПК-приложение.
+  // Relative paths: the build works from any folder:
+  // GitHub Pages (/<repo>/), a local file, the Windows app.
   base: './',
   plugins: [react(), tailwindcss()],
   define: {
@@ -20,9 +20,9 @@ export default defineConfig({
   build: {
     rolldownOptions: {
       output: {
-        // React — отдельным файлом: меняется редко, после обновления сайта
-        // браузер берёт его из кэша. Таблицы орудий и так в своих файлах
-        // (грузятся по одной, см. data/artillery/tables.ts)
+        // React is a separate file: it changes rarely, so after a site update
+        // the browser takes it from the cache. The weapon tables are in their own files anyway
+        // (they load one by one, see data/artillery/tables.ts)
         codeSplitting: {
           groups: [{ name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ }],
         },

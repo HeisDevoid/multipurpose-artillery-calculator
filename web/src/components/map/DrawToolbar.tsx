@@ -15,8 +15,8 @@ const TOOLS: { id: DrawTool; icon: FieldIconName; label: MessageKey }[] = [
 ]
 
 /**
- * Рисование на карте: одна кнопка-карандаш, по нажатию — полоса инструментов
- * (карандаш, прямая, ластик, цвет, отмена, стереть всё по двойному нажатию).
+ * Drawing on the map: one pencil button, a press opens the tool strip
+ * (pencil, straight line, eraser, colour, undo, erase all with a double press).
  */
 export function DrawToolbar({
   tool,
@@ -29,9 +29,9 @@ export function DrawToolbar({
   onUndo,
   onClear,
 }: {
-  // Выбранный инструмент рисования или null, если карта в обычном режиме
+  // The selected drawing tool, or null if the map is in the normal mode
   tool: DrawTool | null
-  // null — выйти из рисования (касание снова ставит цель)
+  // null: leave drawing (a touch places the target again)
   onTool: (tool: DrawTool | null) => void
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -41,7 +41,7 @@ export function DrawToolbar({
   onUndo: () => void
   onClear: () => void
 }) {
-  // «Стереть всё» срабатывает со второго нажатия в течение 3 с
+  // "Erase all" works on the second press within 3 s
   const [clearArmed, setClearArmed] = useState(false)
   useEffect(() => {
     if (!clearArmed) return

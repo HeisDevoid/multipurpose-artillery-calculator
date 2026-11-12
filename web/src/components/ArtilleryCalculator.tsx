@@ -89,36 +89,36 @@ import { WeatherRows } from './WeatherRows'
 
 const MODES: readonly ArtilleryMode[] = ['HIGH', 'LOW']
 
-// Карта с рельефом и распознаванием экрана — отдельным чанком:
-// расчёт открывается раньше, карта догружается следом.
+// The map with terrain and screen recognition is a separate chunk:
+// the calculator opens earlier, the map loads after it.
 const MapPicker = lazy(() =>
   import('./MapPicker').then((m) => ({ default: m.MapPicker }))
 )
 
 interface Props {
   modelId: ModelId
-  // Таблицы орудия (грузятся по требованию, см. data/artillery/tables.ts)
+  // The weapon tables (loaded on demand, see data/artillery/tables.ts)
   reference: ArtilleryReference
   language: Language
-  // Запись журнала, из которой восстановлены вводные
+  // The journal entry the inputs were restored from
   initial?: JournalEntry | null
-  // Экспериментальный ввод по координатам сетки (из настроек)
+  // Experimental input by grid coordinates (from the settings)
   gridInput?: boolean
-  // Экспериментальная карта с высотами (из настроек)
+  // Experimental map with heights (from the settings)
   mapInput?: boolean
-  // Метки на карте и метки с экрана игры (из настроек)
+  // Map markers and markers from the game screen (from the settings)
   showMarkers?: boolean
   showScreenMarkers?: boolean
-  // Выбор модели — в одной строке с выбором боеприпаса
+  // The model choice shares a row with the ammunition choice
   modelSelector?: ReactNode
-  // Полоска быстрого выбора сохранённых целей
+  // The quick pick strip of saved targets
   targetBar?: ReactNode
-  // Цель из журнала, с которой сейчас работаем: её можно обновить
+  // The journal target in use now: it can be updated
   activeEntry?: Pick<JournalEntry, 'id' | 'name'> | null
-  // Все цели журнала — для отметок на карте
+  // All journal targets, for the marks on the map
   journalEntries?: readonly JournalEntry[]
   onLoadEntry?: (id: string) => void
-  // Экспорт, импорт, переименование и удаление целей — в панели целей на карте
+  // Export, import, renaming and removal of targets are in the targets panel on the map
   journalActions?: JournalActions
   onSave: (draft: JournalDraft) => void
   onUpdate?: (id: string, draft: JournalDraft) => void
@@ -153,13 +153,13 @@ export function ArtilleryCalculator({
   const onlyGood = useFeature('onlyGood')
   const ammunition = reference.ammunition ?? []
 
-  // Черновик: введённое ранее (другим орудием, до перезагрузки). Запись
-  // журнала, если её загрузили, важнее черновика.
+  // The draft: what was entered earlier (with another weapon, before a reload). A journal
+  // entry, if one was loaded, wins over the draft.
   const [draft] = useState(() => (initial ? null : readCalcDraft()))
   const [modelDraft] = useState(() => (initial ? {} : readModelDraft(modelId)))
 
-  // Режим из загруженной записи журнала, если модель его поддерживает
-  // Траектория: выбранная вручную или «авто» — лучшая по приоритету заряда
+  // The mode from the loaded journal entry, if the model supports it
+  // The trajectory: chosen by hand or "auto", the best one by the charge priority
   const [modeChoice, setModeChoice] = useState<ArtilleryMode | 'auto'>(() =>
     initial?.mode && reference.availableModes.includes(initial.mode)
       ? initial.mode
@@ -182,8 +182,8 @@ export function ArtilleryCalculator({
   const [distance, setDistance] = useState(
     initial ? numberToField(initial.distance) : (draft?.distance ?? '')
   )
-  // Высота орудия: блокировка сохраняет значение между запусками и
-  // защищает его от карты, журнала и «Сброса».
+  // Gun height: the lock keeps the value between starts and
+  // protects it from the map, the journal and Reset.
   const [heightLocked, setHeightLocked] = useState(
     () => readStored<'on' | 'off'>('ownHeightLocked', ['on', 'off'], 'off') === 'on'
   )
@@ -207,9 +207,9 @@ export function ArtilleryCalculator({
   const [azimuth, setAzimuth] = useState(
     initial ? numberToField(initial.azimuth) : (draft?.azimuth ?? '')
   )
-  // Точка цели на карте, если цель ставили на карте; ручная правка
-  // дистанции или азимута её сбрасывает.
-  // Рельеф между орудием и целью с карты (если она открыта)
+  // The target point on the map, if the target was placed there; editing the
+  // distance or azimuth by hand clears it.
+  // The terrain between the gun and the target from the map (if it is open)
   const [terrain, setTerrain] = useState<TerrainProfile | null>(null)
   const [mapTarget, setMapTarget] = useState<MapTarget | null>(
     initial ? (initial.target ?? null) : (draft?.mapTarget ?? null)
@@ -220,8 +220,8 @@ export function ArtilleryCalculator({
       readStored<AngleUnit>('azimuthUnit', ['mil', 'deg'], 'mil')
   )
 
-  // История докладов корректировки. Из журнала приходит только итог —
-  // он становится одной записью истории.
+  // The history of adjustment reports. The journal gives only the total,
+  // which becomes a single history entry.
   const [adjustHistory, setAdjustHistory] = useState<AdjustmentEntry[]>(
     () => {
       if (!initial) return draft?.adjust ?? []
@@ -235,14 +235,14 @@ export function ArtilleryCalculator({
   const { range: rangeAdjust, lateral: lateralAdjust } =
     sumAdjustments(adjustHistory)
 
-  // Огонь по времени: момент разрыва, мс
+  // Time on target: the moment of impact, ms
   const [totAt, setTotAt] = useState<number | null>(null)
 
   const [chosenCharge, setChosenCharge] = useState<number | null>(
     initial ? (initial.charge ?? null) : (modelDraft.charge ?? null)
   )
 
-  // Всё введённое сохраняется сразу: смена орудия, настройки, перезагрузка
+  // Everything entered is saved at once: a weapon change, the settings, a reload
   useEffect(() => {
     writeCalcDraft({ distance, ownHeight, targetHeight, azimuth, mapTarget, adjust: adjustHistory })
   }, [distance, ownHeight, targetHeight, azimuth, mapTarget, adjustHistory])
@@ -256,7 +256,7 @@ export function ArtilleryCalculator({
 
   const [chargePreference, setChargePreference] =
     useState<ChargePreference>(() =>
-      // Прежнее «меньший» из старых версий читается как «лучший»
+      // The former "lowest" from old versions is read as "best"
       readStored<ChargePreference>(
         'chargePreference',
         ['best', 'fastest', 'precise'],
@@ -275,9 +275,9 @@ export function ArtilleryCalculator({
   const selectedAmmo =
     ammunition.find((ammo) => ammo.id === ammoId) ?? ammunition[0]
 
-  // Погодные поправки и улучшенная баллистика — один переключатель: поправки
-  // имеют смысл только при игре с сопротивлением воздуха и погодой.
-  // substituted — траектории, для которых нет таблиц под эту физику
+  // Weather corrections and advanced ballistics are one switch: the corrections
+  // make sense only in a game with air resistance and weather.
+  // substituted: trajectories that have no tables for this physics
   const { profile, substituted } = selectProfile(
     reference,
     selectedAmmo,
@@ -286,7 +286,7 @@ export function ArtilleryCalculator({
 
   const hasWeather = profile !== undefined && profileHasWeather(profile)
 
-  // ---- ввод ----
+  // ---- input ----
   const distanceValue = parseNumber(distance)
   const validDistance = distanceValue !== null && distanceValue > 0
 
@@ -297,13 +297,13 @@ export function ArtilleryCalculator({
     ownHeight.trim() === '' && targetHeight.trim() === ''
   const bothHeightsValid = own !== null && target !== null
 
-  // Если высоты не введены или введены не полностью, поправка
-  // на высоту не применяется (разница = 0).
+  // If the heights are missing or incomplete, the height
+  // correction is not applied (the difference is 0).
   const heightDifference = bothHeightsValid ? target - own : 0
   const heightIncomplete = !bothHeightsEmpty && !bothHeightsValid
 
-  // Дистанция с корректировкой; погодная поправка добавляется
-  // при расчёте отдельно для каждого заряда.
+  // The distance with the adjustment; the weather correction is added
+  // in the calculation separately for every charge.
   const baseRange = validDistance ? distanceValue + rangeAdjust : null
 
   const azimuthValue = parseNumber(azimuth)
@@ -334,13 +334,13 @@ export function ArtilleryCalculator({
     ...(hasWeather ? weatherInputs.fields : []),
   ].some(isInvalid)
 
-  // ---- расчёт ----
-  // Режимы, для которых у боеприпаса есть таблицы
+  // ---- calculation ----
+  // The modes the ammunition has tables for
   const profileModes = MODES.filter(
     (item) => profile?.modes[item] !== undefined
   )
 
-  // Все способы выстрела по текущей дистанции: каждая траектория и заряд
+  // All ways to fire at the current distance: every trajectory and charge
   const modeResults =
     profile && baseRange !== null
       ? profileModes.map((item) => ({
@@ -356,9 +356,9 @@ export function ArtilleryCalculator({
         }))
       : []
 
-  // ---- рельеф по пути снаряда ----
-  // Профиль берётся с карты, только если дистанция в поле совпадает с картой
-  // (её не правили руками): иначе он не про этот выстрел.
+  // ---- terrain along the shell path ----
+  // The profile is taken from the map only if the distance in the field matches the map
+  // (it was not edited by hand): otherwise it is not about this shot.
   const terrainActive =
     terrain !== null && validDistance && Math.abs(terrain.distance - distanceValue) <= Math.max(25, distanceValue * 0.01)
       ? terrain
@@ -372,7 +372,7 @@ export function ArtilleryCalculator({
     }
   }
   const terrainOf = (m: ArtilleryMode, charge: number) => terrainChecks.get(`${m}:${charge}`) ?? null
-  // Выбор по приоритету — среди способов, которые не упираются в рельеф (если такие есть)
+  // The priority choice is among the ways that do not hit terrain (if there are any)
   const clearGroups = modeResults.map((group) => ({
     ...group,
     results: group.results.filter((r) => !isBlocked(terrainOf(group.mode, r.charge))),
@@ -380,7 +380,7 @@ export function ArtilleryCalculator({
   const anyClear = clearGroups.some((group) => group.results.some((r) => r.solution !== null))
   const pickGroups = anyClear ? clearGroups : modeResults
 
-  // «Авто»: лучший способ по приоритету среди всех траекторий
+  // "Auto": the best way by priority among all trajectories
   const autoBest =
     modeChoice === 'auto' ? pickBest(pickGroups, chargePreference) : undefined
   const mode: ArtilleryMode =
@@ -393,7 +393,7 @@ export function ArtilleryCalculator({
 
   const applicable = results.filter((r) => r.solution !== null)
 
-  // Явно выбранный заряд важнее предпочтения по умолчанию.
+  // An explicitly chosen charge wins over the default preference.
   const activeResult =
     applicable.find((r) => r.charge === chosenCharge) ??
     (modeChoice === 'auto'
@@ -403,9 +403,9 @@ export function ArtilleryCalculator({
   const solution = activeResult?.solution ?? null
   const range = overallRange(results)
 
-  // Рельеф у выбранного способа и чем стрелять вместо, если он упирается
+  // The terrain for the chosen way and what to fire instead if it is blocked
   const activeTerrain = activeResult ? terrainOf(mode, activeResult.charge) : null
-  // Для оверлея и стрелков: огонь впритык к рельефу или закрыт им
+  // For the overlay and the gunners: the fire is tight over terrain or blocked by it
   const terrainStatus: TerrainStatus =
     terrainActive && activeTerrain
       ? isBlocked(activeTerrain)
@@ -425,8 +425,8 @@ export function ArtilleryCalculator({
     return `${label.toLowerCase()}, ${t('mrsiPanel.charge')} ${best.result.charge}`
   })()
 
-  // Огонь по линии: та же траектория и, пока достаёт, тот же заряд, что и в
-  // основном расчёте; иначе — заряд по приоритету
+  // Line fire: the same trajectory and, while it reaches, the same charge as in the
+  // main calculation; otherwise the charge by priority
   const solveLinePoint = (lineDistance: number, lineHeightDiff: number) => {
     if (!profile) return null
     const lineResults = solveAllCharges(
@@ -444,14 +444,14 @@ export function ArtilleryCalculator({
   }
   const w = solution?.weather
 
-  // Доворот: боковой ветер + корректировка по направлению, мил.
+  // Deflection: crosswind + the direction adjustment, mils.
   const lateralMil =
     validDistance && lateralAdjust !== 0
       ? lateralCorrectionMil(lateralAdjust, distanceValue)
       : 0
   const azimuthCorrectionMil = (w?.azimuth ?? 0) + lateralMil
 
-  // Азимут стрельбы в единицах ввода.
+  // The firing azimuth in the input units.
   const firingAzimuth =
     azimuthValue === null || !solution
       ? null
@@ -459,14 +459,14 @@ export function ArtilleryCalculator({
         ? normalizeAngle(azimuthValue + azimuthCorrectionMil, MILS_PER_TURN)
         : normalizeAngle(azimuthValue + milToDeg(azimuthCorrectionMil), 360)
 
-  // ---- горячие клавиши ----
+  // ---- hotkeys ----
   const timerRef = useRef<FireTimerHandle>(null)
 
-  // Одновременный удар: план (панель раскрыта) и момент старта — их видят
-  // оверлей и стрелки по связке; «огонь» при выбранном ударе начинает его
+  // Simultaneous impact: the plan (the panel is open) and the start moment are seen
+  // by the overlay and the gunners over Link; "fire" with the strike selected starts it
   const [mrsiPlan, setMrsiPlan] = useState<MrsiShot[] | null>(null)
   const [mrsiStartedAt, setMrsiStartedAt] = useState<number | null>(null)
-  // Снаряд в полёте — для анимации на карте
+  // The shell in flight, for the animation on the map
   const [flight, setFlight] = useState<FlightShot[]>([])
   const [combatOpen, setCombatOpen] = useState(false)
 
@@ -488,7 +488,7 @@ export function ArtilleryCalculator({
   const hotkeys: HotkeyMap = {
     KeyF: () => fire(),
     Escape: () => {
-      // Сначала закрывается боевой экран, затем останавливается таймер
+      // The combat screen closes first, then the timer stops
       if (combatOpen) setCombatOpen(false)
       else timerRef.current?.stop()
     },
@@ -553,7 +553,7 @@ export function ArtilleryCalculator({
 
   function changeAzimuthUnit(unit: AngleUnit) {
     if (unit === azimuthUnit) return
-    // Пересчитываем уже введённый азимут в новые единицы.
+    // Convert the azimuth already entered to the new units.
     if (azimuthValue !== null) {
       const converted =
         unit === 'mil' ? degToMil(azimuthValue) : milToDeg(azimuthValue)
@@ -600,7 +600,7 @@ export function ArtilleryCalculator({
     setJustSaved('saved')
   }
 
-  // Перезаписать текущую цель: те же имя и запись, новые вводные.
+  // Overwrite the current target: the same name and entry, new inputs.
   function handleUpdate() {
     if (!activeEntry || !onUpdate) return
     const draft = buildDraft(activeEntry.name)
@@ -626,10 +626,10 @@ export function ArtilleryCalculator({
 
   const totalRangeCorrection = rangeAdjust + (w?.total ?? 0)
 
-  // ---- одновременный удар: все заряды во всех режимах ----
-  // Только орудиям, которые успевают сменить заряд и возвышение между
-  // выстрелами (буксируемые и САУ). Миномёт и РСЗО — нет: заряд мины
-  // меняют руками, а пусковую не перенаведёшь за секунды.
+  // ---- simultaneous impact: all charges in all modes ----
+  // Only for weapons that can change the charge and elevation between
+  // shots (towed and self-propelled guns). Not a mortar or an MLRS: a mortar
+  // charge is changed by hand, and a launcher cannot be re-laid in seconds.
   const category = models[modelId].category as ArtilleryCategory
   const mrsiAllowed = category === 'towed' || category === 'spg'
   const mrsiOptions: MrsiOption[] =
@@ -650,7 +650,7 @@ export function ArtilleryCalculator({
         )
       : []
 
-  // Досягаемость орудия не зависит от введённой дистанции — для колец на карте
+  // The weapon's reach does not depend on the entered distance: for the rings on the map
   const reach = profile
     ? overallRange(
         solveAllCharges(
@@ -664,7 +664,7 @@ export function ArtilleryCalculator({
       )
     : null
 
-  // Дистанция не достаёт или слишком мала для всех зарядов выбранной траектории
+  // The distance is out of reach or too short for all charges of the chosen trajectory
   const outOfRange =
     profile && validDistance && applicable.length === 0 && range && baseRange !== null
       ? baseRange > range.max
@@ -674,7 +674,7 @@ export function ArtilleryCalculator({
           : null
       : null
 
-  // Быстрый список сохранённых целей на карте
+  // The quick list of saved targets on the map
   const quickTargets = (showJournal ? recentEntries(journalEntries, 12) : []).map(
     (entry) => ({
         id: entry.id,
@@ -684,9 +684,9 @@ export function ArtilleryCalculator({
     })
   )
 
-  // Закрепление орудия на карте закрепляет и высоту орудия — как будто
-  // её ввели и заблокировали руками. Освобождение снимает только то
-  // закрепление, которое поставила карта.
+  // Locking the gun on the map locks the gun height too, as if it
+  // had been entered and locked by hand. Unlocking removes only the
+  // lock the map has set.
   const heightAutoLocked = useRef(false)
   function handleGunLock(locked: boolean, height: number | null) {
     if (locked) {
@@ -701,7 +701,7 @@ export function ArtilleryCalculator({
     }
   }
 
-  // ---- цели журнала, поставленные на карте ----
+  // ---- journal targets placed on the map ----
   const activeEntryId = activeEntry?.id ?? null
   const journalTargets = useMemo(
     () =>
@@ -720,7 +720,7 @@ export function ArtilleryCalculator({
     [journalEntries, activeEntryId]
   )
 
-  // ---- программа для ПК: оверлей поверх игры и глобальные клавиши ----
+  // ---- Windows app: the overlay over the game and global keys ----
   const overlayState: OverlayState = {
     language,
     title: reference.name,
@@ -755,7 +755,7 @@ export function ArtilleryCalculator({
           }
         : null,
   }
-  // Строка — чтобы отправлять в оверлей только реальные изменения
+  // A string, so that only real changes are sent to the overlay
   const overlayJson = JSON.stringify(overlayState)
   const overlayJsonRef = useRef(overlayJson)
 
@@ -772,7 +772,7 @@ export function ArtilleryCalculator({
     []
   )
 
-  // Обработчик глобальных клавиш видит актуальное состояние через ref
+  // The global key handler sees the current state through a ref
   const globalHotkeyRef = useRef<(action: HotkeyAction) => void>(() => {})
   useEffect(() => {
     globalHotkeyRef.current = (action) => {
@@ -782,7 +782,7 @@ export function ArtilleryCalculator({
   })
   useEffect(() => onHotkey((action) => globalHotkeyRef.current(action)), [])
 
-  // Ввод из оверлея — те же действия, что и в основном окне
+  // Input from the overlay: the same actions as in the main window
   function describeSpot(over: number, right: number): string {
     const parts: string[] = []
     if (over !== 0) {
@@ -849,7 +849,7 @@ export function ArtilleryCalculator({
     []
   )
 
-  // ---- связка: наводчик отправляет установки, выстрел — у всех ----
+  // ---- Link: fire direction sends the settings, a shot goes to everyone ----
   const sync = useSync()
   const sharing = sync.enabled && sync.role === 'computer'
   const syncSolution: SyncSolution | null = overlayState.solution
@@ -869,7 +869,7 @@ export function ArtilleryCalculator({
     if (sharing) shareSolution(JSON.parse(syncJson))
   }, [sharing, syncJson, shareSolution])
 
-  // Выстрел с другого устройства: при одновременном ударе — старт удара
+  // A shot from another device: with a simultaneous impact it starts the strike
   const remoteFireRef = useRef(() => {})
   useEffect(
     () =>
@@ -892,14 +892,14 @@ export function ArtilleryCalculator({
     if (sync.active) sendShot()
   }
 
-  // Одновременный удар начат: здесь и (share) у всех по связке
+  // The simultaneous impact has started: here and (share) for everyone over Link
   function startMrsi(share: boolean) {
     setMrsiStartedAt(Date.now())
     playSound('fire')
     if (share && sync.active) sendShot()
   }
 
-  // «Огонь» (F, Ctrl+Alt+F): при выбранном ударе — удар, иначе таймер
+  // "Fire" (F, Ctrl+Alt+F): the strike if one is selected, otherwise the timer
   function fire() {
     if (mrsiPlan) startMrsi(true)
     else timerRef.current?.fire()
@@ -907,7 +907,7 @@ export function ArtilleryCalculator({
 
   const alertClass = 'rounded-md bg-app-raised px-3 py-2 text-[13.5px]'
 
-  // Орудие и цель на карте (здесь или в оверлее): дистанция, азимут, высоты
+  // The gun and the target on the map (here or in the overlay): distance, azimuth, heights
   function applyMapSelection(selection: MapSelection) {
     setDistance(String(Math.round(selection.distance)))
     setAzimuth(
@@ -929,7 +929,7 @@ export function ArtilleryCalculator({
           mapInput ? 'lg:grid-cols-2' : 'mx-auto max-w-xl',
         ].join(' ')}
       >
-        {/* ---- Карта ---- */}
+        {/* ---- Map ---- */}
         {(mapInput || gridInput) && (
           <div className="min-w-0">
             {mapInput && (
@@ -986,9 +986,9 @@ export function ArtilleryCalculator({
           </div>
         )}
 
-        {/* ---- Решение и вводные: «подпись — значение» ---- */}
+        {/* ---- Solution and inputs: "label: value" ---- */}
         <div className="min-w-0">
-          {/* «Огонь» и боевой экран — сверху: главное действие под рукой */}
+          {/* "Fire" and the combat screen are on top: the main action is at hand */}
           {!combatOpen && (
             <div className="mb-3">
               <FireTimer
@@ -1055,7 +1055,7 @@ export function ArtilleryCalculator({
           </div>
           <dl>
             <Row icon="charge" control="full" tourId="charge" label={t('artilleryCalculator.charge')}>
-              {/* Автовыбор: какой заряд брать, пока не выбран вручную */}
+              {/* Auto choice: which charge to take until one is chosen by hand */}
               <Toggle
                 label={t('artilleryCalculator.which-charge-to-use')}
                 equal
@@ -1250,7 +1250,7 @@ export function ArtilleryCalculator({
 
           {showJournal && !mapInput && targetBar}
 
-          {/* ---- Состояние расчёта и предупреждения ---- */}
+          {/* ---- Calculation state and warnings ---- */}
           <div className="mt-4 space-y-2">
             {!profile && (
               <p className={`${alertClass} text-app-muted`}>
@@ -1420,7 +1420,7 @@ export function ArtilleryCalculator({
         </div>
       </div>
 
-      {/* ---- Дополнительно: раскрывающиеся разделы ---- */}
+      {/* ---- More: collapsible sections ---- */}
       <div className="mt-12 grid items-start gap-3 lg:grid-cols-2">
         <div className="min-w-0 space-y-3">
           {(showAdjust || adjustHistory.length > 0) && (
@@ -1449,7 +1449,7 @@ export function ArtilleryCalculator({
               impactAt={totAt}
               onImpactChange={setTotAt}
               onFireMoment={() => {
-                // Только у себя: стрелки по связке ведут свой отсчёт
+                // Local only: gunners over Link run their own countdown
                 timerRef.current?.remoteFire()
                 notifyOverlayShot()
               }}

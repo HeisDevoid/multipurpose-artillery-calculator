@@ -4,9 +4,9 @@ import { t } from '../i18n'
 import { FieldIcon } from './FieldIcon'
 
 /**
- * Линия-разделитель с кнопкой очистки справа. Срабатывает со второго
- * нажатия (первое просит подтвердить, через 3 с возвращается), чтобы не
- * стереть введённое случайно.
+ * A divider line with a clear button on the right. It works on the second
+ * press (the first asks to confirm and resets after 3 s), so that the
+ * entered values are not erased by accident.
  */
 export function ConfirmClear({
   label,

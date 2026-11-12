@@ -14,7 +14,7 @@ function makeMap(height: (x: number, y: number) => number, size = 41, step = 25)
 const wholeMap = { x0: 0, y0: 1000, scale: 1, width: 1000, height: 1000 }
 
 describe('contourInterval', () => {
-  it('чем ближе, тем гуще; мелкий масштаб — линий нет', () => {
+  it('the closer, the denser; at a small scale there are no lines', () => {
     expect(contourInterval(0.05)).toBeNull()
     expect(contourInterval(0.3)).toBe(5)
     expect(contourInterval(1)).toBe(2)
@@ -25,28 +25,28 @@ describe('contourInterval', () => {
 })
 
 describe('demContours', () => {
-  it('наклонная плоскость: линии высоты стоят на x = высота, вертикальные', () => {
-    // Высота равна x / 5: от 0 до 200 м
+  it('an inclined plane: the height lines stand at x = height and are vertical', () => {
+    // The height equals x / 5: from 0 to 200 m
     const map = makeMap((x) => x / 5)
     const levels = demContours(map, wholeMap, 10)
-    // Линия нулевой высоты идёт по краю карты (там высота 0); 200 — вершина, линии нет
+    // The zero height line runs along the map edge (the height is 0 there); 200 is the top, no line
     expect(levels.map((l) => l.level)).toEqual(Array.from({ length: 20 }, (_, k) => k * 10))
     const l50 = levels.find((l) => l.level === 50)!
     for (let s = 0; s < l50.segments.length; s += 4) {
       const [ax, ay, bx, by] = l50.segments.slice(s, s + 4)
-      // x = 250 м (высота 50 при x/5)
+      // x = 250 m (height 50 at x/5)
       expect(ax).toBeCloseTo(250, 2)
       expect(bx).toBeCloseTo(250, 2)
       expect(Math.abs(ay - by)).toBeCloseTo(25, 3)
     }
-    // Линия пересекает всю карту по высоте: 1000 м из отрезков по 25 м
+    // The line crosses the whole map vertically: 1000 m of 25 m segments
     expect(l50.segments.length / 4).toBe(40)
   })
 
-  it('холм даёт замкнутые линии: длина кольца около 2πr', () => {
+  it('a hill gives closed lines: the ring length is about 2πr', () => {
     const map = makeMap((x, y) => Math.max(0, 100 - Math.hypot(x - 500, y - 500) / 4))
     const level = demContours(map, wholeMap, 10).find((l) => l.level === 50)!
-    // Высота 50 на расстоянии 200 м от вершины
+    // Height 50 at 200 m from the top
     let length = 0
     for (let s = 0; s < level.segments.length; s += 4) {
       length += Math.hypot(level.segments[s + 2] - level.segments[s], level.segments[s + 3] - level.segments[s + 1])
@@ -55,7 +55,7 @@ describe('demContours', () => {
     expect(length).toBeLessThan(2 * Math.PI * 200 * 1.05)
   })
 
-  it('считает только видимый участок', () => {
+  it('only the visible part is calculated', () => {
     const map = makeMap((x) => x / 5)
     const part = demContours(map, { x0: 400, y0: 1000, scale: 1, width: 100, height: 1000 }, 10)
     const levels = part.map((l) => l.level)
@@ -63,7 +63,7 @@ describe('demContours', () => {
     expect(Math.max(...levels)).toBeLessThanOrEqual(110)
   })
 
-  it('на ровном месте линий нет', () => {
+  it('flat ground has no lines', () => {
     expect(demContours(makeMap(() => 33), wholeMap, 5)).toEqual([])
   })
 })

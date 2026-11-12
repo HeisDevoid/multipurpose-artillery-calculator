@@ -1,6 +1,6 @@
 # KamAZ MRL, HIGH, Charge 8
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rockets_230mm_GAT, 329.8 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rockets_230mm_GAT, 329.8 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 8300 1169 3.1 0.4 61.3
 8400 1162 3.2 0.4 61.1
 8500 1155 3.3 0.4 61.0

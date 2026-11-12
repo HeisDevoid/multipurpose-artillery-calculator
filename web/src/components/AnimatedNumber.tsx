@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 
 
 interface Props {
-  // null — значения нет, показывается «—»
+  // null: no value, a dash is shown
   value: number | null
-  // Как показать число (по умолчанию — целое)
+  // How to show the number (an integer by default)
   format?: (value: number) => string
-  // Скачок больше этого — без прокрутки (азимут через 0 не «мотается»)
+  // A jump larger than this is not animated (an azimuth through 0 does not spin)
   maxTween?: number
   className?: string
   duration?: number
@@ -17,8 +17,8 @@ import { getMotion } from '../lib/motion'
 const reduced = () => !getMotion('numbers')
 
 /**
- * Число, которое плавно «докручивается» до нового значения и коротко
- * вспыхивает при смене — видно, что расчёт обновился.
+ * A number that smoothly rolls to its new value and flashes briefly
+ * on a change, so it is clear that the solution was updated.
  */
 export function AnimatedNumber({
   value,
@@ -45,7 +45,7 @@ export function AnimatedNumber({
     const start = performance.now()
     let frame = 0
     const tick = () => {
-      // Свои часы, а не метка rAF: так не зависит от окружения
+      // Its own clock, not the rAF timestamp: this does not depend on the environment
       const t = Math.min(1, Math.max(0, (performance.now() - start) / duration))
       const eased = 1 - Math.pow(1 - t, 3)
       const current = from + (value - from) * eased

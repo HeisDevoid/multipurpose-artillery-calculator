@@ -9,13 +9,13 @@ import { NumberField } from './FormControls'
 
 interface Props {
   azimuthUnit: AngleUnit
-  // Подставить дистанцию и азимут (в единицах azimuthUnit)
+  // Fill in the distance and the azimuth (in azimuthUnit units)
   onApply: (distance: number, azimuth: number) => void
 }
 
 /**
- * Экспериментально: дистанция и азимут по координатам сетки.
- * Координата орудия запоминается между сессиями.
+ * Experimental: distance and azimuth from grid coordinates.
+ * The gun coordinate is remembered between sessions.
  */
 export function GridInput({ azimuthUnit, onApply }: Props) {
 

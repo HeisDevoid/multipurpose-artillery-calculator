@@ -3,16 +3,16 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } f
 export interface DropdownOption<T extends string> {
   value: T
   label: ReactNode
-  // Вторая строка мелким шрифтом (автор карты, пояснение)
+  // The second line in small type (the map author, an explanation)
   description?: ReactNode
-  // Слева: значок или цветная метка
+  // On the left: an icon or a colour mark
   icon?: ReactNode
-  // Заголовок группы: выводится перед первой опцией с таким заголовком
+  // The group heading: shown before the first option with this heading
   group?: string
   disabled?: boolean
-  // Справа в строке: превью, кнопка «в избранное»
+  // On the right of the row: a preview, a favourite button
   trailing?: ReactNode
-  // Линия над строкой (отделяет действия от выбора)
+  // A line above the row (separates actions from the choice)
   divider?: boolean
 }
 
@@ -21,32 +21,32 @@ interface DropdownProps<T extends string> {
   options: readonly DropdownOption<T>[]
   onChange: (value: T) => void
   label: string
-  // Что показать на кнопке, если выбранного значения нет в списке
+  // What the button shows when the selected value is not in the list
   placeholder?: string
   disabled?: boolean
-  // Список раскрывается к левому краю кнопки (по умолчанию — к правому)
+  // The list opens towards the left edge of the button (the right one by default)
   alignLeft?: boolean
-  // Подпись на кнопке вместо подписи выбранной опции
+  // The button label instead of the selected option's label
   buttonLabel?: ReactNode
   className?: string
-  // field — поле с фоном; ghost — как значение в строке списка, фон при наведении
+  // field: a field with a background; ghost: like a value in a list row, a background on hover
   variant?: 'field' | 'ghost' | 'icon'
-  // Для обучения: подсвечиваемый элемент
+  // For the tutorial: the highlighted element
   tourId?: string
-  // Кнопка занимает всю ширину контейнера, шеврон — справа
+  // The button takes the full width of the container, the chevron is on the right
   fullWidth?: boolean
-  // Список раскрывается вверх (у нижнего края страницы)
+  // The list opens upwards (at the bottom edge of the page)
   up?: boolean
-  // Дополнительные классы кнопки (размер, фон на телефоне)
+  // Extra classes of the button (size, background on a phone)
   buttonClassName?: string
-  // Справа на кнопке, перед шевроном: своя кнопка (например, «в избранное»).
-  // Лежит поверх кнопки списка, а не внутри неё
+  // On the right of the button, before the chevron: a button of its own (for example, a favourite star).
+  // It lies over the list button, not inside it
   buttonTrailing?: ReactNode
 }
 
 /**
- * Выпадающий список в стиле интерфейса: вместо системного <select>.
- * Кнопка + listbox, управление стрелками, Home/End, Enter, Escape.
+ * A dropdown list in the interface style, instead of the system <select>.
+ * A button + a listbox, arrow keys, Home/End, Enter, Escape.
  */
 export function Dropdown<T extends string>({
   value,
@@ -67,9 +67,9 @@ export function Dropdown<T extends string>({
 }: DropdownProps<T>) {
   const id = useId()
   const [open, setOpen] = useState(false)
-  // Раскрытие вверх: явно или когда снизу не хватает места
+  // Opening upwards: explicitly or when there is not enough room below
   const [flipUp, setFlipUp] = useState(false)
-  // Высота списка по свободному месту, чтобы он не раздувал страницу
+  // The list height follows the free room, so that it does not stretch the page
   const [maxHeight, setMaxHeight] = useState(320)
   const up = upProp || flipUp
   const rootRef = useRef<HTMLDivElement>(null)
@@ -93,8 +93,8 @@ export function Dropdown<T extends string>({
     if (open) listRef.current?.focus()
   }, [open])
 
-  // Список не выходит за края экрана: если по ширине он вылезает (кнопка у
-  // края, а список шире её), сдвигаем его вбок до отступа 8 px от края
+  // The list stays within the screen: if it sticks out sideways (the button is at the
+  // edge and the list is wider), it shifts until it is 8 px from the edge
   useLayoutEffect(() => {
     const list = listRef.current
     if (!open || !list) return
@@ -110,7 +110,7 @@ export function Dropdown<T extends string>({
     if (shift) list.style.transform = `translateX(${Math.round(shift)}px)`
   }, [open])
 
-  // Активная строка всегда в поле зрения
+  // The active row is always in view
   useEffect(() => {
     if (open) {
       document
@@ -121,7 +121,7 @@ export function Dropdown<T extends string>({
 
   function openList() {
     if (disabled) return
-    // Не раздувать страницу: если снизу тесно, а сверху просторнее — раскрыть вверх
+    // Do not stretch the page: if it is tight below and roomier above, open upwards
     const rect = buttonRef.current?.getBoundingClientRect()
     if (rect) {
       const below = window.innerHeight - rect.bottom
@@ -215,7 +215,7 @@ export function Dropdown<T extends string>({
         <span className="min-w-0 flex-1 leading-tight break-words whitespace-normal">
           {buttonLabel ?? current?.label ?? placeholder}
         </span>
-        {/* Место под кнопку справа (она лежит поверх) */}
+        {/* Room for the button on the right (it lies on top) */}
         {buttonTrailing && <span aria-hidden="true" className="w-6 shrink-0" />}
         {variant !== 'icon' && (
         <svg

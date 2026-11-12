@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Уменьшает вес встроенных карт: убирает самый подробный уровень тайлов
- * у карт, где он тяжелее порога (по умолчанию 3 МБ). Детализация падает
- * вдвое (около 4 м на пиксель), для наведения этого достаточно.
+ * Reduces the weight of the built-in maps: removes the most detailed tile level
+ * of maps where it is heavier than the threshold (3 MB by default). The detail
+ * halves (about 4 m per pixel), which is enough for aiming.
  *
- *   node scripts/trim-maps.mjs [порог, МБ]
+ *   node scripts/trim-maps.mjs [threshold, MB]
  */
 import { readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -41,6 +41,6 @@ for (const world of readdirSync(ROOT)) {
   map.tiles.metersPerTile *= 2
   writeFileSync(mapFile, JSON.stringify(map, null, 2) + '\n')
   saved += mb
-  console.log(`${world}: уровень ${top} (${mb.toFixed(1)} МБ) убран`)
+  console.log(`${world}: level ${top} (${mb.toFixed(1)} MB) removed`)
 }
-console.log(`Освобождено ${saved.toFixed(1)} МБ`)
+console.log(`Freed ${saved.toFixed(1)} MB`)

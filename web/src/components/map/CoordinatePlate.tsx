@@ -6,10 +6,10 @@ import type { FlightShot } from '../FlightCanvas'
 import { FlightTrack } from '../FlightTrack'
 
 /**
- * Снизу на карте: координаты и высоты орудия и цели, полёт снаряда между ними,
- * под ними — зоны по рельефу (children). На узкой карте (телефон, маленькое
- * окно) орудие и цель стоят в две строки по центру, без полоски полёта: так
- * плашка не заходит на кнопку слоя. Ширина — по самой карте (@container).
+ * At the bottom of the map: the coordinates and heights of the gun and the target, the shell flight between them,
+ * the terrain zones under them (children). On a narrow map (a phone, a small
+ * window) the gun and the target are centred in two rows, without the flight strip: this way
+ * the plate does not overlap the layer button. The width follows the map itself (@container).
  */
 export function CoordinatePlate({
   gun,

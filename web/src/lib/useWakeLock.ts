@@ -4,9 +4,9 @@ export const wakeLockSupported =
   typeof navigator !== 'undefined' && 'wakeLock' in navigator
 
 /**
- * Не давать экрану гаснуть, пока active = true.
- * Браузер снимает блокировку, когда вкладка скрыта, — при возврате
- * она запрашивается заново.
+ * Keeps the screen from going dark while active = true.
+ * The browser releases the lock when the tab is hidden, so it is
+ * requested again on return.
  */
 export function useWakeLock(active: boolean) {
   useEffect(() => {
@@ -24,7 +24,7 @@ export function useWakeLock(active: boolean) {
         }
         sentinel = lock
       } catch {
-        // Отказ (энергосбережение, нет жеста пользователя) — не критично.
+        // A refusal (power saving, no user gesture) is not critical.
       }
     }
 

@@ -32,13 +32,13 @@ interface Props {
 
 interface Shot {
   image: ImageData
-  // Снимок для показа
+  // The image to show
   url: string
   blobs: FoundBlob[]
 }
 
 const AUTO_INTERVAL_MS = 10_000
-// Совпадение с прежней меткой: метров или пикселей снимка
+// A match with an earlier marker: metres or image pixels
 const MATCH_METRES = 25
 const MATCH_PIXELS = 6
 
@@ -73,10 +73,10 @@ async function imageFromBlob(blob: Blob) {
 }
 
 /**
- * Метки со скриншота карты игры: игра не затрагивается, программа
- * смотрит только на картинку. Снимок калибруется по двум
- * пересечениям сетки; пока карту в игре не двигали, калибровка
- * подходит и для следующих снимков.
+ * Markers from a screenshot of the game map: the game is not touched, the app
+ * only looks at the picture. The image is calibrated by two
+ * grid intersections; while the map in the game is not moved, the calibration
+ * fits the next images too.
  */
 export function ScreenMarkers({ world, author, language }: Props) {
   const ru = language === 'ru'
@@ -86,7 +86,7 @@ export function ScreenMarkers({ world, author, language }: Props) {
   const [calibration, setCalibration] = useState<Calibration | null>(() =>
     readCalibration(world)
   )
-  // Калибровка: точки, которые уже кликнули
+  // Calibration: the points already clicked
   const [points, setPoints] = useState<CalibrationPoint[]>([])
   const [pending, setPending] = useState<{ px: number; py: number } | null>(null)
   const [pendingGrid, setPendingGrid] = useState('')
@@ -119,7 +119,7 @@ export function ScreenMarkers({ world, author, language }: Props) {
     return next
   }
 
-  // ---- источники снимка ----
+  // ---- image sources ----
   async function startCapture() {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -179,7 +179,7 @@ export function ScreenMarkers({ world, author, language }: Props) {
     }
   }
 
-  // Ctrl+V при открытой панели
+  // Ctrl+V with the panel open
   useEffect(() => {
     if (!open) return
     function onPaste(event: ClipboardEvent) {
@@ -192,10 +192,10 @@ export function ScreenMarkers({ world, author, language }: Props) {
     }
     window.addEventListener('paste', onPaste)
     return () => window.removeEventListener('paste', onPaste)
-    // load читает только setState и язык
+    // load reads only setState and the language
   }, [open, ru])
 
-  // ---- перенос на карту ----
+  // ---- moving to the map ----
   function apply(current: Shot | null, skip: Set<number>) {
     if (!current || !calibration) return
     const detected: DetectedMarker[] = current.blobs
@@ -216,7 +216,7 @@ export function ScreenMarkers({ world, author, language }: Props) {
     )
   }
 
-  // Последние значения для таймера и глобальной клавиши
+  // The latest values for the timer and the global key
   const applyRef = useRef(() => {})
   useEffect(() => {
     applyRef.current = () => {
@@ -239,7 +239,7 @@ export function ScreenMarkers({ world, author, language }: Props) {
     []
   )
 
-  // ---- калибровка ----
+  // ---- calibration ----
   function onImageClick(event: MouseEvent<HTMLDivElement>) {
     if (!shot) return
     const rect = event.currentTarget.getBoundingClientRect()
@@ -251,7 +251,7 @@ export function ScreenMarkers({ world, author, language }: Props) {
       setPendingGrid('')
       return
     }
-    // Клик по найденной метке — пропустить / вернуть
+    // A click on a found marker skips it / brings it back
     const index = shot.blobs.findIndex(
       (blob) => Math.hypot(blob.x - px, blob.y - py) < Math.max(12, blob.width)
     )
@@ -267,7 +267,7 @@ export function ScreenMarkers({ world, author, language }: Props) {
   function confirmPoint() {
     const grid = parseGrid(pendingGrid)
     if (!pending || !grid) return
-    // Пересечение линий сетки — угол квадрата, а не центр
+    // The intersection of grid lines is a square corner, not its centre
     const point: CalibrationPoint = {
       ...pending,
       x: grid.x - grid.precision / 2,

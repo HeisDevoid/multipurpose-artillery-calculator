@@ -7,18 +7,18 @@ import { gunzipSync } from 'node:zlib'
 import { describe, expect, it } from 'vitest'
 
 describe('scripts/import-rpt.mjs', () => {
-  it('собирает папку в формате grad_meh из RPT скрипта gradtopo_export.sqf', () => {
+  it('builds a folder in the grad_meh format from the RPT of the gradtopo_export.sqf script', () => {
     const dir = mkdtempSync(join(tmpdir(), 'rpt-'))
     const n = 3
     const lines = [
-      '12:00:00 шум до экспорта',
-      '12:00:01 "GRADTOPO|NOISE|в кавычках, как в настоящем RPT"',
+      '12:00:00 noise before the export',
+      '12:00:01 "GRADTOPO|NOISE|in quotes, as in a real RPT"',
       `GRADTOPO|META|testworld|40|20|${n}`,
       ...[0, 1, 2].map((j) => `GRADTOPO|H|${j}|0|${[10 * j, 20 * j + 5, 30 * j].join(',')}`),
       'GRADTOPO|B|0,0,10,0,10,5,0,5|6',
       'GRADTOPO|R|MAIN ROAD|8|0,0,10,0',
       'GRADTOPO|R|MAIN ROAD|8|10,0,20,5',
-      'GRADTOPO|L|NameVillage|Деревня|15|15',
+      'GRADTOPO|L|NameVillage|Village|15|15',
       'GRADTOPO|END',
     ]
     const rpt = join(dir, 'test.rpt')
@@ -33,7 +33,7 @@ describe('scripts/import-rpt.mjs', () => {
 
     const asc = gunzipSync(readFileSync(join(out, 'dem.asc.gz'))).toString().split('\n')
     expect(asc[0]).toBe('ncols 3')
-    // Первая строка сетки — север (j = 2)
+    // The first grid row is the north (j = 2)
     expect(asc[6].split(' ')[0]).toBe('2.0')
     expect(asc[8].split(' ')[0]).toBe('0.0')
 
@@ -41,7 +41,7 @@ describe('scripts/import-rpt.mjs', () => {
     expect(houses).toHaveLength(1)
     expect(houses[0].geometry.coordinates[0]).toHaveLength(5)
 
-    // Два отрезка одной дороги склеены в одну ломаную
+    // Two segments of one road are joined into one polyline
     const road = JSON.parse(gunzipSync(readFileSync(join(out, 'geojson', 'roads', 'main_road.geojson.gz'))).toString())
     expect(road).toHaveLength(1)
     expect(road[0].geometry.coordinates).toHaveLength(3)
@@ -50,14 +50,14 @@ describe('scripts/import-rpt.mjs', () => {
   })
 })
 
-describe('скрипты для игры', () => {
+describe('scripts for the game', () => {
   it.each(['gradtopo_export.sqf', 'gradtopo_photos.sqf'])(
-    '%s годится для вставки в отладочную консоль: без комментариев и кириллицы',
+    '%s fits the debug console: no comments and no Cyrillic',
     (file) => {
       const code = readFileSync(`tools/arma/${file}`, 'utf8')
       expect(code).not.toContain('/*')
       expect(code).not.toMatch(/^\s*\/\//m)
-      expect(code).not.toMatch(/[А-Яа-яЁё]/)
+      expect(code).not.toMatch(/[\u0400-\u04ff]/)
     }
   )
 })

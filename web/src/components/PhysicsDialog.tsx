@@ -7,16 +7,16 @@ import { AceMenuDemo } from './AceTableDemo'
 import { FieldIcon } from './FieldIcon'
 
 /**
- * Главный вопрос перед стрельбой: есть ли на сервере физика полёта снаряда
- * (сопротивление воздуха, улучшенная баллистика ACE). От ответа зависят все
- * таблицы. Открывается сам при первом запуске (до обучения), потом — из
- * справки и настроек.
+ * The main question before firing: does the server have shell flight physics
+ * (air resistance, ACE advanced ballistics). All tables depend on the
+ * answer. It opens by itself on the first start (before the tutorial), later from
+ * the help and the settings.
  */
 export function PhysicsDialog() {
   const open = usePanel('physics')
   const physics = useFeature('weather')
 
-  // Ещё не спрашивали — до обучения
+  // Not asked yet: before the tutorial
   useEffect(() => {
     if (physicsAsked()) return
     const timer = window.setTimeout(() => setPanel('physics', true), 500)
@@ -62,13 +62,13 @@ export function PhysicsDialog() {
 
         <p className="mt-4 text-[14px] leading-relaxed text-app-text">{t('physics.how')}</p>
 
-        {/* Как в игре: Ctrl+Win, пункт с названием орудия без звёздочки и с ней, таблица */}
+        {/* As in the game: Ctrl+Win, the item with the weapon name without and with an asterisk, the table */}
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Variant withAir={false} onPick={() => answer(false)} />
           <Variant withAir onPick={() => answer(true)} />
         </div>
 
-        {/* Без ACE таблицы нет, а у артиллерии в обычной Arma 3 сопротивления воздуха нет */}
+        {/* Without ACE there is no table, and artillery in plain Arma 3 has no air resistance */}
         <p className="mt-3 text-[13px] leading-relaxed text-app-text-2">{t('physics.no-ace')}</p>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-app-line pt-3 text-[12.5px] text-app-muted">
@@ -84,13 +84,13 @@ export function PhysicsDialog() {
   )
 }
 
-// Закрыть; при первом запуске после ответа — обучение
+// Close; on the first start the tutorial follows the answer
 function closePhysics() {
   setPanel('physics', false)
   if (!tourDone()) window.setTimeout(() => setPanel('tour', true), 400)
 }
 
-/** Вариант ответа: как это выглядит в игре, что значит и кнопка «у меня так». */
+/** An answer variant: how it looks in the game, what it means and a "mine looks like this" button. */
 function Variant({ withAir, onPick }: { withAir: boolean; onPick: () => void }) {
   return (
     <div className="flex flex-col overflow-hidden rounded-lg ring-1 ring-app-line">

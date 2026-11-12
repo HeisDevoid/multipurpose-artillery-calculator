@@ -28,14 +28,14 @@ import {
   type Weather,
 } from './ballistics'
 
-// Две строки из таблицы M252, заряд 4 (HIGH), со всеми 12 столбцами.
+// Two rows from the M252 table, charge 4 (HIGH), with all 12 columns.
 const WEATHER_ROWS: BallisticRow[] = [
   [2000, 1241, 6.3, 0.7, 35.1, 3.1, 8.4, -7.9, 0.2, -0.3, -4.7, 4.4],
   [2050, 1230, 6.5, 0.7, 34.9, 3.0, 8.4, -7.8, 0.3, -0.3, -4.9, 4.7],
   [2100, 1219, 7.0, 0.7, 34.8, 2.9, 8.5, -8.0, 0.2, -0.4, -5.0, 4.7],
 ]
 
-// Таблица без погодных столбцов, с прочерком в первой строке.
+// A table without weather columns, with a dash in the first row.
 const BASE_ROWS: BallisticRow[] = [
   [50, 1548, null, null, 14.2],
   [100, 1495, 9.1, 1.4, 14.1],
@@ -174,7 +174,7 @@ describe('weatherCorrection', () => {
 
 describe('solve: weather shifts the lookup range', () => {
   it('uses the corrected range for elevation', () => {
-    // +42 м встречного ветра: 2000 → 2042 м
+    // +42 m of headwind: 2000 → 2042 m
     const solution = solve(WEATHER_ROWS, 2000, 0, weather({ headwind: 5 }))
     expect(solution?.lookupRange).toBeCloseTo(2042)
     expect(solution?.elevation).toBeCloseTo(1241 - (11 * 42) / 50)
@@ -233,7 +233,7 @@ describe('solveAllCharges', () => {
 describe('geometry helpers', () => {
   it('splits wind into head and cross components', () => {
     expect(windComponents(5, 0, 0)).toEqual({ headwind: 5, crosswind: 0 })
-    // Ветер с востока при стрельбе на север — справа
+    // Wind from the east when firing north comes from the right
     expect(windComponents(5, 90, 0)).toEqual({ headwind: 0, crosswind: 5 })
     expect(windComponents(5, 180, 0)).toEqual({ headwind: -5, crosswind: 0 })
     expect(windComponents(5, 270, 0)).toEqual({ headwind: 0, crosswind: -5 })
@@ -261,10 +261,10 @@ describe('geometry helpers', () => {
 
 describe('charge choice', () => {
   it('measures metres per mil from the table slope', () => {
-    // 2000 → 2050: 11 мил на 50 м → 4.55 м/мил
+    // 2000 → 2050: 11 mils per 50 m → 4.55 m/mil
     expect(metersPerMil(WEATHER_ROWS, 2000)).toBeCloseTo(50 / 11)
     expect(metersPerMil(WEATHER_ROWS, 2025)).toBeCloseTo(50 / 11)
-    // Последняя строка — предыдущий промежуток
+    // The last row uses the previous interval
     expect(metersPerMil(WEATHER_ROWS, 2100)).toBeCloseTo(50 / 11)
     expect(metersPerMil(WEATHER_ROWS, 3000)).toBeNull()
   })
@@ -284,16 +284,16 @@ describe('charge choice', () => {
   it('picks by preference among usable charges', () => {
     expect(pickCharge(results, 'lowest')?.charge).toBe(1)
     expect(pickCharge(results, 'fastest')?.charge).toBe(2)
-    // Заряд 3 точнее всех, но у края таблицы — берётся заряд 1
+    // Charge 3 is the most precise but at the table edge: charge 1 is taken
     expect(pickCharge(results, 'precise')?.charge).toBe(1)
-    // Если остался только заряд у края — берётся он
+    // If only the charge at the edge is left, it is taken
     expect(pickCharge([results[3]], 'precise')?.charge).toBe(3)
     expect(pickCharge([], 'precise')).toBeUndefined()
   })
 })
 
-// Строки режима LOW (Seara, заряд 0): возвышение растёт с дальностью,
-// поправка на высоту отрицательная, часть дальностей пропущена.
+// LOW mode rows (Seara, charge 0): the elevation grows with range,
+// the height correction is negative, some ranges are skipped.
 const LOW_ROWS: BallisticRow[] = [
   [1000, 228, -106.6, -0.1, 6.9],
   [1050, 240, -101.7, -0.1, 7.2],
@@ -346,39 +346,39 @@ describe('pickBest', () => {
   const high = { mode: 'HIGH' as const, results: [result(1, 40, 8), result(2, 30, 6)] }
   const low = { mode: 'LOW' as const, results: [result(1, 20, 12), result(3, 15, 9)] }
 
-  it('fastest — самый короткий полёт среди всех траекторий', () => {
+  it('fastest: the shortest flight among all trajectories', () => {
     const best = pickBest([high, low], 'fastest')
     expect(best?.group.mode).toBe('LOW')
     expect(best?.result.charge).toBe(3)
   })
 
-  it('precise — наименьшая ошибка на 1 мил среди всех траекторий', () => {
+  it('precise: the smallest error per 1 mil among all trajectories', () => {
     const best = pickBest([high, low], 'precise')
     expect(best?.group.mode).toBe('HIGH')
     expect(best?.result.charge).toBe(2)
   })
 
-  it('lowest — меньший номер заряда, при равенстве первая траектория', () => {
+  it('lowest: the lower charge number, on a tie the first trajectory', () => {
     const best = pickBest([high, low], 'lowest')
     expect(best?.group.mode).toBe('HIGH')
     expect(best?.result.charge).toBe(1)
   })
 
-  it('заряд у края таблицы уступает остальным', () => {
+  it('a charge at the table edge gives way to the others', () => {
     const edge = { mode: 'LOW' as const, results: [result(1, 5, 1, true)] }
     expect(pickBest([high, edge], 'fastest')?.group.mode).toBe('HIGH')
-    // если других нет — берётся и он
+    // if there are no others, it is taken
     expect(pickBest([edge], 'fastest')?.group.mode).toBe('LOW')
   })
 
-  it('нет подходящих зарядов — undefined', () => {
+  it('no suitable charges: undefined', () => {
     const none = { mode: 'HIGH' as const, results: [{ ...result(1, 1, 1), solution: null }] }
     expect(pickBest([none], 'fastest')).toBeUndefined()
     expect(pickBest([], 'lowest')).toBeUndefined()
   })
 })
 
-describe('приоритет «лучший»', () => {
+describe('the "best" priority', () => {
   const r = (charge: number, tof: number, metersPerMil: number): ChargeResult => ({
     charge,
     minRange: 0,
@@ -389,21 +389,21 @@ describe('приоритет «лучший»', () => {
     wideGap: false,
   })
 
-  it('берёт золотую середину, а не крайность', () => {
-    // быстрый, но неточный / точный, но медленный / сбалансированный
+  it('takes the balance, not an extreme', () => {
+    // fast but imprecise / precise but slow / balanced
     const list = [r(1, 10, 40), r(2, 40, 6), r(3, 18, 12)]
     expect(pickCharge(list, 'fastest')?.charge).toBe(1)
     expect(pickCharge(list, 'precise')?.charge).toBe(2)
     expect(pickCharge(list, 'best')?.charge).toBe(3)
   })
 
-  it('сравнивает траектории между собой', () => {
+  it('compares trajectories with each other', () => {
     const high = { mode: 'HIGH' as const, results: [r(1, 40, 6)] }
     const low = { mode: 'LOW' as const, results: [r(1, 18, 12)] }
     expect(pickBest([high, low], 'best')?.group.mode).toBe('LOW')
   })
 
-  it('один вариант и отсутствие данных об ошибке не ломают выбор', () => {
+  it('a single variant and no error data do not break the choice', () => {
     expect(pickCharge([r(1, 10, 5)], 'best')?.charge).toBe(1)
     const noMpm: ChargeResult = { ...r(2, 5, 1), metersPerMil: null }
     expect(pickCharge([r(1, 10, 5), noMpm], 'best')).toBeDefined()

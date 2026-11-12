@@ -6,6 +6,7 @@ import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
 import { getLanguage, setLanguage, t, translate } from './index'
+import { LANGUAGES } from './languages'
 import { en, ru } from './messages'
 import { de } from './messages.de'
 import { fr } from './messages.fr'
@@ -14,23 +15,23 @@ import { uk } from './messages.uk'
 import { zh } from './messages.zh'
 
 const placeholders = (s: string) => [...s.matchAll(/\{(\d+)\}/g)].map((m) => m[1]).sort()
-const cyrillic = /[А-Яа-яЁё]/
+const cyrillic = /[\u0400-\u04ff]/
 
-describe('словари', () => {
+describe('dictionaries', () => {
   const keys = Object.keys(ru)
 
-  it('у обоих языков одни и те же ключи', () => {
+  it('both languages have the same keys', () => {
     expect(Object.keys(en).sort()).toEqual([...keys].sort())
   })
 
-  it('подстановки {0}, {1} совпадают в русской и английской версии', () => {
+  it('the placeholders {0}, {1} match in the Russian and English versions', () => {
     const bad = keys.filter(
       (k) => JSON.stringify(placeholders(ru[k as keyof typeof ru])) !== JSON.stringify(placeholders(en[k as keyof typeof ru]))
     )
     expect(bad).toEqual([])
   })
 
-  it('в английских текстах нет кириллицы, в русских она есть (кроме обозначений)', () => {
+  it('English texts have no Cyrillic, Russian ones have it (except symbols)', () => {
     const inEn = keys.filter((k) => cyrillic.test(en[k as keyof typeof ru]))
     expect(inEn).toEqual([])
     const ALLOWED_SAME = new Set(['unit.hpa', 'picker.vanilla', 'picker.dlc', 'picker.filter-dlc'])
@@ -43,28 +44,28 @@ describe('словари', () => {
     expect(notTranslated).toEqual([])
   })
 
-  it('пустых текстов нет', () => {
+  it('there are no empty texts', () => {
     expect(keys.filter((k) => ru[k as keyof typeof ru].trim() === '' || en[k as keyof typeof ru].trim() === '')).toEqual([])
   })
 })
 
 describe('t()', () => {
-  it('берёт текущий язык и подставляет значения', () => {
+  it('takes the current language and fills in the values', () => {
     setLanguage('ru')
     expect(getLanguage()).toBe('ru')
-    expect(t('markers.min', 5)).toBe('5 мин')
+    expect(t('markers.min', 5)).toBe(ru['markers.min'].replace('{0}', '5'))
     setLanguage('en')
     expect(t('markers.min', 5)).toBe('5 min')
     setLanguage('ru')
   })
 
-  it('translate() работает с явным языком и пропущенные аргументы даёт пустыми', () => {
+  it('translate() works with an explicit language and gives missing arguments as empty', () => {
     expect(translate('en', 'markers.h-min', 1, 5)).toBe('1 h 5 min')
-    expect(translate('ru', 'markers.h-min', 1)).toBe('1 ч  мин')
+    expect(translate('en', 'markers.h-min', 1)).toBe('1 h  min')
   })
 })
 
-describe('тексты не зашиты в код', () => {
+describe('texts are not hard-coded', () => {
   const root = fileURLToPath(new URL('..', import.meta.url))
 
   function files(dir: string, out: string[] = []): string[] {
@@ -77,10 +78,10 @@ describe('тексты не зашиты в код', () => {
     return out
   }
 
-  // Названия языков пишутся на самих языках — это не перевод
-  const ENDONYMS = new Set(['Русский'])
+  // Language names are written in the languages themselves: this is not a translation
+  const ENDONYMS = new Set<string>(LANGUAGES.map((l) => l.name))
 
-  it('кириллица в строках кода — только в словаре', () => {
+  it('Cyrillic in code strings is only in the dictionary', () => {
     const offenders: string[] = []
     for (const file of files(root)) {
       const code = readFileSync(file, 'utf8')
@@ -106,7 +107,7 @@ describe('тексты не зашиты в код', () => {
   })
 })
 
-describe('словарь без мусора', () => {
+describe('a dictionary without junk', () => {
   const root = fileURLToPath(new URL('..', import.meta.url))
 
   function sources(dir: string, out: string[] = []): string[] {
@@ -119,13 +120,13 @@ describe('словарь без мусора', () => {
     return out
   }
 
-  it('каждый ключ используется в коде', () => {
+  it('every key is used in the code', () => {
     const code = sources(root).join('\n')
     const unused = Object.keys(ru).filter(
       (k) =>
-        // горячие клавиши собираются из имени действия
+        // hotkeys are built from the action name
         !k.startsWith('settings.hotkeys.') &&
-        // вопросы и ответы справки собираются по номеру
+        // help questions and answers are built by number
         !/^help\.[qa]\d+$/.test(k) &&
         !code.includes(`'${k}'`) &&
         !code.includes(`"${k}"`)
@@ -134,15 +135,15 @@ describe('словарь без мусора', () => {
   })
 })
 
-describe('все языки интерфейса', () => {
+describe('all interface languages', () => {
   const keys = Object.keys(ru) as (keyof typeof ru)[]
-  // Обозначения и имена собственные, одинаковые на всех языках
+  // Symbols and proper names, the same in all languages
   const SAME_AS_EN = /^(unit\.|picker\.vanilla|about\.)/
   const others = { uk, de, fr, ja, zh }
 
   for (const [id, dict] of Object.entries(others)) {
     describe(id, () => {
-      it('те же ключи и подстановки, что в русском', () => {
+      it('the same keys and placeholders as in Russian', () => {
         expect(Object.keys(dict).sort()).toEqual([...keys].sort())
         const bad = keys.filter(
           (k) => JSON.stringify(placeholders(dict[k])) !== JSON.stringify(placeholders(ru[k]))
@@ -150,18 +151,18 @@ describe('все языки интерфейса', () => {
         expect(bad).toEqual([])
       })
 
-      it('кириллица только в украинском (без ы, э, ъ, ё)', () => {
+      it('Cyrillic only in Ukrainian (no letters that exist only in Russian)', () => {
         const withCyr = keys.filter((k) => cyrillic.test(dict[k]))
         if (id === 'uk') {
           expect(withCyr.length).toBeGreaterThan(keys.length * 0.9)
-          expect(keys.filter((k) => /[ыэъёЫЭЪЁ]/.test(dict[k]))).toEqual([])
+          expect(keys.filter((k) => /[\u044b\u044d\u044a\u0451\u042b\u042d\u042a\u0401]/.test(dict[k]))).toEqual([])
         } else {
           expect(withCyr).toEqual([])
         }
       })
 
-      it('не осталось непереведённых английских строк', () => {
-        // В немецком и французском бывают совпадения (Auto, Distance): допускаем короткие
+      it('no untranslated English strings are left', () => {
+        // German and French have matches (Auto, Distance): short ones are allowed
         const cognates = id === 'de' || id === 'fr'
         const same = keys.filter(
           (k) =>

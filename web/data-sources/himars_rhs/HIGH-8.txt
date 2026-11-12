@@ -1,6 +1,6 @@
 # M142 HIMARS (227 mm), HIGH, Charge 8
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_mlrs, 252.2 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_mlrs, 252.2 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 5000 1152 - - 46.5
 5100 1139 6.0 0.6 46.3
 5200 1126 6.4 0.6 46.0

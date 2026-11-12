@@ -21,7 +21,7 @@ import type { AngleUnit } from '../lib/journal'
 import { NumberField, Toggle } from './FormControls'
 
 export interface AdjustmentEntry extends Adjustment {
-  // Как доклад был введён — для истории
+  // How the report was entered, for the history
   label: string
 }
 
@@ -32,16 +32,16 @@ interface Props {
   onAdd: (entry: AdjustmentEntry) => void
   onUndo: () => void
   onReset: () => void
-  // Азимут орудие → цель, мил; нужен для режима наблюдателя
+  // Gun → target azimuth, mils; needed for the observer mode
   gunAzimuthMil: number | null
   azimuthUnit: AngleUnit
 }
 
 /**
- * Пристрелка по докладу: где лёг разрыв относительно цели.
- * Доклад можно вести по линии орудия или по линии наблюдателя —
- * во втором случае он пересчитывается в линию орудие — цель.
- * Доклады складываются; последний можно отменить.
+ * Adjusting fire from a report: where the burst landed relative to the target.
+ * A report can be given along the gun line or along the observer line;
+ * in the second case it is converted to the gun to target line.
+ * Reports add up; the last one can be undone.
  */
 export function AdjustFire({
   history,
@@ -57,7 +57,7 @@ export function AdjustFire({
   const [frame, setFrame] = useState<Frame>(() =>
     readStored<Frame>('adjustFrame', ['gun', 'observer'], 'gun')
   )
-  // Наблюдатель обычно не двигается между разрывами — запоминаем.
+  // The observer usually stays put between bursts: remember the position.
   const [observerAzimuth, setObserverAzimuth] = useState(() =>
     readStoredText('observerAzimuth')
   )

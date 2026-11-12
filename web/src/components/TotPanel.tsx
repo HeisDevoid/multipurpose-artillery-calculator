@@ -12,26 +12,26 @@ import {
 } from '../lib/tot'
 import { ProgressBar } from './FormControls'
 
-// Отсчёт со звуком за столько секунд до выстрела
+// A countdown with sound this many seconds before the shot
 const COUNTDOWN_S = 5
-// Сколько показывать «Огонь!» после момента выстрела
+// How long to show "Fire!" after the moment of the shot
 const HOLD_MS = 3000
 
 interface Props {
   tof: number
-  // Время разрыва, мс; null — не задано
+  // The impact time, ms; null: not set
   impactAt: number | null
-  // Нет — время пришло от наводчика и здесь не меняется
+  // No: the time came from fire direction and is not changed here
   onImpactChange?: (impactAt: number | null) => void
-  // Момент выстрела настал: запустить таймер полёта
+  // The moment of the shot has come: start the flight timer
   onFireMoment: () => void
-  // Оформление блока: по умолчанию — самостоятельная панель
+  // The block look: a standalone panel by default
   className?: string
 }
 
 /**
- * Огонь по времени (TOT): разрыв в заданное время. Выстрел — за время
- * полёта до него, с отсчётом и звуком; по связке время получают стрелки.
+ * Time on target (TOT): impact at a set time. The shot comes one time of flight
+ * before it, with a countdown and sound; gunners get the time over Link.
  */
 export function TotPanel({
   tof,
@@ -51,7 +51,7 @@ export function TotPanel({
 
   const fireAt = impactAt === null ? null : fireMoment(impactAt, tof)
 
-  // Отсчёт: тик 10 раз в секунду, звук на последних секундах
+  // The countdown: ticks 10 times a second, sound in the last seconds
   useEffect(() => {
     if (fireAt === null) return
     const interval = window.setInterval(() => {
@@ -71,7 +71,7 @@ export function TotPanel({
         playSound('mrsiFire')
         fireRef.current()
       }
-      // После «Огонь!» тикать незачем
+      // After "Fire!" there is no need to tick
       if (current - fireAt > HOLD_MS + 1000) window.clearInterval(interval)
     }, 100)
     return () => window.clearInterval(interval)
@@ -202,7 +202,7 @@ export function TotPanel({
                 : `T−${left.toFixed(1)}`}
             </span>
           </div>
-          {/* Последняя минута до выстрела — шкалой */}
+          {/* The last minute before the shot as a scale */}
           <ProgressBar
             progress={1 - Math.min(60, Math.max(0, left)) / 60}
             alert={phase === 'count' || phase === 'fire'}

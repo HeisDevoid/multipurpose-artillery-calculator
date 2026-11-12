@@ -1,6 +1,6 @@
 # 2S1 Gvozdika (122 mm), LOW, Charge 4
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_2a31, 345 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_2a31, 345 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 900 38 - - 2.6
 1000 42 - - 2.9
 1100 46 - - 3.2

@@ -39,7 +39,7 @@ interface Props {
   language: Language
 }
 
-/** Сколько секунд назад — для «обновлено N с назад». */
+/** How many seconds ago, for "updated N s ago". */
 function useNow(intervalMs: number) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -57,9 +57,9 @@ function ago(ms: number): string {
 }
 
 /**
- * Связка наводчик ↔ стрелок: наводчик считает в калькуляторе,
- * у стрелков установки обновляются сами; «Выстрел» на любом
- * устройстве запускает отсчёт до разрыва у всех.
+ * Link between fire direction and the gunner: fire direction calculates in the calculator,
+ * the gunners' settings update by themselves; "Shot" on any
+ * device starts the countdown to impact for everyone.
  */
 export function SyncPage({ language }: Props) {
   const sync = useSync()
@@ -97,8 +97,8 @@ function RoomCard() {
   const sync = useSync()
   const validCode = isValidRoomCode(sync.code)
 
-  // Из программы для ПК и с localhost телефон по текущему адресу
-  // не откроет — приглашение ведёт на опубликованный сайт.
+  // From the Windows app and from localhost a phone cannot open the current
+  // address: the invitation leads to the published site.
   const local =
     isDesktop ||
     ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
@@ -117,7 +117,7 @@ function RoomCard() {
         if (!cancelled) setQr({ link, image })
       })
       .catch(() => {
-        // Без картинки остаётся ссылка текстом.
+        // Without the picture the link stays as text.
       })
     return () => {
       cancelled = true
@@ -131,7 +131,7 @@ function RoomCard() {
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Буфер обмена недоступен — ссылку видно на экране.
+      // The clipboard is unavailable: the link is visible on the screen.
     }
   }
 
@@ -344,21 +344,21 @@ function ComputerView() {
   )
 }
 
-/** Экран стрелка: установки от наводчика, крупно, и «Выстрел». */
+/** The gunner screen: the settings from fire direction in large type, and "Shot". */
 function GunnerView({ language }: Props) {
   const sync = useSync()
   const now = useNow(1000)
   const timerRef = useRef<FireTimerHandle>(null)
   const [combatOpen, setCombatOpen] = useState(false)
 
-  // Телефон у орудия не гаснет
+  // The phone at the gun does not go dark
   useWakeLock(true)
 
   const remote = sync.remote
   const solution = remote?.solution ?? null
   const fresh = remote !== null && now - remote.receivedAt < 3000
 
-  // Одновременный удар от наводчика: старт свой, по «выстрелу» с любого устройства
+  // Simultaneous impact from fire direction: own start, on a "shot" from any device
   const mrsiShots = solution?.mrsi?.shots ?? null
   const [mrsiStartedAt, setMrsiStartedAt] = useState<number | null>(null)
   const mrsiNow = useMrsiClock(mrsiShots ?? [], mrsiShots ? mrsiStartedAt : null, () => setMrsiStartedAt(null))
@@ -367,14 +367,14 @@ function GunnerView({ language }: Props) {
     playSound('fire')
   }
 
-  // Новые установки — короткий сигнал
+  // New settings: a short signal
   const receivedAt = remote?.solution ? remote.receivedAt : null
   useEffect(() => {
     if (receivedAt !== null) playSound('syncUpdate')
   }, [receivedAt])
 
   const { onShot, sendShot } = sync
-  // Выстрел с другого устройства: при одновременном ударе — старт удара
+  // A shot from another device: with a simultaneous impact it starts the strike
   const remoteFireRef = useRef(() => {})
   useEffect(
     () =>
@@ -397,7 +397,7 @@ function GunnerView({ language }: Props) {
     sendShot()
   }
 
-  // «Огонь» стрелка: при одновременном ударе — удар у всех
+  // The gunner's Fire: with a simultaneous impact, the strike for everyone
   function fire() {
     if (mrsiShots) {
       startMrsi()
@@ -419,7 +419,7 @@ function GunnerView({ language }: Props) {
     Escape: () => setCombatOpen(false),
   })
 
-  // Программа для ПК: Ctrl+Alt+F и оверлей с установками наводчика
+  // Windows app: Ctrl+Alt+F and the overlay with the fire direction settings
   useEffect(
     () =>
       onHotkey((action) => {
@@ -540,7 +540,7 @@ function GunnerView({ language }: Props) {
         </Row>
       </dl>
 
-      {/* Рельеф на пути снаряда: стрелок видит и может сказать наводчику */}
+      {/* Terrain on the shell path: the gunner sees it and can tell fire direction */}
       {solution.terrain && (
         <p
           className={[
@@ -554,7 +554,7 @@ function GunnerView({ language }: Props) {
       )}
 
       {mrsiShots ? (
-        // Одновременный удар: план от наводчика, старт кнопкой или по связке
+        // Simultaneous impact: the plan from fire direction, the start with a button or over Link
         <div className="mt-3 rounded-lg bg-app-raised p-3">
           <p className="flex items-center gap-2 text-[15px] font-medium text-app-text">
             <FieldIcon name="stack" className="h-5 w-5 text-app-muted" />

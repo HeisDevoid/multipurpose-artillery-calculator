@@ -1,6 +1,6 @@
 # Mk6 (82 mm), HIGH, Charge 2
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): mortar_82mm, 200 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): mortar_82mm, 200 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 300 1563 0.5 0.5 40.8
 350 1556 0.5 0.5 40.8
 400 1550 0.6 0.5 40.7

@@ -1,13 +1,13 @@
 /**
- * Векторный слой карты (vector.json, см. scripts/build-vector.mjs): здания,
- * дороги, леса, горизонтали, названия и отметки высот. Рисуется на холсте
- * поверх спутника при большом приближении или вместо него («топо»-режим).
+ * The vector layer of a map (vector.json, see scripts/build-vector.mjs): buildings,
+ * roads, forests, contour lines, names and spot heights. It is drawn on the canvas
+ * over the satellite image at high zoom or instead of it (the topo mode).
  */
 
 export type MapStyle = 'sat' | 'topo'
 
 interface Shape {
-  pts: Float32Array // x0,y0,x1,y1,… в метрах мира
+  pts: Float32Array // x0,y0,x1,y1,… in world metres
   minX: number
   maxX: number
   minY: number
@@ -61,7 +61,7 @@ const shapes = (list: unknown, q: number, from = 0): Shape[] =>
     .map((p) => (Array.isArray(p) ? decode(p as number[], q, from) : null))
     .filter((s): s is Shape => s !== null)
 
-/** Разбор vector.json; null — неверный формат. */
+/** Parsing vector.json; null: a wrong format. */
 export function parseVector(value: unknown): MapVector | null {
   if (typeof value !== 'object' || value === null) return null
   const v = value as Record<string, unknown>
@@ -108,12 +108,12 @@ export async function loadVector(url: string): Promise<MapVector | null> {
 export interface VectorView {
   x0: number
   y0: number
-  scale: number // пикселей на метр
+  scale: number // pixels per metre
   width: number
   height: number
 }
 
-/** С какого приближения вообще рисуется векторный слой поверх спутника. */
+/** From which zoom the vector layer is drawn over the satellite image at all. */
 export const SAT_OVERLAY_MIN_SCALE = 0.45
 
 const NAME_MIN_SCALE: Record<string, number> = {
@@ -141,10 +141,10 @@ const TOPO = {
   },
 }
 
-/** Цвет фона в топо-режиме (рисуется вместо рельефа и спутника). */
+/** The background colour in the topo mode (drawn instead of the terrain and the satellite image). */
 export const TOPO_PAPER = TOPO.paper
 
-/** Фигура в кадре и не мельче minPx пикселей (мелочь не рисуется). */
+/** A shape in the frame and no smaller than minPx pixels (small things are not drawn). */
 function visible(s: Shape, v: VectorView, minPx = 0): boolean {
   if (minPx > 0 && Math.max(s.maxX - s.minX, s.maxY - s.minY) * v.scale < minPx) return false
   const maxX = v.x0 + v.width / v.scale
@@ -167,7 +167,7 @@ export function drawVector(
   v: VectorView,
   style: MapStyle,
   font: string,
-  // false: горизонтали из векторных данных не рисуются (их рисует drawDemContours)
+  // false: contour lines from the vector data are not drawn (drawDemContours draws them)
   contourLines = true
 ) {
   const topo = style === 'topo'
@@ -187,7 +187,7 @@ export function drawVector(
     for (const s of vec.runways) if (visible(s, v)) trace(ctx, s, v, true)
     ctx.fill()
 
-    // Горизонтали: чем мельче масштаб, тем реже
+    // Contour lines: the smaller the scale, the sparser
     const every = v.scale < 0.12 ? 100 : v.scale < 0.4 ? 50 : 10
     ctx.lineWidth = 0.7
     ctx.strokeStyle = TOPO.contour
@@ -207,7 +207,7 @@ export function drawVector(
     ctx.stroke()
   }
 
-  // Дороги: обводка, затем заливка; мелкие — только при приближении
+  // Roads: the outline, then the fill; small ones only when zoomed in
   const minRoadScale: Record<RoadKind, number> = { main_road: 0, road: 0.03, track: 0.1, trail: 0.25 }
   for (const kind of ROAD_KINDS) {
     if (v.scale < minRoadScale[kind] && topo) continue
@@ -233,7 +233,7 @@ export function drawVector(
     ctx.stroke()
   }
 
-  // Здания
+  // Buildings
   if (v.scale >= (topo ? 0.1 : SAT_OVERLAY_MIN_SCALE)) {
     ctx.fillStyle = topo ? TOPO.houseFill : 'rgba(0,0,0,0.3)'
     ctx.strokeStyle = topo ? TOPO.houseStroke : 'rgba(255,255,255,0.75)'

@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react'
 
 /**
- * Настройки анимации выстрела: вид (выкл / минимальная / подробная)
- * и показывать ли её на карте. Общее состояние в localStorage.
+ * Shot animation settings: the style (off / minimal / detailed)
+ * and whether to show it on the map. Shared state in localStorage.
  */
 export type FlightStyle = 'off' | 'minimal' | 'detailed'
 
@@ -36,7 +36,7 @@ export function setFlightStyle(style: FlightStyle) {
   try {
     localStorage.setItem('flightAnim', style)
   } catch {
-    // Хранилище недоступно — настройка живёт до перезагрузки.
+    // Storage is unavailable: the setting lives until a reload.
   }
   emit()
 }
@@ -46,7 +46,7 @@ export function setFlightOnMap(value: boolean) {
   try {
     localStorage.setItem('flightAnimMap', value ? 'on' : 'off')
   } catch {
-    // см. выше
+    // see above
   }
   emit()
 }

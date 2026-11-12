@@ -29,7 +29,7 @@ describe('heightColor', () => {
 
 describe('renderRelief', () => {
   it('draws one opaque pixel per grid node, north up', () => {
-    // 2×2: юг — море, север — суша
+    // 2×2: the south is sea, the north is land
     const map: Heightmap = {
       world: 'Test',
       worldSize: 200,
@@ -39,7 +39,7 @@ describe('renderRelief', () => {
     }
     const pixels = renderRelief(map, 'night')
     expect(pixels).toHaveLength(2 * 2 * 4)
-    // Строка 0 изображения — север (суша), строка 1 — юг (море)
+    // Image row 0 is the north (land), row 1 is the south (sea)
     const north = brightness([...pixels.slice(0, 3)])
     const south = brightness([...pixels.slice(8, 11)])
     expect(north).toBeGreaterThan(south)

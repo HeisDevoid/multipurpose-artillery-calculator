@@ -14,7 +14,7 @@ const base: MapMarker = {
   world: 'Altis',
   x: 1000,
   y: 2000,
-  label: 'ДЗОТ',
+  label: 'Bunker',
   color: 'red',
   createdAt: 1_700_000_000_000,
   author: 'Heis',
@@ -39,9 +39,9 @@ describe('parseMarker', () => {
 
 describe('age', () => {
   it('formats minutes and hours', () => {
-    expect(formatAge(20_000)).toBe('только что')
-    expect(formatAge(5 * 60_000)).toBe('5 мин')
     setLanguage('en')
+    expect(formatAge(20_000)).toBe('just now')
+    expect(formatAge(5 * 60_000)).toBe('5 min')
     expect(formatAge(65 * 60_000)).toBe('1 h 5 min')
     setLanguage('ru')
   })
@@ -59,9 +59,9 @@ describe('planScreenMerge', () => {
     const existing: MapMarker[] = [
       base,
       { ...base, id: 'b2', x: 3000, y: 3000, color: 'blue' },
-      // вне снимка — не трогаем
+      // outside the image: leave it alone
       { ...base, id: 'c3', x: 9000, y: 9000 },
-      // поставлена руками — не трогаем
+      // placed by hand: leave it alone
       { ...base, id: 'd4', x: 4000, y: 4000, source: 'app' },
     ]
     const plan = planScreenMerge(

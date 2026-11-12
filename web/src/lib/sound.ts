@@ -5,7 +5,7 @@ function context(): AudioContext {
   return audioContext
 }
 
-/** События со звуком. Каждому можно поставить свой файл. */
+/** Events with sound. Each can get a file of its own. */
 export type SoundEvent =
   | 'fire'
   | 'splash'
@@ -23,7 +23,7 @@ export const SOUND_EVENTS: readonly SoundEvent[] = [
   'syncUpdate',
 ]
 
-// Стандартные сигналы: частота, Гц и длительность, мс
+// The standard signals: frequency, Hz, and duration, ms
 const DEFAULT_BEEPS: Record<SoundEvent, [number, number]> = {
   fire: [440, 60],
   splash: [880, 150],
@@ -33,7 +33,7 @@ const DEFAULT_BEEPS: Record<SoundEvent, [number, number]> = {
   syncUpdate: [1200, 80],
 }
 
-// Свои файлы — больше не нужно, а IndexedDB не резиновая
+// Own files: no bigger than this, IndexedDB is not unlimited
 export const MAX_SOUND_BYTES = 2 * 1024 * 1024
 
 const VOLUME_KEY = 'soundVolume'
@@ -61,11 +61,11 @@ export function setVolume(value: number) {
   try {
     localStorage.setItem(VOLUME_KEY, String(volume))
   } catch {
-    // Хранилище недоступно — громкость живёт до перезагрузки.
+    // Storage is unavailable: the volume lives until a reload.
   }
 }
 
-/** Короткий сигнал; без звука в браузере — молча. */
+/** A short signal; silent if the browser has no sound. */
 export function beep(frequency: number, durationMs: number) {
   try {
     const ctx = context()
@@ -74,7 +74,7 @@ export function beep(frequency: number, durationMs: number) {
 
     oscillator.type = 'sine'
     oscillator.frequency.value = frequency
-    // Плавные края, чтобы не щёлкало
+    // Smooth edges, so that it does not click
     gain.gain.setValueAtTime(0, ctx.currentTime)
     gain.gain.linearRampToValueAtTime(0.2 * volume, ctx.currentTime + 0.01)
     gain.gain.linearRampToValueAtTime(0, ctx.currentTime + durationMs / 1000)
@@ -83,15 +83,15 @@ export function beep(frequency: number, durationMs: number) {
     oscillator.start()
     oscillator.stop(ctx.currentTime + durationMs / 1000 + 0.05)
   } catch {
-    // Звук недоступен — таймер работает и без него.
+    // Sound is unavailable: the timer works without it.
   }
 }
 
-// ---- свои звуки ----
+// ---- own sounds ----
 
 export interface CustomSound {
   event: SoundEvent
-  // Имя файла — показать в настройках
+  // The file name, to show in the settings
   name: string
   data: ArrayBuffer
 }
@@ -130,7 +130,7 @@ async function run<T>(
   }
 }
 
-// Готовые к проигрыванию файлы
+// Files ready to play
 const buffers = new Map<SoundEvent, AudioBuffer>()
 const names = new Map<SoundEvent, string>()
 const listeners = new Set<() => void>()
@@ -139,7 +139,7 @@ function changed() {
   listeners.forEach((listener) => listener())
 }
 
-/** Подписка на смену своих звуков (для настроек). */
+/** A subscription to changes of own sounds (for the settings). */
 export function onCustomSoundsChange(listener: () => void) {
   listeners.add(listener)
   return () => {
@@ -147,17 +147,17 @@ export function onCustomSoundsChange(listener: () => void) {
   }
 }
 
-/** Имя своего файла для события; null — стандартный сигнал. */
+/** The name of the own file for an event; null: the standard signal. */
 export function customSoundName(event: SoundEvent): string | null {
   return names.get(event) ?? null
 }
 
 async function decode(data: ArrayBuffer): Promise<AudioBuffer> {
-  // decodeAudioData забирает буфер — отдаём копию
+  // decodeAudioData takes the buffer: give it a copy
   return context().decodeAudioData(data.slice(0))
 }
 
-/** Загрузить свои звуки при старте приложения. */
+/** Load own sounds when the app starts. */
 export async function loadCustomSounds() {
   try {
     const sounds = await run<CustomSound[]>('readonly', (store) =>
@@ -169,18 +169,18 @@ export async function loadCustomSounds() {
         buffers.set(sound.event, await decode(sound.data))
         names.set(sound.event, sound.name)
       } catch {
-        // Файл не читается — остаётся стандартный сигнал.
+        // The file cannot be read: the standard signal stays.
       }
     }
     changed()
   } catch {
-    // Нет IndexedDB — только стандартные сигналы.
+    // No IndexedDB: standard signals only.
   }
 }
 
 export type SoundFileError = 'too-large' | 'not-audio'
 
-/** Поставить свой файл на событие. */
+/** Set an own file for an event. */
 export async function setCustomSound(
   event: SoundEvent,
   file: File
@@ -197,7 +197,7 @@ export async function setCustomSound(
   try {
     await run('readwrite', (store) => store.put(sound))
   } catch {
-    // Не сохранилось — звук работает до перезагрузки.
+    // Not saved: the sound works until a reload.
   }
   buffers.set(event, buffer)
   names.set(event, file.name)
@@ -205,19 +205,19 @@ export async function setCustomSound(
   return null
 }
 
-/** Вернуть стандартный сигнал. */
+/** Bring back the standard signal. */
 export async function resetCustomSound(event: SoundEvent) {
   buffers.delete(event)
   names.delete(event)
   try {
     await run('readwrite', (store) => store.delete(event))
   } catch {
-    // Нет IndexedDB — удалять нечего.
+    // No IndexedDB: nothing to remove.
   }
   changed()
 }
 
-/** Звук события: свой файл, если есть, иначе стандартный сигнал. */
+/** The sound of an event: the own file if there is one, else the standard signal. */
 export function playSound(event: SoundEvent) {
   const buffer = buffers.get(event)
   if (!buffer) {
@@ -233,6 +233,6 @@ export function playSound(event: SoundEvent) {
     source.connect(gain).connect(ctx.destination)
     source.start()
   } catch {
-    // Звук недоступен — таймер работает и без него.
+    // Sound is unavailable: the timer works without it.
   }
 }

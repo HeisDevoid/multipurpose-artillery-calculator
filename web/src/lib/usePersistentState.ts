@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Состояние, которое переживает перезагрузку (localStorage).
- * parse получает сохранённую строку или null и решает, что взять.
+ * State that survives a reload (localStorage).
+ * parse gets the saved string or null and decides what to take.
  */
 export function usePersistentState<T>(
   key: string,
@@ -21,7 +21,7 @@ export function usePersistentState<T>(
     try {
       localStorage.setItem(key, serialize(value))
     } catch {
-      // Хранилище недоступно — значение живёт до перезагрузки.
+      // Storage is unavailable: the value lives until a reload.
     }
   }, [key, value, serialize])
 

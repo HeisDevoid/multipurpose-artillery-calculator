@@ -1,6 +1,6 @@
 /**
- * Журнал ошибок на устройстве: последние сбои с версией и стеком. Никуда не
- * отправляется — пользователь сам копирует отчёт или открывает issue.
+ * The error log on the device: the latest failures with the version and the stack. It is not
+ * sent anywhere: the user copies the report or opens an issue.
  */
 
 export interface ErrorEntry {
@@ -35,12 +35,12 @@ export function recordError(area: string, error: unknown, componentStack?: strin
   try {
     localStorage.setItem(KEY, JSON.stringify([...readErrors(), entry].slice(-MAX)))
   } catch {
-    // Хранилище недоступно — отчёт всё равно можно скопировать с экрана ошибки.
+    // Storage is unavailable: the report can still be copied from the error screen.
   }
   return entry
 }
 
-/** Текст отчёта для копирования или issue. */
+/** The report text for copying or an issue. */
 export function errorReport(entry: ErrorEntry): string {
   return [
     `Version: ${typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '?'}`,
@@ -56,7 +56,7 @@ export function errorReport(entry: ErrorEntry): string {
   ].join('\n')
 }
 
-/** Ошибки вне React (обработчики событий, промисы) тоже попадают в журнал. */
+/** Errors outside React (event handlers, promises) go into the log too. */
 export function installGlobalErrorLog() {
   window.addEventListener('error', (event) => {
     recordError('window', event.error ?? event.message)

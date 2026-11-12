@@ -1,14 +1,14 @@
 /*
- * Service worker: приложение работает без интернета после первого
- * открытия.
+ * Service worker: the app works offline after the first
+ * visit.
  *
- * - Страница (навигация): сначала сеть, при ошибке — кэш. Так новая
- *   версия подхватывается сразу, а без сети открывается последняя.
- * - Файлы сборки из assets/ (с хэшем в имени, не меняются): сначала кэш.
- * - Остальное (иконки, манифест): из кэша, параллельно обновляется.
+ * - The page (navigation): network first, the cache on failure. A new
+ *   version is picked up at once, and offline the last one opens.
+ * - Build files from assets/ (a hash in the name, never change): cache first.
+ * - The rest (icons, the manifest): from the cache, refreshed in parallel.
  *
- * Версия кэша приходит из адреса регистрации (sw.js?v=0.8.0):
- * с новой версией старые кэши удаляются.
+ * The cache version comes from the registration address (sw.js?v=0.8.0):
+ * a new version removes the old caches.
  */
 const VERSION = new URL(self.location.href).searchParams.get('v') || 'dev'
 const CACHE = `artillery-calc-${VERSION}`

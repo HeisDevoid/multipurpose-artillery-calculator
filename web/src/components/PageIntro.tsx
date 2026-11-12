@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-/** Вводный абзац экрана: короткая мысль и пояснение под ней. */
+/** The intro paragraph of a screen: a short idea and an explanation under it. */
 export function PageIntro({
   title,
   children,

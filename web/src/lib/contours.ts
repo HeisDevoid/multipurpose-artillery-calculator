@@ -1,17 +1,17 @@
 import type { Heightmap } from './heightmap'
 
 /**
- * Горизонтали из сетки высот карты: метод «марширующих квадратов» только по
- * видимому участку. Сетка у карт грубая (до 22 м), зато так линии можно
- * проводить через 1-5 м, чего нет в готовых данных (там через 10 м), а при
- * приближении это и нужно, чтобы точно поставить орудие на нужную высоту.
+ * Contour lines from the map height grid: the marching squares method, only over
+ * the visible part. The map grids are coarse (up to 22 m), but this way lines can
+ * be drawn every 1-5 m, which the ready data lacks (it has them every 10 m), and when
+ * zoomed in this is exactly what is needed to put the gun at the right height.
  */
 
 export interface ContourView {
-  // Мировые координаты левого верхнего угла, м
+  // World coordinates of the top left corner, m
   x0: number
   y0: number
-  // Пикселей на метр
+  // Pixels per metre
   scale: number
   width: number
   height: number
@@ -19,11 +19,11 @@ export interface ContourView {
 
 export interface ContourLevel {
   level: number
-  // Отрезки x1, y1, x2, y2, … в метрах мира
+  // Segments x1, y1, x2, y2, … in world metres
   segments: number[]
 }
 
-/** Через сколько метров проводить линии при таком приближении; null — не рисовать. */
+/** How many metres apart to draw lines at this zoom; null: do not draw. */
 export function contourInterval(scale: number): number | null {
   if (scale < 0.15) return null
   if (scale < 0.5) return 5
@@ -31,7 +31,7 @@ export function contourInterval(scale: number): number | null {
   return 1
 }
 
-/** Каждая какая линия «главная» (толще, с подписью): кратная этому числу. */
+/** Which lines are "major" (thicker, labelled): multiples of this number. */
 export function majorEvery(interval: number): number {
   return interval === 1 ? 5 : interval === 2 ? 10 : 25
 }
@@ -66,12 +66,12 @@ export function demContours(map: Heightmap, view: ContourView, interval: number)
 
       for (let k = Math.ceil(lo / interval); k * interval <= hi; k += 1) {
         const level = k * interval
-        // Ровно на узле: чуть сдвигаем, чтобы не плодить дубликаты по соседним клеткам
+        // Exactly on a node: shift slightly, so as not to make duplicates in neighbouring cells
         const L = level + 1e-4
         const idx = (a > L ? 1 : 0) | (b > L ? 2 : 0) | (c > L ? 4 : 0) | (d > L ? 8 : 0)
         if (idx === 0 || idx === 15) continue
 
-        // Точки на рёбрах клетки: низ (a-b), право (b-c), верх (d-c), лево (a-d)
+        // Points on the cell edges: bottom (a-b), right (b-c), top (d-c), left (a-d)
         const bottom = (): [number, number] => [x + (step * (L - a)) / (b - a), y]
         const right = (): [number, number] => [x + step, y + (step * (L - b)) / (c - b)]
         const top = (): [number, number] => [x + (step * (L - d)) / (c - d), y + step]
@@ -104,7 +104,7 @@ export function demContours(map: Heightmap, view: ContourView, interval: number)
             seg(left(), top())
             break
           case 5:
-            // a и c выше линии: по центру решаем, соединены ли они
+            // a and c are above the line: the centre decides whether they are connected
             if ((a + b + c + d) / 4 > L) {
               seg(bottom(), right())
               seg(left(), top())
@@ -145,11 +145,11 @@ const TOPO = {
   outline: 'rgba(244,242,234,0.9)',
 }
 
-// Подписи высот не гуще этого, пиксели
+// Height labels no denser than this, pixels
 const LABEL_GAP = 170
 const MAX_LABELS = 60
 
-/** Горизонтали и подписи высот на холст; возвращает, сколько линий нарисовано. */
+/** Contour lines and height labels on the canvas; returns how many lines were drawn. */
 export function drawDemContours(
   ctx: CanvasRenderingContext2D,
   map: Heightmap,
@@ -181,7 +181,7 @@ export function drawDemContours(
     ctx.stroke()
   }
 
-  // Подписи на главных линиях: по одной на участок, не гуще LABEL_GAP
+  // Labels on the major lines: one per stretch, no denser than LABEL_GAP
   ctx.font = `11px ${font}`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'

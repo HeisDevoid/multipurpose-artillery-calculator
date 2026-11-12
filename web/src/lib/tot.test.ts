@@ -8,7 +8,7 @@ import {
   suggestImpactTime,
 } from './tot'
 
-// 15.10.2026 18:00:00 по местному времени
+// 15.10.2026 18:00:00 local time
 const NOW = new Date(2026, 9, 15, 18, 0, 0, 0).getTime()
 
 describe('fireMoment', () => {
@@ -19,7 +19,7 @@ describe('fireMoment', () => {
 
 describe('suggestImpactTime', () => {
   it('leaves time to prepare and rounds up to 10 s', () => {
-    // 30 с на подготовку + 24.5 с полёта = 18:00:54.5 → 18:01:00
+    // 30 s to get ready + 24.5 s of flight = 18:00:54.5 → 18:01:00
     expect(formatClock(suggestImpactTime(NOW, 24.5))).toBe('18:01:00')
     expect(formatClock(suggestImpactTime(NOW + 6_000, 24.5))).toBe('18:01:10')
   })
@@ -35,7 +35,7 @@ describe('parseClock', () => {
 
   it('takes tomorrow for a time long past today', () => {
     expect(parseClock('17:00', NOW)! - NOW).toBe(23 * 3_600_000)
-    // Только что прошедшее время остаётся сегодняшним
+    // A time that has just passed stays today's
     expect(parseClock('17:58', NOW)! - NOW).toBe(-120_000)
   })
 

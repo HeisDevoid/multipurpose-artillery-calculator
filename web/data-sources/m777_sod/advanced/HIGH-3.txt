@@ -1,6 +1,6 @@
 # M777 (155 mm), HIGH, Charge 3
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): SOD_weap_M776, 648 м/с, сопротивление воздуха -0.00006.
-# С сопротивлением воздуха (улучшенная баллистика ACE).
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): SOD_weap_M776, 648 m/s, air friction -0.00006.
+# With air resistance (ACE advanced ballistics).
 9300 1272 0.7 0.3 88.7 4.7 50 -50 0.7 -0.7 -57 50
 9400 1268 0.7 0.3 88.5 4.7 50 -50 0.8 -0.8 -58 51
 9500 1263 0.7 0.3 88.4 4.6 50 -50 0.8 -0.8 -59 51

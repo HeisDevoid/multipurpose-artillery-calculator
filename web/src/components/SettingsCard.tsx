@@ -5,9 +5,9 @@ import { SETTINGS_CARD_OPEN, settingsCardKey } from '../lib/settingsCards'
 import { FieldIcon, type FieldIconName } from './FieldIcon'
 
 /**
- * Раздел настроек: значок, заголовок и стрелка — нажатие сворачивает или
- * раскрывает. Свёрнутый раздел занимает одну строку, и пролистать страницу
- * на телефоне можно, не задев ни один переключатель.
+ * A settings section: an icon, a title and an arrow; a press collapses or
+ * expands it. A collapsed section takes one line, and the page can be scrolled
+ * on a phone without touching any switch.
  */
 export function SettingsCard({
   id,
@@ -21,7 +21,7 @@ export function SettingsCard({
   icon: FieldIconName
   title: string
   description?: string
-  // Раскрыт, пока пользователь сам его не свернул
+  // Open until the user collapses it
   defaultOpen?: boolean
   children: ReactNode
 }) {
@@ -35,7 +35,7 @@ export function SettingsCard({
     writeStored(settingsCardKey(id), next ? 'on' : 'off')
   }
 
-  // Переход по чипу сверху раскрывает раздел
+  // A jump from the chip on top opens the section
   useEffect(() => {
     function onOpen(event: Event) {
       if ((event as CustomEvent<string>).detail !== id) return

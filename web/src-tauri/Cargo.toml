@@ -1,6 +1,6 @@
 [package]
 name = "artillery-calculator"
-version = "0.18.2"
+version = "0.19.0"
 description = "Firing calculator for Arma 3 ACE3 mortars and artillery"
 authors = ["Heis"]
 license = "MIT"
@@ -15,7 +15,7 @@ tauri-plugin-global-shortcut = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 tauri-plugin-single-instance = "2"
-# Нужен коду, который generate_context! создаёт из настроек плагинов (plugins.updater)
+# Needed by the code generate_context! creates from the plugin settings (plugins.updater)
 serde_json = "1"
 
 [profile.release]

@@ -1,6 +1,6 @@
 # 2A18M D-30A (122 mm), LOW, Charge 2
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_d30, 269.1 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_d30, 269.1 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 600 41 - - 2.2
 700 48 - - 2.6
 800 55 - - 3.0

@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 /**
- * Склейка снимков карты из игры (tools/arma/gradtopo_photos.sqf) в «спутниковый» слой
- * в формате выгрузки grad_meh: <папка-выгрузки>/sat/<столбец>/<строка>.png.
+ * Stitches map photos from the game (tools/arma/gradtopo_photos.sqf) into a "satellite" layer
+ * in the grad_meh export format: <export-folder>/sat/<column>/<row>.png.
  *
- *   node scripts/import-photos.mjs <файл.rpt> <папка-выгрузки> [--images <папка> …] [--mpp 2] [--crop 0]
+ *   node scripts/import-photos.mjs <file.rpt> <export-folder> [--images <folder> …] [--mpp 2] [--crop 0]
  *
- * --images — где искать скриншоты gradphoto_*.png (можно несколько раз; по умолчанию
- *            Документы\Arma 3 и папка игры рядом с выгрузкой). Поиск рекурсивный.
- * --mpp    — метров на пиксель итоговой картинки (по умолчанию 2).
- * --rect   — область карты на скриншоте: x,y,ширина,высота в пикселях или auto (по умолчанию):
- *            карта в игре занимает прямоугольник, остальное — 3D-сцена; область находится
- *            сравнением двух кадров (меняется только карта).
- * --degrid — убрать линии сетки игры (по умолчанию включено; --degrid off выключает).
- * --crop   — дополнительно срезать столько пикселей с каждого края области (рамки).
+ * --images: where to look for the gradphoto_*.png screenshots (may be repeated; by default
+ *           Documents\Arma 3 and the game folder next to the export). The search is recursive.
+ * --mpp:    metres per pixel of the final picture (2 by default).
+ * --rect:   the map area on a screenshot: x,y,width,height in pixels or auto (the default):
+ *           the map takes a rectangle in the game, the rest is the 3D scene; the area is found
+ *           by comparing two frames (only the map changes).
+ * --degrid: remove the game grid lines (on by default; --degrid off turns it off).
+ * --crop:   also cut this many pixels from every edge of the area (frames).
  *
- * После этого карта собирается как обычно (с тайлами спутника):
- *   node scripts/import-grad-meh.mjs "<папка-выгрузки>"
+ * After that the map is built as usual (with satellite tiles):
+ *   node scripts/import-grad-meh.mjs "<export-folder>"
  */
 import { createReadStream, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -42,7 +42,7 @@ if (searchDirs.length === 0) {
   searchDirs.push(join(homedir(), 'Documents', 'Arma 3'), join(dirname(outDir), '..'), dirname(outDir), '.')
 }
 
-// ---- RPT: где и какой кадр ----
+// ---- RPT: where each frame is ----
 let worldSize = 0
 const shots = new Map()
 let ended = false
@@ -62,12 +62,12 @@ for await (const raw of rl) {
   }
 }
 if (!worldSize || shots.size === 0) {
-  console.error('В RPT нет строк GRADPHOTO — скрипт gradtopo_photos.sqf не запускался.')
+  console.error('The RPT has no GRADPHOTO lines: the gradtopo_photos.sqf script did not run.')
   process.exit(1)
 }
-if (!ended) console.warn('ВНИМАНИЕ: нет GRADPHOTO|END — съёмка могла прерваться, часть карты будет пустой.')
+if (!ended) console.warn('WARNING: no GRADPHOTO|END, the shooting may have been interrupted and a part of the map will be empty.')
 
-// ---- поиск файлов скриншотов ----
+// ---- looking for the screenshot files ----
 function findFiles(dir, wanted, found, depth = 0) {
   if (depth > 4 || !existsSync(dir)) return
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -78,16 +78,16 @@ function findFiles(dir, wanted, found, depth = 0) {
 }
 const found = new Map()
 for (const dir of searchDirs) findFiles(dir, new Set(shots.keys()), found)
-console.log(`кадров в логе: ${shots.size}, файлов найдено: ${found.size}`)
+console.log(`frames in the log: ${shots.size}, files found: ${found.size}`)
 if (found.size === 0) {
-  console.error('Скриншоты gradphoto_*.png не найдены. Укажите папку: --images "<папка>".')
+  console.error('No gradphoto_*.png screenshots found. Pass the folder: --images "<folder>".')
   process.exit(1)
 }
 
-// ---- убрать сетку игры ----
-// Линии сетки — тонкие тёмные линии через весь кадр. Столбец (или строка), где яркость
-// заметно отличается от соседей по всей длине, считается линией и заменяется
-// интерполяцией между чистыми соседями.
+// ---- removing the game grid ----
+// Grid lines are thin dark lines across the whole frame. A column (or a row) whose brightness
+// clearly differs from its neighbours along the whole length counts as a line and is replaced
+// by interpolation between clean neighbours.
 function lineScores(data, width, height, vertical) {
   const along = vertical ? height : width
   const across = vertical ? width : height
@@ -116,7 +116,7 @@ function degrid(data, width, height) {
     const scores = lineScores(data, width, height, vertical)
     const mark = new Uint8Array(across)
     for (let c = 3; c < across - 3; c += 1) if (scores[c] > 3) mark[c] = 1
-    // Края линии: соседи слабее, но заметно тёмные
+    // Line edges: the neighbours are weaker but clearly dark
     for (let c = 3; c < across - 3; c += 1) {
       if (!mark[c] && scores[c] > 1.5 && (mark[c - 1] || mark[c + 1])) mark[c] = 2
     }
@@ -142,14 +142,14 @@ function degrid(data, width, height) {
   return out
 }
 
-// ---- область карты на скриншоте ----
+// ---- the map area on a screenshot ----
 async function rawPixels(path) {
   const { data, info } = await sharp(path).removeAlpha().raw().toBuffer({ resolveWithObject: true })
   return { data, width: info.width, height: info.height }
 }
 
 async function detectRect(paths) {
-  // Сравниваем два далёких кадра: 3D-сцена вокруг карты одинакова, карта различается
+  // Two distant frames are compared: the 3D scene around the map is the same, the map differs
   const a = await rawPixels(paths[0])
   const b = await rawPixels(paths[Math.floor(paths.length / 2)])
   let minX = a.width, minY = a.height, maxX = -1, maxY = -1
@@ -178,14 +178,14 @@ if (rectArg === 'auto') {
 }
 const baseRect = rect
 rect = { left: rect.left + crop, top: rect.top + crop, width: rect.width - 2 * crop, height: rect.height - 2 * crop }
-console.log(`область карты на кадре: x=${rect.left} y=${rect.top} ${rect.width}×${rect.height}`)
+console.log(`map area on a frame: x=${rect.left} y=${rect.top} ${rect.width}×${rect.height}`)
 
-// ---- мозаика ----
+// ---- the mosaic ----
 const n = Math.ceil(worldSize / (TILE_PX * mpp))
 const total = n * TILE_PX
-// Мозаика покрывает ровно карту: метров на пиксель чуть меньше заказанного
+// The mosaic covers exactly the map: metres per pixel are slightly below the requested value
 const m = worldSize / total
-console.log(`мозаика ${total}×${total} px, ${m.toFixed(2)} м/px, плиток ${n}×${n}`)
+console.log(`mosaic ${total}×${total} px, ${m.toFixed(2)} m/px, ${n}×${n} tiles`)
 
 const layers = []
 for (const [name, path] of found) {
@@ -193,7 +193,7 @@ for (const [name, path] of found) {
   const wm = s.x1 - s.x0
   const hm = s.y0 - s.y1
   if (wm <= 0 || hm <= 0) continue
-  // Логированные углы относятся к исходной области; срез --crop сдвигает привязку
+  // The logged corners refer to the source area; the --crop cut shifts the anchor
   const mx = (wm / baseRect.width) * crop
   const my = (hm / baseRect.height) * crop
   const x0 = s.x0 + mx
@@ -208,7 +208,7 @@ for (const [name, path] of found) {
     source = sharp(degrid(data, info.width, info.height), { raw: { width: info.width, height: info.height, channels: 3 } })
   }
   let buf = await source.resize(widthPx, heightPx, { fit: 'fill' }).png().toBuffer()
-  // Обрезка по границам мозаики
+  // Cropping to the mosaic borders
   let w = widthPx
   let h = heightPx
   const cl = Math.max(0, -left)
@@ -233,7 +233,7 @@ const mosaic = await sharp({
   .png()
   .toBuffer()
 
-// ---- плитки sat/<столбец>/<строка>.png (север сверху) ----
+// ---- tiles sat/<column>/<row>.png (north up) ----
 rmSync(join(outDir, 'sat'), { recursive: true, force: true })
 for (let a = 0; a < n; a += 1) {
   mkdirSync(join(outDir, 'sat', String(a)), { recursive: true })
@@ -246,4 +246,4 @@ for (let a = 0; a < n; a += 1) {
   process.stdout.write('.')
 }
 process.stdout.write('\n')
-console.log(`Готово: ${layers.length} кадров → ${join(outDir, 'sat')}\nДальше: node scripts/import-grad-meh.mjs "${outDir}"`)
+console.log(`Done: ${layers.length} frames → ${join(outDir, 'sat')}\nNext: node scripts/import-grad-meh.mjs "${outDir}"`)

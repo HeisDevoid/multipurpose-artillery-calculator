@@ -1,6 +1,6 @@
 # 2B14-1 Podnos (82 mm), HIGH, Charge 1
-# Выгружено из игры 2026-11-03 скриптом tools/arma/export_tables.sqf (расчёт ACE): rhs_weap_2b14, 147.7 м/с, сопротивление воздуха 0.
-# Без сопротивления воздуха: погодные столбцы пустые.
+# Exported from the game 2026-11-03 by tools/arma/export_tables.sqf (ACE calculation): rhs_weap_2b14, 147.7 m/s, air friction 0.
+# Without air resistance: the weather columns are empty.
 400 1508 2.0 0.7 30.0
 450 1496 2.3 0.7 30.0
 500 1485 2.6 0.7 29.9

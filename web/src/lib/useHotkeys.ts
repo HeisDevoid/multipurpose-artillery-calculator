@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Клавиша → действие. Ключ — KeyboardEvent.code («KeyF», «Digit1»),
- * а не символ: так клавиши работают и в русской раскладке.
+ * Key → action. The key is KeyboardEvent.code ("KeyF", "Digit1"),
+ * not the character: this way the keys work in any keyboard layout.
  */
 export type HotkeyMap = Record<string, () => void>
 
@@ -17,12 +17,12 @@ function isTyping(target: EventTarget | null): boolean {
 }
 
 /**
- * Глобальные горячие клавиши. Не срабатывают, пока курсор в поле
- * ввода (кроме Escape — он снимает фокус с поля) и при зажатых
- * Ctrl / Alt / Meta, чтобы не мешать системным сочетаниям.
+ * Global hotkeys. They do not fire while the cursor is in an input
+ * field (except Escape, which takes the focus off the field) and with
+ * Ctrl / Alt / Meta held, so as not to get in the way of system shortcuts.
  */
 export function useHotkeys(map: HotkeyMap, enabled = true) {
-  // Последняя версия обработчиков без переподписки на каждый рендер
+  // The latest version of the handlers without resubscribing on every render
   const mapRef = useRef(map)
   useEffect(() => {
     mapRef.current = map

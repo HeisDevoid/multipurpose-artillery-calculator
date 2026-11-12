@@ -27,5 +27,5 @@ dist-ssr
 test-results
 playwright-report
 
-# Карты — в ветке maps (npm run maps:pull / maps:publish)
+# Maps live in the maps branch (npm run maps:pull / maps:publish)
 public/maps

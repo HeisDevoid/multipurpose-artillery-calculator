@@ -1,7 +1,7 @@
 # H-12 (S.O.G. Prairie Fire), LOW, Charge 5
-# Снято 26.10.2026. Два скриншота: 950–3700 и 1750–4050. Перекрытие 1750–3650 сверено.
-# В режиме LOW «D ELEV / TIME OF FLIGHT PER 100 M DR» отрицательные: цель выше — возвышение больше.
-# Часть дальностей игра пропускает (таблица LOW считается в игре и слегка отличается от Seara).
+# Taken 26.10.2026. Two screenshots: 950–3700 and 1750–4050. The overlap 1750–3650 is checked.
+# In the LOW mode the "D ELEV / TIME OF FLIGHT PER 100 M DR" values are negative: a higher target needs more elevation.
+# The game skips some ranges (the LOW table is calculated in the game and differs slightly from Seara).
 950 101 - - 4.4 0.1 0.9 -0.2 0.7 -0.0 -0.2 0.9
 1000 107 - - 4.7 0.1 0.2 -0.9 0.0 -0.7 -0.9 0.2
 1150 124 - - 5.4 0.2 1.0 -0.3 0.7 -0.0 -0.3 0.9

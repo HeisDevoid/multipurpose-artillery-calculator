@@ -35,7 +35,7 @@ import {
   type SyncStatus,
 } from '../lib/syncContext'
 
-// «Я в сети» — так часто; устройство считается ушедшим без отклика
+// "I am online" this often; a device counts as gone without an answer
 const HELLO_INTERVAL_MS = 10_000
 const PEER_TIMEOUT_MS = 35_000
 
@@ -45,8 +45,8 @@ interface Connection {
 }
 
 /**
- * Связка наводчик ↔ стрелок: одно соединение на всё приложение,
- * переживает переходы между страницами.
+ * Link between fire direction and the gunner: one connection for the whole app,
+ * it survives page changes.
  */
 export function SyncProvider({ children }: { children: ReactNode }) {
   const invite = useMemo(() => readInvite(window.location.search), [])
@@ -67,7 +67,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     () => invite !== null || readStoredText('syncEnabled') === 'true'
   )
 
-  // Состояние соединения от брокера; null — соединения ещё нет
+  // The connection state from the broker; null: no connection yet
   const [link, setLink] = useState<SyncStatus | null>(null)
   const ready = enabled && isValidRoomCode(code)
   const status: SyncStatus = ready ? (link ?? 'connecting') : 'off'
@@ -76,7 +76,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const [lastSharedAt, setLastSharedAt] = useState<number | null>(null)
   const [now, setNow] = useState(() => Date.now())
 
-  // Уникальный номер вкладки: свои сообщения брокер присылает обратно
+  // A unique tab number: the broker sends own messages back
   const clientId = useMemo(
     () => Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) =>
       b.toString(16).padStart(2, '0')
@@ -85,7 +85,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   )
   const connectionRef = useRef<Connection | null>(null)
   const shotHandlers = useRef(new Set<() => void>())
-  // Последнее решение наводчика: отправляется заново после переподключения
+  // The last fire direction solution: sent again after a reconnect
   const sharedRef = useRef<{ json: string; solution: SyncSolution | null } | null>(
     null
   )
@@ -96,7 +96,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   useEffect(() => writeStored('syncCallsign', callsign), [callsign])
   useEffect(() => writeStored('syncEnabled', String(enabled)), [enabled])
 
-  // Ссылка-приглашение отработала — убираем код из адресной строки
+  // The invitation link worked: remove the code from the address bar
   useEffect(() => {
     if (!invite) return
     try {
@@ -104,7 +104,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       url.search = ''
       window.history.replaceState(null, '', url.toString())
     } catch {
-      // Не получилось — код останется в адресе, это не мешает.
+      // It did not work: the code stays in the address, which does no harm.
     }
   }, [invite])
 
@@ -146,7 +146,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     [clientId, publish]
   )
 
-  // Удаление метки — пустое сообщение в её канале стирает её на брокере
+  // Removing a marker: an empty message in its channel erases it on the broker
   const clearMarker = useCallback((id: string) => {
     const connection = connectionRef.current
     if (!connection || !connection.client.connected) return
@@ -156,7 +156,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  // Метки, поставленные на этом устройстве, — всем в комнате
+  // Markers placed on this device go to everyone in the room
   useEffect(
     () =>
       onLocalMarkerChange((change) => {
@@ -180,7 +180,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     })
   }, [clientId, publish])
 
-  // Роль сменилась — сразу сообщаем остальным
+  // The role changed: tell the others at once
   useEffect(() => {
     if (status === 'online') sendHello()
   }, [role, status, sendHello])
@@ -190,7 +190,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false
     let client: MqttClient | null = null
-    // Повторы перехваченных пакетов отбрасываются (на каждое подключение — своя)
+    // Replays of intercepted packets are dropped (each connection has its own guard)
     const guard = new ReplayGuard()
 
     async function handle(message: SyncMessage) {
@@ -225,8 +225,8 @@ export function SyncProvider({ children }: { children: ReactNode }) {
           import('mqtt'),
           deriveRoom(code),
         ])
-        // Сборка mqtt — CommonJS: в режиме разработки Vite отдаёт
-        // её только как default, в production — с именованными экспортами.
+        // The mqtt build is CommonJS: in development Vite serves it
+        // only as default, in production with named exports.
         const connect = mqtt.connect ?? mqtt.default.connect
         if (cancelled) return
         const url = SYNC_SERVERS.find((item) => item.id === server)!.url
@@ -249,9 +249,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
             { qos: 1 }
           )
           sendHello()
-          // Свои метки, поставленные без связи, — на брокер
+          // Own markers placed while offline go to the broker
           ownMarkers().forEach((marker) => void publishMarker(marker))
-          // После обрыва наводчик повторяет последнее решение
+          // After a drop fire direction repeats the last solution
           if (roleRef.current === 'computer' && sharedRef.current) {
             void publishSolution(sharedRef.current.solution)
           }
@@ -301,7 +301,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     }
   }, [ready, code, server, clientId, sendHello, publishSolution, publishMarker])
 
-  // Часы для «кто в сети»
+  // A clock for "who is online"
   useEffect(() => {
     if (status !== 'online') return
     const interval = window.setInterval(() => setNow(Date.now()), 5000)
