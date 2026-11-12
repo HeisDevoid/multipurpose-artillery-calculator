@@ -194,7 +194,7 @@
     color: var(--color-text-2);
   }
 
-  /* ---- buttons (soft, as in Joy UI) ---- */
+  /* ---- buttons (soft) ---- */
   .btn {
     display: inline-flex;
     align-items: center;

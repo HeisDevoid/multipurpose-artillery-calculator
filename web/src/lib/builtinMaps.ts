@@ -7,10 +7,21 @@ import { PUBLIC_SITE_URL } from './sync'
  * scripts/import-grad-meh.mjs from an export of the grad_meh mod.
  * They live in public/maps/ and open without an import: on the site, a phone
  * and in the Windows app (it takes them from the site, so as not to bloat
- * the installer).
+ * the installer). Maps marked "bundled" in index.json ship inside the Windows
+ * app instead (scripts/strip-maps.mjs keeps them), and it lists them next to
+ * the site maps.
  */
 
-export const MAPS_BASE = isDesktop ? `${PUBLIC_SITE_URL}maps/` : './maps/'
+const LOCAL_MAPS = './maps/'
+export const MAPS_BASE = isDesktop ? `${PUBLIC_SITE_URL}maps/` : LOCAL_MAPS
+
+// The folder of every listed map: the site or the copy inside the app
+const folderOf = new Map<string, string>()
+
+/** The folder of a map, ending with "/". */
+export function mapFolder(world: string): string {
+  return folderOf.get(world) ?? `${MAPS_BASE}${world}/`
+}
 
 export interface BuiltinMapEntry {
   world: string
@@ -23,6 +34,8 @@ export interface BuiltinMapEntry {
   // low: the map was taken from the game without grad_meh: coarser heights, the background is a picture of the game map
   quality?: 'low'
   worldSize: number
+  // Ships inside the Windows app instead of being loaded from the site
+  bundled?: boolean
 }
 
 export type MapKind = 'official' | 'dlc' | 'community'
@@ -138,9 +151,9 @@ export function decodeHeights(
   }
 }
 
-export async function listBuiltinMaps(): Promise<BuiltinMapEntry[]> {
+async function readIndex(base: string): Promise<BuiltinMapEntry[]> {
   try {
-    const response = await fetch(`${MAPS_BASE}index.json`)
+    const response = await fetch(`${base}index.json`)
     if (!response.ok) return []
     const data = (await response.json()) as { maps?: unknown }
     if (!Array.isArray(data.maps)) return []
@@ -158,6 +171,31 @@ export async function listBuiltinMaps(): Promise<BuiltinMapEntry[]> {
   }
 }
 
+/** Map lists from several places: a later place wins, and every map gets its folder. */
+export function mergeMapLists(lists: { base: string; maps: BuiltinMapEntry[] }[]): {
+  maps: BuiltinMapEntry[]
+  folders: Map<string, string>
+} {
+  const byWorld = new Map<string, BuiltinMapEntry>()
+  const folders = new Map<string, string>()
+  for (const { base, maps } of lists) {
+    for (const entry of maps) {
+      byWorld.set(entry.world, entry)
+      folders.set(entry.world, `${base}${entry.world}/`)
+    }
+  }
+  return { maps: [...byWorld.values()], folders }
+}
+
+export async function listBuiltinMaps(): Promise<BuiltinMapEntry[]> {
+  // The Windows app: the site maps plus the ones shipped inside the app (they win)
+  const bases = MAPS_BASE === LOCAL_MAPS ? [MAPS_BASE] : [MAPS_BASE, LOCAL_MAPS]
+  const lists = await Promise.all(bases.map(async (base) => ({ base, maps: await readIndex(base) })))
+  const { maps, folders } = mergeMapLists(lists)
+  for (const [world, folder] of folders) folderOf.set(world, folder)
+  return maps
+}
+
 export async function loadBuiltinMap(
   world: string
 ): Promise<{
@@ -166,7 +204,7 @@ export async function loadBuiltinMap(
   displayName: string
   vectorUrl: string | null
 } | null> {
-  const base = `${MAPS_BASE}${world}/`
+  const base = mapFolder(world)
   const description = parseMapDescription(
     await (await fetch(`${base}map.json`)).json()
   )

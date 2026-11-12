@@ -79,7 +79,7 @@ import { useFavorites } from '../lib/favorites'
 import { FavoriteToggle } from './FavoriteToggle'
 import { shellKind } from '../lib/shellKind'
 import type { ArtilleryCategory } from '../types/gameModel'
-import { MAPS_BASE } from '../lib/builtinMaps'
+import { mapFolder } from '../lib/builtinMaps'
 import { pinchView, type TouchPoint } from '../lib/pinch'
 import { ScreenMarkers } from './ScreenMarkers'
 import { CoordinatePlate } from './map/CoordinatePlate'
@@ -1516,7 +1516,7 @@ export function MapPicker({
     kind: mapKind(m),
     official: mapKind(m) === 'official',
     lowQuality: m.quality === 'low',
-    preview: `${MAPS_BASE}${m.world}/preview.webp`,
+    preview: `${mapFolder(m.world)}preview.webp`,
   }))
   const current = mapEntries.find((e) => e.key === mapKey)
   function mapLabel(key: string): string {

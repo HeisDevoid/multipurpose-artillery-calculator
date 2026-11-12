@@ -268,6 +268,8 @@ for (const source of sources) {
   if (previous?.kind) entry.kind = previous.kind
   // The author is edited by hand too: it matters which mod the map is from (Chernarus: CUP)
   if (previous?.author) entry.author = previous.author
+  // Shipping the map inside the Windows app is a manual choice too
+  if (previous?.bundled) entry.bundled = previous.bundled
   index.maps = [...index.maps.filter((m) => m.world !== entry.world), entry].sort(
     (a, b) => a.displayName.localeCompare(b.displayName)
   )

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  mergeMapLists,
   decodeHeights,
   metersPerTile,
   parseMapDescription,
@@ -106,5 +107,37 @@ describe('tile pyramid', () => {
       maxY: 20000,
     })
     expect(tiles).toHaveLength(1)
+  })
+})
+
+describe('mergeMapLists', () => {
+  const entry = (world: string, author = 'Someone') => ({ world, displayName: world, author, worldSize: 10240 })
+
+  it('joins the site maps and the maps inside the app, each with its folder', () => {
+    const { maps, folders } = mergeMapLists([
+      { base: 'https://site/maps/', maps: [entry('altis'), entry('stratis')] },
+      { base: './maps/', maps: [{ ...entry('fapovo'), bundled: true }] },
+    ])
+    expect(maps.map((m) => m.world)).toEqual(['altis', 'stratis', 'fapovo'])
+    expect(folders.get('altis')).toBe('https://site/maps/altis/')
+    expect(folders.get('fapovo')).toBe('./maps/fapovo/')
+  })
+
+  it('a map inside the app wins over the site copy', () => {
+    const { maps, folders } = mergeMapLists([
+      { base: 'https://site/maps/', maps: [entry('altis', 'Site')] },
+      { base: './maps/', maps: [entry('altis', 'Inside')] },
+    ])
+    expect(maps).toHaveLength(1)
+    expect(maps[0].author).toBe('Inside')
+    expect(folders.get('altis')).toBe('./maps/altis/')
+  })
+
+  it('an empty place adds nothing', () => {
+    const { maps } = mergeMapLists([
+      { base: 'https://site/maps/', maps: [entry('vr')] },
+      { base: './maps/', maps: [] },
+    ])
+    expect(maps.map((m) => m.world)).toEqual(['vr'])
   })
 })
