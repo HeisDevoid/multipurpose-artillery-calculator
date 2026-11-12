@@ -7,6 +7,10 @@ All notable changes. The format follows [Keep a Changelog](https://keepachangelo
 ### Map
 - Pinch to zoom: on a phone or tablet two fingers zoom and drag the map. The + and − buttons are for the mouse and are hidden on touch screens.
 
+### Maps
+- 62 new maps in "Mods and DLC": Takistan, Zargabad, Sahrani, Utes, Everon, Kolgujev, Nogova, Lingor, Panthera, Napf, Kunduz, Fallujah, Chernarus 2035, Chernarus Redux, Kujari, Ruha, Anizay, Green Sea and more.
+- Cam Lao Nam is no longer in the list.
+
 ### Statistics
 - Anonymous usage counter: once a day the site and the Windows app download a small file from a GitHub release, and the download counts become the "Daily use" chart in the README. Nothing about the user or the device is sent. The setting "Anonymous statistics" turns it off.
 - The stats picture in the README shows installer downloads by version and daily use of the site and the app as lines.

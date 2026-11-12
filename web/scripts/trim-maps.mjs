@@ -4,7 +4,9 @@
  * of maps where it is heavier than the threshold (3 MB by default). The detail
  * halves (about 4 m per pixel), which is enough for aiming.
  *
- *   node scripts/trim-maps.mjs [threshold, MB]
+ *   node scripts/trim-maps.mjs [threshold, MB] [map…]
+ *
+ * Without map names every map is checked.
  */
 import { readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -12,6 +14,7 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('../public/maps/', import.meta.url))
 const limitMb = Number(process.argv[2] ?? 3)
+const only = new Set(process.argv.slice(3))
 
 function sizeMb(dir) {
   let total = 0
@@ -24,6 +27,7 @@ function sizeMb(dir) {
 
 let saved = 0
 for (const world of readdirSync(ROOT)) {
+  if (only.size > 0 && !only.has(world)) continue
   const mapFile = join(ROOT, world, 'map.json')
   try {
     statSync(mapFile)
@@ -31,6 +35,8 @@ for (const world of readdirSync(ROOT)) {
     continue
   }
   const map = JSON.parse(readFileSync(mapFile, 'utf8'))
+  // A map without a satellite image has no tiles
+  if (!map.tiles) continue
   const top = map.tiles.levels - 1
   const topDir = join(ROOT, world, 'tiles', String(top))
   if (top < 1) continue
