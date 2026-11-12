@@ -32,6 +32,8 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   for (const world of readdirSync(ROOT)) {
     if (only.length && !only.includes(world)) continue
     if (!existsSync(join(ROOT, world, 'map.json'))) continue
+    // A map without a satellite image keeps its paper preview from the import
+    if (!JSON.parse(readFileSync(join(ROOT, world, 'map.json'), 'utf8')).tiles) continue
     const side = await makePreview(world)
     console.log(`${world}: preview.webp (${side} px from the tile)`)
   }

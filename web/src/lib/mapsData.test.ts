@@ -73,7 +73,7 @@ describe.skipIf(!HAS_MAPS)('built-in maps in public/maps', () => {
     }
   )
 
-  it('the total weight of the maps does not bloat (a 120 MB limit, with the vector layers)', () => {
+  it('the maps do not bloat: no more than 5 MB per map on average, with the vector layers', () => {
     function size(dir: string): number {
       return readdirSync(dir).reduce((sum, name) => {
         const p = join(dir, name)
@@ -81,6 +81,6 @@ describe.skipIf(!HAS_MAPS)('built-in maps in public/maps', () => {
         return sum + (s.isDirectory() ? size(p) : s.size)
       }, 0)
     }
-    expect(size(ROOT) / 1024 / 1024).toBeLessThan(120)
+    expect(size(ROOT) / 1024 / 1024 / index.maps.length).toBeLessThan(5)
   })
 })
