@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1270" height="360" viewBox="0 0 1270 360" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-label="Installer downloads by version and daily use of the site and the Windows app">
+  <rect width="1270" height="360" rx="12" fill="#000"/>
+  <text x="44" y="62" font-size="17" font-weight="600" letter-spacing="1.2" fill="#8c939c">DOWNLOADS</text>
+  <text x="44" y="122" font-size="56" font-weight="700" fill="#f2f2f2">26</text>
+  <text x="44" y="152" font-size="17" fill="#8c939c">Windows installer, by version</text>
+  <line x1="44" y1="294" x2="399" y2="294" stroke="#1f2226" stroke-width="1"/>
+  <path d="M47 294V222Q47 218 51 218H66.6Q70.6 218 70.6 222V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.11: 2</title></path>
+  <text x="58.8" y="312" font-size="13" text-anchor="middle" fill="#8c939c">0.11</text>
+  <path d="M76.6 294V222Q76.6 218 80.6 218H96.2Q100.2 218 100.2 222V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.12: 2</title></path>
+  <path d="M106.2 294V260Q106.2 256 110.2 256H125.8Q129.8 256 129.8 260V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.13: 1</title></path>
+  <path d="M135.8 294V222Q135.8 218 139.8 218H155.4Q159.4 218 159.4 222V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.14: 2</title></path>
+  <path d="M165.3 294V184Q165.3 180 169.3 180H184.9Q188.9 180 188.9 184V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.15: 3</title></path>
+  <path d="M194.9 294V184Q194.9 180 198.9 180H214.5Q218.5 180 218.5 184V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.16: 3</title></path>
+  <path d="M224.5 294V184Q224.5 180 228.5 180H244.1Q248.1 180 248.1 184V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.16.1: 3</title></path>
+  <path d="M254.1 294V222Q254.1 218 258.1 218H273.7Q277.7 218 277.7 222V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.17: 2</title></path>
+  <path d="M283.7 294V222Q283.7 218 287.7 218H303.3Q307.3 218 307.3 222V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.18: 2</title></path>
+  <path d="M313.3 294V222Q313.3 218 317.3 218H332.9Q336.9 218 336.9 222V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.18.1: 2</title></path>
+  <path d="M342.8 294V222Q342.8 218 346.8 218H362.4Q366.4 218 366.4 222V294Z" fill="#f2f2f2" fill-opacity="0.55"><title>v0.18.2: 2</title></path>
+  <path d="M372.4 294V222Q372.4 218 376.4 218H392Q396 218 396 222V294Z" fill="#f2f2f2" fill-opacity="1"><title>v0.19: 2</title></path>
+  <text x="384.2" y="312" font-size="13" text-anchor="middle" fill="#8c939c">0.19</text>
+  <line x1="443" y1="44" x2="443" y2="316" stroke="#1f2226" stroke-width="1"/>
+  <text x="487" y="62" font-size="17" font-weight="600" letter-spacing="1.2" fill="#8c939c">DAILY USE</text>
+  <text x="487" y="122" font-size="56" font-weight="700" fill="#f2f2f2">3</text>
+  <text x="487" y="152" font-size="17" fill="#8c939c">devices a day, 7-day average</text>
+  <text x="1114.2" y="62" font-size="15" fill="#8c939c">Windows app 0</text>
+  <circle cx="1103.2" cy="57" r="5" fill="#6b7280"/>
+  <text x="998.8" y="62" font-size="15" fill="#8c939c">Website 0</text>
+  <circle cx="987.8" cy="57" r="5" fill="#f2f2f2"/>
+  <line x1="487" y1="294" x2="1226" y2="294" stroke="#1f2226" stroke-width="1"/>
+  <line x1="487" y1="180" x2="1226" y2="180" stroke="#1f2226" stroke-width="1" stroke-dasharray="3 5"/>
+  <text x="1226" y="173" font-size="13" text-anchor="end" fill="#8c939c">5</text>
+  <polyline points="487,271.2 1226,294" fill="none" stroke="#6b7280" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><title>Windows app</title></polyline>
+  <circle cx="1226" cy="294" r="5" fill="#6b7280" stroke="#000" stroke-width="2"/>
+  <polyline points="487,180 1226,294" fill="none" stroke="#f2f2f2" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><title>Website</title></polyline>
+  <circle cx="1226" cy="294" r="5" fill="#f2f2f2" stroke="#000" stroke-width="2"/>
+  <text x="487" y="312" font-size="13" fill="#8c939c">12 Nov</text>
+  <text x="1226" y="312" font-size="13" text-anchor="end" fill="#8c939c">13 Nov</text>
+  <text x="1226" y="346" font-size="12" text-anchor="end" fill="#8c939c" fill-opacity="0.7">updated 2026-11-14</text>
+</svg>
